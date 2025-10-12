@@ -1,115 +1,12 @@
-// import 'package:banking_app/core/AppStyles/app_styles.dart';
-// import 'package:banking_app/screens/auth/widgets/app_logo.dart';
-// import 'package:banking_app/screens/auth/widgets/button.dart';
-// import 'package:banking_app/screens/auth/widgets/size.dart';
-// import 'package:flutter/material.dart';
-// import 'register_screen.dart';
 
-// class MainScreen extends StatelessWidget {
-//   const MainScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: appTheme.scaffoldBackgroundColor,
-//       body: SafeArea(
-//         child: Padding(
-//           padding: EdgeInsets.symmetric(horizontal: CommonSize.s20(context)),
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//             children: [
-//               SizedBox(height: CommonSize.s40(context)),
-
-//               Expanded(
-//                 child: Column(
-//                   children: [
-//                     // Logo
-//                     Container(
-//                       alignment: Alignment.center,
-//                       child: AppLogo(
-//                         width: 100,
-//                         height: 100,
-//                         borderRadius: 20,
-//                         showShadow: true,
-//                       ),
-//                     ),
-//                     SizedBox(height: CommonSize.s32(context)),
-//                     //Cotent
-//                     Text(
-//                       '“Move money, Anywhere, Instantly”',
-//                       style: TextStyle(
-//                         fontSize: CommonSize.s18(context),
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//               //  SizedBox(height: CommonSize.s32(context)),
-//               // Buttons
-//               Column(
-//                 crossAxisAlignment: CrossAxisAlignment.stretch,
-//                 children: [
-//                   customElevatedButton(
-//                     onPressed:
-//                         () => Navigator.push(
-//                           context,
-//                           MaterialPageRoute(
-//                             builder: (_) => const RegisterScreen(),
-//                           ),
-//                         ),
-//                     text: "Create Account",
-//                     color: appTheme.colorScheme.secondary,
-//                     textColor: appTheme.textTheme.bodyLarge!.color,
-//                     borderRadius: BorderRadius.circular(CommonSize.s8(context)),
-//                     height: CommonSize.s48(context),
-//                     width: double.infinity,
-//                     fontSize: CommonSize.s18(context),
-//                     fontWeight: FontWeight.normal,
-//                   ),
-
-//                   SizedBox(height: CommonSize.s8(context)),
-
-//                   // customElevatedButton(
-//                   //   onPressed:
-//                   //       () => Navigator.push(
-//                   //         context,
-//                   //         MaterialPageRoute(
-//                   //           builder: (_) => const LoginScreen(),
-//                   //         ),
-//                   //       ),
-//                   //   text: "Login",
-//                   //   color: appTheme.colorScheme.secondary,
-//                   //   textColor: appTheme.textTheme.bodyLarge!.color,
-//                   //   borderRadius: BorderRadius.circular(
-//                   //     CommonSize.s8(context),
-//                   //   ),
-//                   //   height: CommonSize.s48(context),
-//                   //   width: double.infinity,
-//                   //   fontSize: CommonSize.s18(context),
-//                   //   fontWeight: FontWeight.normal,
-//                   // ),
-//                 ],
-//               ),
-
-//               //TODO: Version info || Other info
-//               // SizedBox(height: CommonSize.s16(context)),
-//               // const Text('Version 1.0.0', style: TextStyle(color: Colors.grey)),
-//               // SizedBox(height: CommonSize.s8(context)),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 import 'package:banking_app/screens/auth/views/login_screen.dart';
+import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:flutter/material.dart';
-import 'register_screen.dart';
+import 'personalinfo_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -259,7 +156,7 @@ class _MainScreenState extends State<MainScreen>
                               () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => const RegisterScreen(),
+                                  builder: (_) => const SignupScreen(),
                                 ),
                               ),
                           text: "Create Account",

@@ -12,14 +12,14 @@ import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/textfield.dart';
 import '../../home/home_screen.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class PersonalInfoScreen extends StatefulWidget {
+  const PersonalInfoScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen>
+class _PersonalInfoScreenState extends State<PersonalInfoScreen>
     with SingleTickerProviderStateMixin {
   final _fullNameController = TextEditingController();
   final _dayController = TextEditingController();
@@ -157,13 +157,25 @@ class _RegisterScreenState extends State<RegisterScreen>
                     opacity: _contentFade,
                     child: SlideTransition(
                       position: _contentSlide,
-                      child: Text(
-                        'Create your account',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: CommonSize.s24(context),
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Personal Details',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: CommonSize.s24(context),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Tell about yourself!',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: CommonSize.s14(context),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

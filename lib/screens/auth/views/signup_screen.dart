@@ -1,25 +1,24 @@
-import 'package:banking_app/screens/auth/controllers/auth_state.dart';
+import 'package:banking_app/screens/auth/views/login_screen.dart';
 import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
-import 'package:banking_app/screens/auth/views/signup_screen.dart';
-import 'package:banking_app/screens/auth/widgets/app_logo.dart';
-import 'package:banking_app/screens/auth/widgets/button.dart';
-import 'package:banking_app/screens/auth/widgets/flushbar.dart';
-import 'package:banking_app/screens/auth/widgets/size.dart';
-import 'package:banking_app/screens/auth/widgets/textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../controllers/auth_bloc.dart';
-import '../controllers/auth_event.dart';
-import '../../home/home_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+import '../controllers/auth_bloc.dart';
+import '../controllers/auth_state.dart';
+import 'package:banking_app/screens/auth/widgets/app_logo.dart';
+import 'package:banking_app/screens/auth/widgets/button.dart';
+import 'package:banking_app/screens/auth/widgets/size.dart';
+import 'package:banking_app/screens/auth/widgets/textfield.dart';
+
+
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _SignupScreenState extends State<SignupScreen>
     with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -158,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen>
                     child: SlideTransition(
                       position: _contentSlide,
                       child: Text(
-                        'Welcome back',
+                        'Create Account',
                         style: TextStyle(
                           fontSize: CommonSize.s28(context),
                           color: Colors.white,
@@ -171,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen>
                   SizedBox(height: CommonSize.s32(context)),
                   Form(
                     key: _formKey,
-                   // autovalidateMode: AutovalidateMode.always,
+                    // autovalidateMode: AutovalidateMode.always,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -210,61 +209,61 @@ class _LoginScreenState extends State<LoginScreen>
                               //   if (_formKey.currentState != null) {
                               //     _formKey.currentState!.validate();
                               //   }
-                             // },
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(height: CommonSize.s10(context)),
-
-                        FadeTransition(
-                          opacity: _2TextFieldFade,
-                          child: SlideTransition(
-                            position: _2TextFieldSlide,
-                            child: customTextField(
-                              controller: _passwordController,
-                              hintText: 'Password',
-                              errorStyle: const TextStyle(
-                                color: Color.fromARGB(255, 240, 252, 2),
-                              ),
-                              textStyle: const TextStyle(color: Colors.white),
-                              prefixIconColor: Colors.white,
-                              suffixIconColor: Colors.white,
-                              hintStyle: const TextStyle(color: Colors.white),
-                              borderColor: Colors.white,
-                              keyboardType: TextInputType.text,
-                              prefixIcon: const Icon(Icons.lock),
-                              isPassword: true,
-                              showPasswordToggle: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your password';
-                                }
-                                // if (value.length < 6) {
-                                //   return 'Password must be at least 6 characters';
-                                // }
-                                return null;
-                              },
-                              // onChanged: (value) {
-                              //   // Trigger validator on every change
-                              //   if (_formKey.currentState != null) {
-                              //     _formKey.currentState!.validate();
-                              //   }
                               // },
-                              onEditingComplete: () {
-                                FocusScope.of(context).unfocus();
-                                if (_formKey.currentState!.validate()) {
-                                  context.read<AuthBloc>().add(
-                                    AuthLoginWithCredentials(
-                                      _emailController.text.trim(),
-                                      _passwordController.text,
-                                    ),
-                                  );
-                                }
-                              },
                             ),
                           ),
                         ),
+
+                        SizedBox(height: CommonSize.s20(context)),
+
+                        // FadeTransition(
+                        //   opacity: _2TextFieldFade,
+                        //   child: SlideTransition(
+                        //     position: _2TextFieldSlide,
+                        //     child: customTextField(
+                        //       controller: _passwordController,
+                        //       hintText: 'Password',
+                        //       errorStyle: const TextStyle(
+                        //         color: Color.fromARGB(255, 240, 252, 2),
+                        //       ),
+                        //       textStyle: const TextStyle(color: Colors.white),
+                        //       prefixIconColor: Colors.white,
+                        //       suffixIconColor: Colors.white,
+                        //       hintStyle: const TextStyle(color: Colors.white),
+                        //       borderColor: Colors.white,
+                        //       keyboardType: TextInputType.text,
+                        //       prefixIcon: const Icon(Icons.lock),
+                        //       isPassword: true,
+                        //       showPasswordToggle: true,
+                        //       validator: (value) {
+                        //         if (value == null || value.isEmpty) {
+                        //           return 'Please enter your password';
+                        //         }
+                        //         // if (value.length < 6) {
+                        //         //   return 'Password must be at least 6 characters';
+                        //         // }
+                        //         return null;
+                        //       },
+                        //       // onChanged: (value) {
+                        //       //   // Trigger validator on every change
+                        //       //   if (_formKey.currentState != null) {
+                        //       //     _formKey.currentState!.validate();
+                        //       //   }
+                        //       // },
+                        //       onEditingComplete: () {
+                        //         FocusScope.of(context).unfocus();
+                        //         if (_formKey.currentState!.validate()) {
+                        //           context.read<AuthBloc>().add(
+                        //             AuthLoginWithCredentials(
+                        //               _emailController.text.trim(),
+                        //               _passwordController.text,
+                        //             ),
+                        //           );
+                        //         }
+                        //       },
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
@@ -277,28 +276,28 @@ class _LoginScreenState extends State<LoginScreen>
                         children: [
                           BlocConsumer<AuthBloc, AuthState>(
                             listener: (context, state) {
-                              if (state.status == AuthStatus.success) {
-                                customFlushbar(
-                                  context: context,
-                                  message: "Login Successful!",
-                                  backgroundColor: Colors.green,
-                                  icon: const Icon(
-                                    Icons.check_circle,
-                                    color: Colors.white,
-                                  ),
-                                );
-                                // navigate to home
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (_) => const HomeScreen(),
-                                  ),
-                                );
-                              } else if (state.status == AuthStatus.failure) {
-                                customFlushbar(
-                                  context: context,
-                                  message: state.message ?? "Login Failed",
-                                );
-                              }
+                              // if (state.status == AuthStatus.success) {
+                              //   customFlushbar(
+                              //     context: context,
+                              //     message: "Login Successful!",
+                              //     backgroundColor: Colors.green,
+                              //     icon: const Icon(
+                              //       Icons.check_circle,
+                              //       color: Colors.white,
+                              //     ),
+                              //   );
+                              //   // navigate to home
+                              //   Navigator.of(context).pushReplacement(
+                              //     MaterialPageRoute(
+                              //       builder: (_) => const HomeScreen(),
+                              //     ),
+                              //   );
+                              // } else if (state.status == AuthStatus.failure) {
+                              //   customFlushbar(
+                              //     context: context,
+                              //     message: state.message ?? "Login Failed",
+                              //   );
+                              // }
                             },
                             builder: (context, state) {
                               final isLoading =
@@ -306,16 +305,25 @@ class _LoginScreenState extends State<LoginScreen>
 
                               return customElevatedButton(
                                 onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<AuthBloc>().add(
-                                      AuthLoginWithCredentials(
-                                        _emailController.text.trim(),
-                                        _passwordController.text,
-                                      ),
-                                    );
-                                  }
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => const PersonalInfoScreen(),
+                                    ),
+                                  );
+
+                                  //TODO: submit email registration
+                                  // if (_formKey.currentState!.validate()) {
+                                  //   context.read<AuthBloc>().add(
+                                  //     AuthLoginWithCredentials(
+                                  //       _emailController.text.trim(),
+                                  //       _passwordController.text,
+                                  //     ),
+                                  //   );
+                                  // }
                                 },
-                                text: "Login",
+                                text: "Continue",
                                 color: Colors.white,
                                 textColor: const Color(0xFF1E3C72),
                                 borderRadius: BorderRadius.circular(
@@ -334,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                "If you don't have an account? ",
+                                "Already have an account? ",
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.9),
                                   fontSize: CommonSize.s16(context),
@@ -345,12 +353,12 @@ class _LoginScreenState extends State<LoginScreen>
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => const SignupScreen(),
+                                      builder: (_) => const LoginScreen(),
                                     ),
                                   );
                                 },
                                 child: Text(
-                                  "Sign up",
+                                  "Log in",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: CommonSize.s16(context),
