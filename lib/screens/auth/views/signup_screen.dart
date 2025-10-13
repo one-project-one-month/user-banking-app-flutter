@@ -9,8 +9,6 @@ import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/textfield.dart';
-
-
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 

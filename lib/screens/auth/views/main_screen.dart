@@ -1,5 +1,3 @@
-
-
 import 'package:banking_app/screens/auth/views/login_screen.dart';
 import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
@@ -156,7 +154,7 @@ class _MainScreenState extends State<MainScreen>
                               () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => const SignupScreen(),
+                                  builder: (_) => const PersonalInfoScreen(),
                                 ),
                               ),
                           text: "Create Account",
