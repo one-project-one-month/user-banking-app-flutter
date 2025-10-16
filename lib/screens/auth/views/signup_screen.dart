@@ -1,3 +1,4 @@
+import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/auth/views/login_screen.dart';
 import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/textfield.dart';
+
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -303,12 +305,9 @@ class _SignupScreenState extends State<SignupScreen>
 
                               return customElevatedButton(
                                 onPressed: () {
-                                  Navigator.push(
+                                  AppRoutes.navigateTo(
                                     context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => const PersonalInfoScreen(),
-                                    ),
+                                    AppRoutes.personalInfo,
                                   );
 
                                   //TODO: submit email registration
@@ -348,11 +347,9 @@ class _SignupScreenState extends State<SignupScreen>
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  Navigator.push(
+                                  AppRoutes.navigateTo(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const LoginScreen(),
-                                    ),
+                                    AppRoutes.login,
                                   );
                                 },
                                 child: Text(
