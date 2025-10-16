@@ -1,3 +1,4 @@
+import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/auth/views/login_screen.dart';
 import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
@@ -150,13 +151,13 @@ class _MainScreenState extends State<MainScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         customElevatedButton(
-                          onPressed:
-                              () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const PersonalInfoScreen(),
-                                ),
-                              ),
+                          onPressed: () {
+                            AppRoutes.navigateTo(
+                              context,
+                              AppRoutes.personalInfo,
+                            );
+                          },
+
                           text: "Create Account",
                           color: Colors.white,
                           textColor: const Color(0xFF1E3C72),
@@ -181,11 +182,9 @@ class _MainScreenState extends State<MainScreen>
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
+                                AppRoutes.navigateTo(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const LoginScreen(),
-                                  ),
+                                  AppRoutes.login,
                                 );
                               },
                               child: Text(

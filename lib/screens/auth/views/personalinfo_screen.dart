@@ -1,3 +1,7 @@
+import 'package:banking_app/Routes/app_routes.dart';
+import 'package:banking_app/screens/KYC/views/upload_document.dart';
+import 'package:banking_app/screens/KYC/views/upload_document_DL.dart';
+import 'package:banking_app/screens/KYC/views/upload_document_passport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -522,33 +526,39 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                           ),
                           child: BlocConsumer<AuthBloc, AuthState>(
                             listener: (context, state) {
-                              // if (state.status == AuthStatus.success) {
-                              //   customFlushbar(
-                              //     context: context,
-                              //     message: 'Registration successful',
-                              //     backgroundColor: Colors.green,
-                              //     icon: const Icon(
-                              //       Icons.check_circle,
-                              //       color: Colors.white,
-                              //     ),
-                              //   );
-                              //   Navigator.of(context).pushReplacement(
-                              //     MaterialPageRoute(
-                              //       builder: (_) => const HomeScreen(),
-                              //     ),
-                              //   );
-                              // } else if (state.status == AuthStatus.failure) {
-                              //   customFlushbar(
-                              //     context: context,
-                              //     message: state.message ?? 'Registration failed',
-                              //   );
-                              // }
+                              if (state.status == AuthStatus.success) {
+                                customFlushbar(
+                                  context: context,
+                                  message: 'Registration successful',
+                                  backgroundColor: Colors.green,
+                                  icon: const Icon(
+                                    Icons.check_circle,
+                                    color: Colors.white,
+                                  ),
+                                );
+                                // Navigator.of(context).pushReplacement(
+                                //   MaterialPageRoute(
+                                //     builder: (_) => const UploadDocumentDl(),
+                                //   ),
+                                // );
+                              } else if (state.status == AuthStatus.failure) {
+                                customFlushbar(
+                                  context: context,
+                                  message:
+                                      state.message ?? 'Registration failed',
+                                );
+                              }
                             },
                             builder: (context, state) {
                               final isLoading =
                                   state.status == AuthStatus.loading;
                               return customElevatedButton(
-                                onPressed: () {}, //_submit,
+                                onPressed: () {
+                                  AppRoutes.navigateTo(
+                                    context,
+                                    AppRoutes.uploadDocument,
+                                  );
+                                }, //_submit,
                                 text: 'Next',
                                 color: Colors.white,
                                 textColor: const Color(0xFF0A3D62),

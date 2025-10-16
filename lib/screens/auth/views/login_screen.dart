@@ -1,3 +1,4 @@
+import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/auth/controllers/auth_state.dart';
 import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
 import 'package:banking_app/screens/auth/views/signup_screen.dart';
@@ -296,10 +297,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                   );
                                   // navigate to home
-                                  Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                      builder: (_) => const HomeScreen(),
-                                    ),
+                                  AppRoutes.navigateTo(
+                                    context,
+                                    AppRoutes.main,
                                   );
                                 } else if (state.status == AuthStatus.failure) {
                                   customFlushbar(
@@ -350,12 +350,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                                 GestureDetector(
                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const SignupScreen(),
-                                      ),
-                                    );
+                                    AppRoutes.navigateTo(context, AppRoutes.login);
                                   },
                                   child: Text(
                                     "Sign up",
