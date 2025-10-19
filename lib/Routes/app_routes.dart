@@ -1,3 +1,6 @@
+import 'package:banking_app/screens/KYC/views/documentVerification_screen.dart';
+import 'package:banking_app/screens/KYC/views/face_authentication_notice_screen.dart';
+import 'package:banking_app/screens/KYC/views/face_authentication_screen.dart';
 import 'package:banking_app/screens/KYC/views/upload_document.dart';
 import 'package:banking_app/screens/KYC/views/upload_document_dl.dart';
 import 'package:banking_app/screens/KYC/views/upload_document_passport.dart';
@@ -18,6 +21,9 @@ class AppRoutes {
   static const String login = '/login';
   static const String main = '/main';
   static const String personalInfo = '/personal-info';
+  static const String documentVerification = '/document-verification';
+  static const String faceAuthenticationNotice = '/face-authentication-notice';
+  static const String faceAuthentication = '/face-authentication';
 
   // Add more routes as your app grows
   // static const String login = '/login';
@@ -45,7 +51,7 @@ class AppRoutes {
           builder: (_) => const MainScreen(),
           settings: settings,
         );
-        
+
       case personalInfo:
         return MaterialPageRoute(
           builder: (_) => const PersonalInfoScreen(),
@@ -70,6 +76,21 @@ class AppRoutes {
           settings: settings,
         );
 
+      case documentVerification:
+        return MaterialPageRoute(
+          builder: (_) => const DocumentVerificationScreen(),
+          settings: settings,
+        );
+      case faceAuthenticationNotice:
+        return MaterialPageRoute(
+          builder: (_) => const FaceAuthenticationNoticeScreen(),
+          settings: settings,
+        );
+      case faceAuthentication:
+        return MaterialPageRoute(
+          builder: (_) => const FaceAuthenticationScreen(),
+          settings: settings,
+        );
       // 404 - Route not found
       default:
         return MaterialPageRoute(

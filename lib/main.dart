@@ -1,5 +1,6 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/KYC/controllers/upload_bloc.dart';
+import 'package:banking_app/screens/KYC/controllers/upload/upload_bloc.dart';
+import 'package:banking_app/screens/KYC/controllers/verification/verification_bloc.dart';
 import 'package:banking_app/screens/auth/views/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,10 +19,8 @@ class MyApp extends StatelessWidget {
       providers: [
         // Provide UploadBloc globally so it's accessible across all routes
         BlocProvider<UploadBloc>(create: (context) => UploadBloc()),
-        // Add other BLoCs here as your app grows
-        // BlocProvider<AuthBloc>(
-        //   create: (context) => AuthBloc(),
-        // ),
+        // Provide VerificationBloc globally
+        BlocProvider<VerificationBloc>(create: (context) => VerificationBloc()),
       ],
       child: MaterialApp(
         title: 'Banking App',

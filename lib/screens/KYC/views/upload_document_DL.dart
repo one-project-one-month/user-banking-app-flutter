@@ -1,8 +1,9 @@
 import 'dart:io';
 
-import 'package:banking_app/screens/KYC/controllers/upload_bloc.dart';
-import 'package:banking_app/screens/KYC/controllers/upload_event.dart';
-import 'package:banking_app/screens/KYC/controllers/upload_state.dart';
+import 'package:banking_app/Routes/app_routes.dart';
+import 'package:banking_app/screens/KYC/controllers/upload/upload_bloc.dart';
+import 'package:banking_app/screens/KYC/controllers/upload/upload_event.dart';
+import 'package:banking_app/screens/KYC/controllers/upload/upload_state.dart';
 import 'package:banking_app/screens/KYC/utils/scan.dart';
 import 'package:banking_app/screens/KYC/utils/tips.dart';
 import 'package:flutter/material.dart';
@@ -104,14 +105,9 @@ class _UploadDocumentDlState extends State<UploadDocumentDl>
           child: BlocConsumer<UploadBloc, UploadState>(
             listener: (context, state) {
               if (state is DLUploadSuccessState) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Documents uploaded successfully!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                // Navigate to next screen or back
-                // Navigator.pop(context);
+               
+                // Navigate to document verification screen
+                AppRoutes.navigateTo(context, AppRoutes.documentVerification);
               } else if (state is DLUploadErrorState) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -165,41 +161,13 @@ class _UploadDocumentDlState extends State<UploadDocumentDl>
                                 imagePath: state.dlBackImagePath,
                                 onPickImage: () => _pickImage(false),
                               ),
-                              const Tips(),
-                              const SizedBox(height: 20),
-                              if (state.dlFrontImagePath != null &&
-                                  state.dlBackImagePath != null)
-                                ElevatedButton(
-                                  onPressed:
-                                      state.isLoading ? null : _submitImages,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF227DBE),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 40,
-                                      vertical: 15,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                  ),
-                                  child:
-                                      state.isLoading
-                                          ? const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                          : const Text(
-                                            'Submit Documents',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                ),
+                              Tips(
+                                showNextButton:
+                                    state.dlFrontImagePath != null &&
+                                    state.dlBackImagePath != null,
+                                isLoading: state.isLoading,
+                                onNext: _submitImages,
+                              ),
                             ],
                           ),
                         ),
