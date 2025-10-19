@@ -1,12 +1,10 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/KYC/controllers/upload_event.dart';
+import 'package:banking_app/screens/KYC/controllers/upload/upload_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:banking_app/screens/KYC/views/upload_document_DL.dart';
-import 'package:banking_app/screens/KYC/views/upload_document_passport.dart';
-import '../controllers/upload_bloc.dart';
-import '../controllers/upload_state.dart';
+import '../controllers/upload/upload_bloc.dart';
+import '../controllers/upload/upload_state.dart';
 
 class UploadDocument extends StatefulWidget {
   const UploadDocument({super.key});

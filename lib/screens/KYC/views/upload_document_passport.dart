@@ -1,13 +1,11 @@
-import 'dart:io';
-
-import 'package:banking_app/screens/KYC/controllers/upload_bloc.dart';
-import 'package:banking_app/screens/KYC/controllers/upload_event.dart';
-import 'package:banking_app/screens/KYC/controllers/upload_state.dart';
+import 'package:banking_app/Routes/app_routes.dart';
+import 'package:banking_app/screens/KYC/controllers/upload/upload_bloc.dart';
+import 'package:banking_app/screens/KYC/controllers/upload/upload_event.dart';
+import 'package:banking_app/screens/KYC/controllers/upload/upload_state.dart';
 import 'package:banking_app/screens/KYC/utils/scan.dart';
 import 'package:banking_app/screens/KYC/utils/tips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UploadDocumentPp extends StatefulWidget {
@@ -103,14 +101,8 @@ class _UploadDocumentPpState extends State<UploadDocumentPp>
             child: BlocConsumer<UploadBloc, UploadState>(
               listener: (context, state) {
                 if (state is PassportUploadSuccessState) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Passport uploaded successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  // Navigate to next screen or back
-                  // Navigator.pop(context);
+               
+                   AppRoutes.navigateTo(context, AppRoutes.documentVerification);
                 } else if (state is PassportUploadErrorState) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -158,41 +150,13 @@ class _UploadDocumentPpState extends State<UploadDocumentPp>
                                   onPickImage: _pickImage,
                                 ),
                                 const SizedBox(height: 20),
-                                const Tips(),
-                                const SizedBox(height: 20),
-                                if (state.passportImagePath != null &&
-                                    state.passportImagePath!.isNotEmpty)
-                                  ElevatedButton(
-                                    onPressed:
-                                        state.isLoading ? null : _submitImage,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.white,
-                                      foregroundColor: const Color(0xFF227DBE),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 40,
-                                        vertical: 15,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
-                                    ),
-                                    child:
-                                        state.isLoading
-                                            ? const SizedBox(
-                                              height: 20,
-                                              width: 20,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                              ),
-                                            )
-                                            : const Text(
-                                              'Submit Passport',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                  ),
+                                Tips(
+                                  showNextButton:
+                                      state.passportImagePath != null &&
+                                      state.passportImagePath!.isNotEmpty,
+                                  isLoading: state.isLoading,
+                                  onNext: _submitImage,
+                                ),
                               ],
                             ),
                           ),
