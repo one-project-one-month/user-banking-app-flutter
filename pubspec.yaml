@@ -2,7 +2,7 @@ name: banking_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -36,6 +36,21 @@ dependencies:
   cupertino_icons: ^1.0.8
   carousel_slider: ^5.1.1
   smooth_page_indicator: ^1.2.1
+  flutter_bloc: ^8.1.4
+  equatable: ^2.0.7
+  shared_preferences: ^2.1.1
+  another_flushbar: ^1.12.32
+  dropdown_button2: ^2.3.9
+  flutter_svg: 2.0.9
+  image_picker: ^1.2.0
+  camera: ^0.10.6  # For camera preview
+  google_mlkit_face_detection: ^0.12.0  # For on-device face detection/pose/smile
+  permission_handler: ^11.3.1
+  video_player: ^2.10.0
+  flutter_mjpeg: ^2.0.4
+  http: 0.13.6
+  
+
 
 dev_dependencies:
   flutter_test:
@@ -53,7 +68,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -62,6 +76,11 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
+   - assets/logo/flypay.png
+   - assets/font_image/
+   - assets/svg/
+   - assets/svg/Passport.svg
+   
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -87,6 +106,18 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
+    - family: DMS-R
+      fonts:
+        - asset: fonts/DMSans-Regular.ttf
+    - family: DMS-M
+      fonts:
+        - asset: fonts/DMSans-Medium.ttf
+    - family: DMS-SB
+      fonts:
+        - asset: fonts/DMSans-SemiBold.ttf
+    - family: DMS-B
+      fonts:
+        - asset: fonts/DMSans-Bold.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
