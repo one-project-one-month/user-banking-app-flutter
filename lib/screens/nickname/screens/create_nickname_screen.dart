@@ -1,3 +1,4 @@
+import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/core/AppStyles/app_styles.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
@@ -176,9 +177,9 @@ class _CreateNicknameScreenState extends State<CreateNicknameScreen>
                                backgroundColor: Colors.green,
                                margin: const EdgeInsets.all(20), )
                            );
-                           Navigator.push(context, MaterialPageRoute(builder: (_) => ExistingNicknameListScreen()));
+                           AppRoutes.navigateAndReplace(context, AppRoutes.nickNameList);
                          } : (){
-                           Navigator.push(context, MaterialPageRoute(builder: (_) => ExistingNicknameListScreen()));
+                         //  Navigator.push(context, MaterialPageRoute(builder: (_) => ExistingNicknameListScreen()));
                          },
                          color: state.isButtonEnabled ? AppStyles.primary : Colors.grey,
                          textColor: AppStyles.surface,

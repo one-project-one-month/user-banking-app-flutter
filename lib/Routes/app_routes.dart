@@ -9,6 +9,8 @@ import 'package:banking_app/screens/auth/views/main_screen.dart';
 import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
 import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/views/splash_screen.dart';
+import 'package:banking_app/screens/nickname/screens/create_nickname_screen.dart';
+import 'package:banking_app/screens/nickname/screens/existing_nickname_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -24,6 +26,8 @@ class AppRoutes {
   static const String documentVerification = '/document-verification';
   static const String faceAuthenticationNotice = '/face-authentication-notice';
   static const String faceAuthentication = '/face-authentication';
+  static const String createNickname = '/create-nickname';
+  static const String nickNameList = '/nickname-list';
 
   // Add more routes as your app grows
   // static const String login = '/login';
@@ -89,6 +93,16 @@ class AppRoutes {
       case faceAuthentication:
         return MaterialPageRoute(
           builder: (_) => const FaceAuthenticationScreen(),
+          settings: settings,
+        );
+      case createNickname:
+        return MaterialPageRoute(
+          builder: (_) => const CreateNicknameScreen(),
+          settings: settings,
+        );
+      case nickNameList:
+        return MaterialPageRoute(
+          builder: (_) => const ExistingNicknameListScreen(),
           settings: settings,
         );
       // 404 - Route not found

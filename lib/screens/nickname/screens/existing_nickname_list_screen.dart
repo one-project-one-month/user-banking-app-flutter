@@ -1,3 +1,4 @@
+import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/textfield.dart';
 import 'package:banking_app/screens/nickname/screens/create_nickname_screen.dart';
@@ -37,7 +38,11 @@ class _ExistingNicknameListScreenState
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed:
+              () => AppRoutes.navigateAndReplace(
+                context,
+                AppRoutes.createNickname,
+              ),
           icon: const Icon(Icons.arrow_back, color: Color(0xFF002D62)),
         ),
         centerTitle: true,
@@ -103,10 +108,7 @@ class _ExistingNicknameListScreenState
             child: customElevatedButton(
               text: 'Add New Favorite',
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => CreateNicknameScreen()),
-                );
+                AppRoutes.navigateAndReplace(context, AppRoutes.createNickname);
               },
               color: AppStyles.primary,
               textColor: AppStyles.surface,
@@ -117,6 +119,7 @@ class _ExistingNicknameListScreenState
     );
   }
 
+  // nickname update container
   updateNickName(Map<String, String> nickname) {
     // _accountController.text = nickname['accNo'];
     return showModalBottomSheet(
@@ -152,7 +155,10 @@ class _ExistingNicknameListScreenState
                       enabled: false,
                       initialValue: nickname['accountNo'],
                     ),
-                    customTextField(controller: _nicknameController, hintText: 'Enter new nickname'),
+                    customTextField(
+                      controller: _nicknameController,
+                      hintText: 'Enter new nickname',
+                    ),
                   ],
                 ),
               ),
