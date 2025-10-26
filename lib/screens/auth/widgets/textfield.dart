@@ -27,6 +27,8 @@ Widget customTextField({
   VoidCallback? onEditingComplete,
   TextStyle? textStyle,
   TextStyle? errorStyle,
+  bool? enabled = true,
+  String? initialValue = ''
 }) {
   return _CustomTextField(
     controller: controller,
@@ -55,6 +57,8 @@ Widget customTextField({
     onEditingComplete: onEditingComplete,
     textStyle: textStyle,
     errorStyle: errorStyle,
+    enabled: enabled,
+    initialValue: initialValue,
   );
 }
 
@@ -84,6 +88,8 @@ class _CustomTextField extends StatefulWidget {
   final VoidCallback? onEditingComplete;
   final TextStyle? textStyle;
   final TextStyle? errorStyle;
+  final bool? enabled;
+  final String? initialValue;
 
   const _CustomTextField({
     required this.controller,
@@ -111,6 +117,8 @@ class _CustomTextField extends StatefulWidget {
     this.onEditingComplete,
     this.textStyle,
     this.errorStyle,
+    this.enabled,
+    this.initialValue
   });
 
   @override
@@ -128,7 +136,11 @@ class _CustomTextFieldState extends State<_CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    if ((widget.initialValue ?? '').isNotEmpty && widget.controller.text.isEmpty) {
+      widget.controller.text = widget.initialValue!;
+    }
     return TextFormField(
+      enabled:  widget.enabled,
       style: widget.textStyle,
       onEditingComplete: widget.onEditingComplete,
       controller: widget.controller,

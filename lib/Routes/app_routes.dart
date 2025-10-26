@@ -2,7 +2,7 @@ import 'package:banking_app/screens/KYC/views/documentVerification_screen.dart';
 import 'package:banking_app/screens/KYC/views/face_authentication_notice_screen.dart';
 import 'package:banking_app/screens/KYC/views/face_authentication_screen.dart';
 import 'package:banking_app/screens/KYC/views/upload_document.dart';
-import 'package:banking_app/screens/KYC/views/upload_document_dl.dart';
+import 'package:banking_app/screens/KYC/views/upload_document_DL.dart';
 import 'package:banking_app/screens/KYC/views/upload_document_passport.dart';
 import 'package:banking_app/screens/auth/views/login_screen.dart';
 import 'package:banking_app/screens/auth/views/main_screen.dart';

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-
 Widget customElevatedButton({
   required String text,
   required VoidCallback onPressed,
-  
+
   bool isLoading = false,
   Color? color,
   Color? textColor,
@@ -27,17 +26,20 @@ Widget customElevatedButton({
       ),
     ),
     onPressed: isLoading ? null : onPressed,
-    child: isLoading
-        ? const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-          )
-        : Text(text,
-            style: TextStyle(
-              fontSize: fontSize ?? 16,
-              fontWeight: fontWeight ?? FontWeight.normal,
-              color: textColor ?? Colors.black,
-            )),
+    child:
+        isLoading
+            ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+            )
+            : Text(
+              text,
+              style: TextStyle(
+                fontSize: fontSize ?? 16,
+                fontWeight: fontWeight ?? FontWeight.normal,
+                color: textColor ?? Colors.black,
+              ),
+            ),
   );
 }

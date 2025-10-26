@@ -8,7 +8,6 @@ abstract class AuthEvent extends Equatable {
 }
 
 class AuthInitialEvent extends AuthEvent {}
-
 class AuthRegisterSubmitted extends AuthEvent {
   final Map<String, dynamic> payload;
   const AuthRegisterSubmitted(this.payload);

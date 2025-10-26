@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:banking_app/screens/auth/views/main_screen.dart';
 import 'package:banking_app/screens/home/home_screen.dart';
 import 'package:banking_app/screens/auth/models/token.dart';
+import 'package:banking_app/screens/nickname/screens/create_nickname_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
