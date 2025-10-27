@@ -178,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen>
                     SizedBox(height: CommonSize.s32(context)),
                     Form(
                       key: _formKey,
-                      // autovalidateMode: AutovalidateMode.always,
+                      autovalidateMode: AutovalidateMode.always,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -289,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       color: Colors.white,
                                     ),
                                   );
-                                  
+
                                   Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                       builder: (_) => const HomeScreen(),
