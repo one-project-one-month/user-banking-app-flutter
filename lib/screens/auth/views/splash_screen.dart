@@ -46,25 +46,25 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkLogin() async {
     //// small delay to show splash
     await Future.delayed(const Duration(seconds: 2));
-    // final prefs = await SharedPreferences.getInstance();
-    // final tokenJson = prefs.getString('auth_token');
-    // if (tokenJson != null) {
-    //   try {
-    //     final Map<String, dynamic> map = json.decode(tokenJson);
-    //     final token = Token.fromJson(map);
-    //     if (!token.isExpired) {
-    //       if (!mounted) return;
-    //       Navigator.of(context).pushReplacement(
-    //         MaterialPageRoute(builder: (_) => const HomeScreen()),
-    //       );
-    //       return;
-    //     }
-    //   } catch (_) {
-    //     //  parse errors
-    //   }
-    // }
+    final prefs = await SharedPreferences.getInstance();
+    final tokenJson = prefs.getString('auth_token');
+    if (tokenJson != null) {
+      try {
+        final Map<String, dynamic> map = json.decode(tokenJson);
+        final token = Token.fromJson(map);
+        if (!token.isExpired) {
+          if (!mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+          return;
+        }
+      } catch (_) {
+        //  parse errors
+      }
+    }
 
-    //if (!mounted) return;
+    if (!mounted) return;
     Navigator.of(
       context,
     ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
