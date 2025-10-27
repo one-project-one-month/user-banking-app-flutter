@@ -38,6 +38,7 @@ dependencies:
   equatable: ^2.0.7
   shared_preferences: ^2.1.1
   another_flushbar: ^1.12.32
+  http: ^1.5.0
 
 dev_dependencies:
   flutter_test:

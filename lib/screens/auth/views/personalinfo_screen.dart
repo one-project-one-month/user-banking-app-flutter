@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../controllers/auth_bloc.dart';
 import '../controllers/auth_event.dart';
 import '../controllers/auth_state.dart';
+import '../services/cache_service.dart';
+import '../models/registration_options.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/flushbar.dart';
@@ -29,7 +31,20 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
   final _yearController = TextEditingController();
 
   String? _gender;
-  String _nationality = 'NRC';
+  String? _nationality;
+  List<String> _genderItems = ['Male', 'Female', 'Other'];
+  List<String> _nationalityItems = [
+    'Myanmar',
+    'Thailand',
+    'Singapore',
+    'Malaysia',
+    'Indonesia',
+    'Philippines',
+    'Vietnam',
+    'Japan',
+    'South Korea',
+    'China',
+  ];
   final _formKey = GlobalKey<FormState>();
 
   late AnimationController _controller;
@@ -45,6 +60,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
   @override
   void initState() {
     super.initState();
+
+    // load registration options from cache (populated after password creation)
+    _loadRegistrationOptions();
 
     _controller = AnimationController(
       vsync: this,
@@ -87,6 +105,26 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
     _controller.forward();
   }
 
+  Future<void> _loadRegistrationOptions() async {
+    try {
+      final cache = CacheService();
+      final opts = await cache.getRegistrationOptions();
+      if (opts != null) {
+        setState(() {
+          _genderItems = opts.genderOptions.map((e) => e.name).toList();
+          _nationalityItems =
+              opts.nationalityOptions.map((e) => e.name).toList();
+          // set defaults if not selected
+          _gender ??= _genderItems.isNotEmpty ? _genderItems.first : null;
+          _nationality ??=
+              _nationalityItems.isNotEmpty ? _nationalityItems.first : null;
+        });
+      }
+    } catch (_) {
+      // ignore and keep defaults
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -118,6 +156,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.white),
@@ -216,94 +255,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                                   return null;
                                 },
                               ),
-                              SizedBox(height: CommonSize.s12(context)),
-                              Text(
-                                'Email',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              SizedBox(height: CommonSize.s8(context)),
-                              customTextField(
-                                controller: _emailController,
-                                errorStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 240, 252, 2),
-                                ),
-                                hintText: 'test@example.com',
-                                textStyle: const TextStyle(color: Colors.white),
-                                keyboardType: TextInputType.emailAddress,
-                                prefixIcon: const Icon(Icons.email),
-                                borderColor: Colors.white,
-                                hintStyle: const TextStyle(color: Colors.white),
-                                prefixIconColor: Colors.white,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
-                                  }
-                                  // Simple email validation
-                                  if (!RegExp(
-                                    r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$',
-                                  ).hasMatch(value)) {
-                                    return 'Please enter a valid email';
-                                  }
-                                  return null;
-                                },
-                                onEditingComplete:
-                                    () => FocusScope.of(context).nextFocus(),
-                                // onChanged: (value) {
-                                //   // Trigger validator on every change
-                                //   if (_formKey.currentState != null) {
-                                //     _formKey.currentState!.validate();
-                                //   }
-                                // },
-                              ),
 
-                              SizedBox(height: CommonSize.s12(context)),
-                              Text(
-                                'Password',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              SizedBox(height: CommonSize.s8(context)),
-                              customTextField(
-                                controller: _passwordController,
-                                hintText: 'Password',
-                                errorStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 240, 252, 2),
-                                ),
-                                textStyle: const TextStyle(color: Colors.white),
-                                prefixIconColor: Colors.white,
-                                suffixIconColor: Colors.white,
-                                hintStyle: const TextStyle(color: Colors.white),
-                                borderColor: Colors.white,
-                                keyboardType: TextInputType.text,
-                                prefixIcon: const Icon(Icons.lock),
-                                isPassword: true,
-                                showPasswordToggle: true,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
-                                  }
-                                  // if (value.length < 6) {
-                                  //   return 'Password must be at least 6 characters';
-                                  // }
-                                  return null;
-                                },
-                                // onChanged: (value) {
-                                //   // Trigger validator on every change
-                                //   if (_formKey.currentState != null) {
-                                //     _formKey.currentState!.validate();
-                                //   }
-                                // },
-                                onEditingComplete: () {
-                                  FocusScope.of(context).nextFocus();
-                                  // if (_formKey.currentState!.validate()) {
-                                  //   context.read<AuthBloc>().add(
-                                  //     AuthLoginWithCredentials(
-                                  //       _emailController.text.trim(),
-                                  //       _passwordController.text,
-                                  //     ),
-                                  //   );
-                                  // }
-                                },
-                              ),
                               SizedBox(height: CommonSize.s12(context)),
                               Text(
                                 'Date of birth',
@@ -422,7 +374,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                               DropdownButtonFormField<String>(
                                 value: _gender,
                                 items:
-                                    ['Male', 'Female', 'Other']
+                                    _genderItems
                                         .map(
                                           (g) => DropdownMenuItem(
                                             value: g,
@@ -476,35 +428,61 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                               ),
 
                               SizedBox(height: CommonSize.s12(context)),
-                              Text(
-                                'Nationality',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              SizedBox(height: CommonSize.s8(context)),
-                              Wrap(
-                                spacing: 8,
-                                children:
-                                    ['NRC', 'Passport'].map((opt) {
-                                      final selected = _nationality == opt;
-                                      return ChoiceChip(
-                                        label: Text(
-                                          opt,
-                                          style: TextStyle(
-                                            color:
-                                                selected
-                                                    ? Colors.white
-                                                    : Colors.black,
+                              DropdownButtonFormField<String>(
+                                value: _nationality,
+                                items:
+                                    _nationalityItems
+                                        .map(
+                                          (n) => DropdownMenuItem(
+                                            value: n,
+                                            child: Text(n),
                                           ),
-                                        ),
-                                        selected: selected,
-                                        onSelected: (sel) {
-                                          if (sel)
-                                            setState(() => _nationality = opt);
-                                        },
-                                        selectedColor: Colors.blueAccent,
-                                        backgroundColor: Colors.white,
-                                      );
-                                    }).toList(),
+                                        )
+                                        .toList(),
+                                onChanged:
+                                    (v) => setState(() => _nationality = v),
+                                decoration: InputDecoration(
+                                  labelText: 'Nationality',
+                                  labelStyle: const TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.people,
+                                    color: Colors.white,
+                                  ),
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    borderSide: const BorderSide(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.white,
+                                ),
+                                errorBuilder: (context, errorText) {
+                                  return Text(
+                                    errorText,
+                                    style: const TextStyle(
+                                      color: Color.fromARGB(255, 240, 252, 2),
+                                      fontSize: 12,
+                                    ),
+                                  );
+                                },
+                                dropdownColor: const Color(0xFF0A3D62),
+                                style: const TextStyle(color: Colors.white),
+                                validator: (v) {
+                                  if (v == null || v.isEmpty)
+                                    return 'Select Nationality';
+                                  return null;
+                                },
                               ),
                             ],
                           ),
@@ -545,8 +523,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                               // }
                             },
                             builder: (context, state) {
-                              final isLoading =
-                                  state.status == AuthStatus.loading;
                               return customElevatedButton(
                                 onPressed: () {}, //_submit,
                                 text: 'Next',

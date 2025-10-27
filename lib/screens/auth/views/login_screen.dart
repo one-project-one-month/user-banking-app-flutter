@@ -1,5 +1,4 @@
 import 'package:banking_app/screens/auth/controllers/auth_state.dart';
-import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
 import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
@@ -203,12 +202,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter your username';
                                   }
-                                  // // Simple email validation
-                                  // if (!RegExp(
-                                  //   r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$',
-                                  // ).hasMatch(value)) {
-                                  //   return 'Please enter a valid email';
-                                  // }
+
                                   return null;
                                 },
                                 onEditingComplete:
@@ -248,9 +242,9 @@ class _LoginScreenState extends State<LoginScreen>
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter your password';
                                   }
-                                  // if (value.length < 6) {
-                                  //   return 'Password must be at least 6 characters';
-                                  // }
+                                  if (value.length < 6) {
+                                    return 'Password must be at least 6 characters';
+                                  }
                                   return null;
                                 },
                                 // onChanged: (value) {
@@ -295,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       color: Colors.white,
                                     ),
                                   );
-                                  // navigate to home
+                                  
                                   Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                       builder: (_) => const HomeScreen(),
