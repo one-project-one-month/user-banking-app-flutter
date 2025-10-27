@@ -2,10 +2,11 @@ import 'package:banking_app/core/AppStyles/app_styles.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:flutter/material.dart';
 
-TextStyle titleTextStyle(context) {
+TextStyle titleTextStyle({required BuildContext context, Color? color}) {
   return TextStyle(
     fontSize: CommonSize.s24(context),
     fontWeight: FontWeight.w500,
+    color: color?? Colors.black
   );
 }
 

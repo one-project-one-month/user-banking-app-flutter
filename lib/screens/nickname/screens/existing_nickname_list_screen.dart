@@ -46,7 +46,7 @@ class _ExistingNicknameListScreenState
           icon: const Icon(Icons.arrow_back, color: Color(0xFF002D62)),
         ),
         centerTitle: true,
-        title: Text('Favorites Nickname Lists', style: titleTextStyle(context)),
+        title: Text('Favorites Nickname Lists', style: titleTextStyle(context: context)),
       ),
       body: Column(
         children: [

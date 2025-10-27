@@ -73,7 +73,7 @@ class _CreateNicknameScreenState extends State<CreateNicknameScreen>
             icon: const Icon(Icons.arrow_back, color: Color(0xFF002D62)),
           ),
           centerTitle: true,
-          title: Text('Add Favorites', style: titleTextStyle(context)),
+          title: Text('Add Favorites', style: titleTextStyle(context: context)),
         ),
         body: FadeTransition(
           opacity: _fadeAnimation,
