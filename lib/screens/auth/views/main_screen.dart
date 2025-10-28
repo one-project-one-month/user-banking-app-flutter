@@ -92,7 +92,6 @@ class _MainScreenState extends State<MainScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(height: CommonSize.s20(context)),
-
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -110,7 +109,6 @@ class _MainScreenState extends State<MainScreen>
                         ),
                       ),
                       SizedBox(height: CommonSize.s32(context)),
-
                       FadeTransition(
                         opacity: _contentFade,
                         child: SlideTransition(
@@ -142,7 +140,6 @@ class _MainScreenState extends State<MainScreen>
                     ],
                   ),
                 ),
-
                 FadeTransition(
                   opacity: _buttonFade,
                   child: SlideTransition(
@@ -151,13 +148,19 @@ class _MainScreenState extends State<MainScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         customElevatedButton(
-                          onPressed: () {
-                            AppRoutes.navigateTo(
-                              context,
-                              AppRoutes.personalInfo,
-                            );
-                          },
+                          // onPressed: () {
+                          //   AppRoutes.navigateTo(
+                          //     context,
+                          //     AppRoutes.personalInfo,
+                          //   );
+                          // },
 
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SignupScreen(),
+                            ),
+                          ),
                           text: "Create Account",
                           color: Colors.white,
                           textColor: const Color(0xFF1E3C72),
