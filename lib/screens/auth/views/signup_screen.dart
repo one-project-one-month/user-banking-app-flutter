@@ -1,6 +1,7 @@
 import 'package:banking_app/Routes/app_routes.dart';
+import 'package:banking_app/screens/auth/controllers/auth_event.dart';
 import 'package:banking_app/screens/auth/views/login_screen.dart';
-import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
+import 'package:banking_app/screens/auth/views/opt_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -194,7 +195,7 @@ class _SignupScreenState extends State<SignupScreen>
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter your email';
                                 }
-                                // Simple email validation
+
                                 if (!RegExp(
                                   r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$',
                                 ).hasMatch(value)) {
@@ -204,12 +205,12 @@ class _SignupScreenState extends State<SignupScreen>
                               },
                               onEditingComplete:
                                   () => FocusScope.of(context).nextFocus(),
-                              // onChanged: (value) {
-                              //   // Trigger validator on every change
-                              //   if (_formKey.currentState != null) {
-                              //     _formKey.currentState!.validate();
-                              //   }
-                              // },
+                              onChanged: (value) {
+                                // Trigger validator on every change
+                                if (_formKey.currentState != null) {
+                                  _formKey.currentState!.validate();
+                                }
+                              },
                             ),
                           ),
                         ),
@@ -305,20 +306,29 @@ class _SignupScreenState extends State<SignupScreen>
 
                               return customElevatedButton(
                                 onPressed: () {
-                                  AppRoutes.navigateTo(
-                                    context,
-                                    AppRoutes.personalInfo,
-                                  );
+                                  // AppRoutes.navigateTo(
+                                  //   context,
+                                  //   AppRoutes.personalInfo,
+                                  // );
 
                                   //TODO: submit email registration
-                                  // if (_formKey.currentState!.validate()) {
-                                  //   context.read<AuthBloc>().add(
-                                  //     AuthLoginWithCredentials(
-                                  //       _emailController.text.trim(),
-                                  //       _passwordController.text,
-                                  //     ),
-                                  //   );
-                                  // }
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<AuthBloc>().add(
+                                      AuthRequestOTP(
+                                        _emailController.text.trim(),
+                                      ),
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (_) => OtpScreen(
+                                              destination:
+                                                  _emailController.text.trim(),
+                                            ),
+                                      ),
+                                    );
+                                  }
                                 },
                                 text: "Continue",
                                 color: Colors.white,
