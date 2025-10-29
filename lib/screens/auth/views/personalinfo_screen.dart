@@ -1,7 +1,7 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/KYC/views/upload_document.dart';
-import 'package:banking_app/screens/KYC/views/upload_document_DL.dart';
-import 'package:banking_app/screens/KYC/views/upload_document_passport.dart';
+import 'package:banking_app/screens/KYC/document/views/upload_document.dart';
+import 'package:banking_app/screens/KYC/document/views/upload_document_DL.dart';
+import 'package:banking_app/screens/KYC/document/views/upload_document_passport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

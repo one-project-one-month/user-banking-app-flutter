@@ -1,6 +1,8 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/KYC/controllers/upload/upload_bloc.dart';
-import 'package:banking_app/screens/KYC/controllers/verification/verification_bloc.dart';
+import 'package:banking_app/screens/KYC/document/controllers/upload/upload_bloc.dart';
+import 'package:banking_app/screens/KYC/document/controllers/verification/verification_bloc.dart';
+import 'package:banking_app/screens/KYC/face_authentication/controller/face_auth_bloc.dart';
+import 'package:banking_app/screens/KYC/face_authentication/service/face_auth_service.dart';
 import 'package:banking_app/screens/auth/views/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,17 +19,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // Provide UploadBloc globally so it's accessible across all routes
         BlocProvider<UploadBloc>(create: (context) => UploadBloc()),
-        // Provide VerificationBloc globally
         BlocProvider<VerificationBloc>(create: (context) => VerificationBloc()),
+        BlocProvider<FaceAuthBloc>(create: (context) => FaceAuthBloc(FaceAuthService())),
       ],
       child: MaterialApp(
         title: 'Banking App',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
+        theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple), useMaterial3: true),
         debugShowCheckedModeBanner: false,
         home: const SplashScreen(),
         // Use named routes for better navigation management
