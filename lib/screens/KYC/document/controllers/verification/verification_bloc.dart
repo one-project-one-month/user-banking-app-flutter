@@ -1,5 +1,5 @@
-import 'package:banking_app/screens/KYC/controllers/verification/verification_event.dart';
-import 'package:banking_app/screens/KYC/controllers/verification/verification_state.dart';
+import 'package:banking_app/screens/KYC/document/controllers/verification/verification_event.dart';
+import 'package:banking_app/screens/KYC/document/controllers/verification/verification_state.dart';
 import 'package:bloc/bloc.dart';
 
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {

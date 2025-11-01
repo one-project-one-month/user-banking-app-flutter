@@ -1,10 +1,10 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/KYC/controllers/upload/upload_event.dart';
+import 'package:banking_app/screens/KYC/document/controllers/upload/upload_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../controllers/upload/upload_bloc.dart';
-import '../controllers/upload/upload_state.dart';
+import '../../document/controllers/upload/upload_bloc.dart';
+import '../../document/controllers/upload/upload_state.dart';
 
 class UploadDocument extends StatefulWidget {
   const UploadDocument({super.key});
@@ -13,8 +13,7 @@ class UploadDocument extends StatefulWidget {
   _UploadDocumentState createState() => _UploadDocumentState();
 }
 
-class _UploadDocumentState extends State<UploadDocument>
-    with SingleTickerProviderStateMixin {
+class _UploadDocumentState extends State<UploadDocument> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _titleFade;
   late Animation<double> _contentFade;
@@ -25,29 +24,19 @@ class _UploadDocumentState extends State<UploadDocument>
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
 
-    _titleFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.4),
-    );
-    _contentFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.3, 0.7),
-    );
+    _titleFade = CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4));
+    _contentFade = CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7));
 
-    _titleSlide = Tween(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4)),
-    );
+    _titleSlide = Tween(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4)));
     _contentSlide = Tween(
       begin: const Offset(0, 0.2),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7)));
 
     _controller.forward();
   }
@@ -74,11 +63,7 @@ class _UploadDocumentState extends State<UploadDocument>
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF227DBE),
-                    Color.fromARGB(255, 10, 89, 146),
-                    Color(0xFF0A3D62),
-                  ],
+                  colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -99,11 +84,7 @@ class _UploadDocumentState extends State<UploadDocument>
                           position: _titleSlide,
                           child: Text(
                             'Upload Document',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -118,19 +99,12 @@ class _UploadDocumentState extends State<UploadDocument>
                               Container(
                                 width: 200,
                                 height: 200,
-                                child: SvgPicture.asset(
-                                  'assets/svg/Scan.svg',
-                                  fit: BoxFit.contain,
-                                ),
+                                child: SvgPicture.asset('assets/svg/Scan.svg', fit: BoxFit.contain),
                               ),
                               SizedBox(height: 20),
                               Text(
                                 'Select your identity',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                                 textAlign: TextAlign.center,
                               ),
                               SizedBox(height: 20),
@@ -142,32 +116,17 @@ class _UploadDocumentState extends State<UploadDocument>
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(color: Colors.white),
                                       ),
-                                      child: BlocBuilder<
-                                        UploadBloc,
-                                        UploadState
-                                      >(
+                                      child: BlocBuilder<UploadBloc, UploadState>(
                                         builder: (context, state) {
                                           return RadioListTile(
-                                            title: Text(
-                                              'Driving License',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                            ),
+                                            title: Text('Driving License', style: TextStyle(color: Colors.white)),
                                             value: 'driving_license',
                                             groupValue: state.selectedIdentity,
                                             onChanged: (value) {
-                                              context.read<UploadBloc>().add(
-                                                UploadIdentitySelected(
-                                                  value as String,
-                                                ),
-                                              );
+                                              context.read<UploadBloc>().add(UploadIdentitySelected(value as String));
                                             },
                                             activeColor: Colors.white,
-                                            fillColor:
-                                                MaterialStateProperty.all(
-                                                  Colors.white,
-                                                ),
+                                            fillColor: MaterialStateProperty.all(Colors.white),
                                           );
                                         },
                                       ),
@@ -184,32 +143,17 @@ class _UploadDocumentState extends State<UploadDocument>
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(color: Colors.white),
                                       ),
-                                      child: BlocBuilder<
-                                        UploadBloc,
-                                        UploadState
-                                      >(
+                                      child: BlocBuilder<UploadBloc, UploadState>(
                                         builder: (context, state) {
                                           return RadioListTile(
-                                            title: Text(
-                                              'Passport',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                            ),
+                                            title: Text('Passport', style: TextStyle(color: Colors.white)),
                                             value: 'passport',
                                             groupValue: state.selectedIdentity,
                                             onChanged: (value) {
-                                              context.read<UploadBloc>().add(
-                                                UploadIdentitySelected(
-                                                  value as String,
-                                                ),
-                                              );
+                                              context.read<UploadBloc>().add(UploadIdentitySelected(value as String));
                                             },
                                             activeColor: Colors.white,
-                                            fillColor:
-                                                MaterialStateProperty.all(
-                                                  Colors.white,
-                                                ),
+                                            fillColor: MaterialStateProperty.all(Colors.white),
                                           );
                                         },
                                       ),
@@ -224,27 +168,17 @@ class _UploadDocumentState extends State<UploadDocument>
                                   builder: (context, state) {
                                     return ElevatedButton(
                                       onPressed: () {
-                                        if (state.selectedIdentity ==
-                                            'driving_license') {
-                                          AppRoutes.navigateTo(
-                                            context,
-                                            AppRoutes.uploadDocumentDL,
-                                          );
-                                        } else if (state.selectedIdentity ==
-                                            'passport') {
-                                          AppRoutes.navigateTo(
-                                            context,
-                                            AppRoutes.uploadDocumentPP,
-                                          );
+                                        if (state.selectedIdentity == 'driving_license') {
+                                          AppRoutes.navigateTo(context, AppRoutes.uploadDocumentDL);
+                                        } else if (state.selectedIdentity == 'passport') {
+                                          AppRoutes.navigateTo(context, AppRoutes.uploadDocumentPP);
                                         }
                                       },
                                       child: Text('Next'),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.white,
                                         foregroundColor: Color(0xFF0A3D62),
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 15,
-                                        ),
+                                        padding: EdgeInsets.symmetric(vertical: 15),
                                       ),
                                     );
                                   },

@@ -187,7 +187,7 @@ class _MainScreenState extends State<MainScreen>
                               onTap: () {
                                 AppRoutes.navigateTo(
                                   context,
-                                  AppRoutes.login,
+                                  AppRoutes.faceAuthentication,
                                 );
                               },
                               child: Text(
