@@ -75,12 +75,11 @@ class FaceAuthenticationNoticeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Instructions container
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white10, // Light overlay for contrast
+                        color: Colors.white10, 
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: ListView(

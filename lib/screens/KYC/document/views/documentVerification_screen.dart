@@ -1,7 +1,7 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/KYC/controllers/verification/verification_state.dart';
-import 'package:banking_app/screens/KYC/controllers/verification/verification_bloc.dart';
-import 'package:banking_app/screens/KYC/controllers/verification/verification_event.dart';
+import 'package:banking_app/screens/KYC/document/controllers/verification/verification_state.dart';
+import 'package:banking_app/screens/KYC/document/controllers/verification/verification_bloc.dart';
+import 'package:banking_app/screens/KYC/document/controllers/verification/verification_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

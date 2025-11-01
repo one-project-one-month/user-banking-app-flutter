@@ -1,9 +1,9 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/KYC/controllers/upload/upload_bloc.dart';
-import 'package:banking_app/screens/KYC/controllers/upload/upload_event.dart';
-import 'package:banking_app/screens/KYC/controllers/upload/upload_state.dart';
-import 'package:banking_app/screens/KYC/utils/scan.dart';
-import 'package:banking_app/screens/KYC/utils/tips.dart';
+import 'package:banking_app/screens/KYC/document/controllers/upload/upload_bloc.dart';
+import 'package:banking_app/screens/KYC/document/controllers/upload/upload_event.dart';
+import 'package:banking_app/screens/KYC/document/controllers/upload/upload_state.dart';
+import 'package:banking_app/screens/KYC/document/utils/scan.dart';
+import 'package:banking_app/screens/KYC/document/utils/tips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';

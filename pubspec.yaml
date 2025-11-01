@@ -48,6 +48,8 @@ dependencies:
   video_player: ^2.10.0
   flutter_mjpeg: ^2.0.4
   http: 0.13.6
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^3.5.2
   google_fonts: ^4.0.4
   
 dev_dependencies:
