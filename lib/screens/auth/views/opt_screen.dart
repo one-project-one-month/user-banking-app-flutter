@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/auth/controllers/auth_bloc.dart';
 import 'package:banking_app/screens/auth/controllers/auth_event.dart';
 import 'package:banking_app/screens/auth/controllers/auth_state.dart';
-import 'package:banking_app/screens/auth/views/createpwd_screen.dart';
 import 'package:banking_app/screens/auth/widgets/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,6 +46,7 @@ class _OtpScreenState extends State<OtpScreen>
   @override
   void initState() {
     super.initState();
+     
 
     _controller = AnimationController(
       vsync: this,
@@ -328,12 +329,13 @@ class _OtpScreenState extends State<OtpScreen>
                                 ),
                               );
                               Future.delayed(const Duration(seconds: 1), () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => CreatePasswordScreen(),
-                                  ),
-                                );
+                                AppRoutes.navigateTo(context, AppRoutes.personalInfo);
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //     builder: (_) => CreatePasswordScreen(),
+                                //   ),
+                                // );
                               });
                             } else if (state.status == AuthStatus.failure) {
                               customFlushbar(

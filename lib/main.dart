@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
         home: const SplashScreen(),
         // Use named routes for better navigation management
         onGenerateRoute: AppRoutes.generateRoute,
+        initialRoute: AppRoutes.splash, 
       ),
     );
   }

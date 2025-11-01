@@ -1,7 +1,4 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/KYC/document/views/upload_document.dart';
-import 'package:banking_app/screens/KYC/document/views/upload_document_DL.dart';
-import 'package:banking_app/screens/KYC/document/views/upload_document_passport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,13 +7,11 @@ import '../controllers/auth_bloc.dart';
 import '../controllers/auth_event.dart';
 import '../controllers/auth_state.dart';
 import '../services/cache_service.dart';
-import '../models/registration_options.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/flushbar.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/textfield.dart';
-import '../../home/home_screen.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
   const PersonalInfoScreen({super.key});
