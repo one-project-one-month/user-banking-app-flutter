@@ -43,29 +43,45 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  FutureOr<void> _onRequestOTP(
-    AuthRequestOTP event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(state.copyWith(status: AuthStatus.loading));
-    try {
-      final ok = await api.requestOtp(event.payload);
-      if (ok) {
-        emit(state.copyWith(status: AuthStatus.success, message: 'OTP sent'));
-      } else {
-        emit(
-          state.copyWith(
-            status: AuthStatus.failure,
-            message: 'Failed to request OTP',
-          ),
-        );
-      }
-    } catch (e) {
-      String msg = 'Failed to request OTP';
-      if (e is AuthException || e is HttpException) msg = e.toString();
-      emit(state.copyWith(status: AuthStatus.failure, message: msg));
+FutureOr<void> _onRequestOTP(
+  AuthRequestOTP event,
+  Emitter<AuthState> emit,
+) async {
+  emit(state.copyWith(status: AuthStatus.loading));
+
+  try {
+    final result = await api.requestOtp(event.payload);
+
+    final bool success = result['success'] == true;
+    final String message = result['message'] ?? 'Unknown response';
+
+    if (success) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.success,
+          message: message.isNotEmpty ? message : 'OTP sent successfully',
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          message: message.isNotEmpty ? message : 'Failed to request OTP',
+        ),
+      );
     }
+  } catch (e) {
+    String msg = 'Failed to request OTP';
+    if (e is AuthException || e is HttpException) {
+      msg = e.toString();
+    } else {
+      msg = e.toString();
+    }
+
+    emit(state.copyWith(status: AuthStatus.failure, message: msg));
   }
+}
+
 
   FutureOr<void> _onConfirmOTP(
     AuthConfirmOTP event,

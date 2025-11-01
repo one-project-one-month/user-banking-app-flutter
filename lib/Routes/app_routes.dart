@@ -4,8 +4,10 @@ import 'package:banking_app/screens/KYC/views/face_authentication_screen.dart';
 import 'package:banking_app/screens/KYC/views/upload_document.dart';
 import 'package:banking_app/screens/KYC/views/upload_document_dl.dart';
 import 'package:banking_app/screens/KYC/views/upload_document_passport.dart';
+import 'package:banking_app/screens/Main/main_screen.dart';
 import 'package:banking_app/screens/auth/views/login_screen.dart';
-import 'package:banking_app/screens/auth/views/main_screen.dart';
+import 'package:banking_app/screens/auth/views/welcome_screen.dart';
+import 'package:banking_app/screens/auth/views/opt_screen.dart';
 import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
 import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/views/splash_screen.dart';
@@ -14,10 +16,12 @@ import 'package:flutter/material.dart';
 class AppRoutes {
   // Route names as constants
   static const String splash = '/';
+  static const String welcome = '/welcome';
   static const String uploadDocument = '/upload-document';
   static const String uploadDocumentDL = '/upload-document-dl';
   static const String uploadDocumentPP = '/upload-document-pp';
   static const String signup = '/signup';
+  static const String otp = '/otp';
   static const String login = '/login';
   static const String main = '/main';
   static const String personalInfo = '/personal-info';
@@ -36,11 +40,24 @@ class AppRoutes {
           builder: (_) => const SplashScreen(),
           settings: settings,
         );
+      case welcome:
+        return MaterialPageRoute(
+          builder: (_) => const WelcomeScreen(),
+          settings: settings,
+        );
       case signup:
         return MaterialPageRoute(
           builder: (_) => const SignupScreen(),
           settings: settings,
         );
+       case otp:
+  final args = settings.arguments as Map?;
+  final destination = args?['destination'] as String?;
+  return MaterialPageRoute(
+    builder: (_) => OtpScreen(destination: destination),
+    settings: settings,
+  );
+
       case login:
         return MaterialPageRoute(
           builder: (_) => const LoginScreen(),
@@ -169,4 +186,6 @@ class AppRoutes {
     final result = await navigateTo<bool>(context, uploadDocumentDL);
     return result;
   }
+
+ 
 }
