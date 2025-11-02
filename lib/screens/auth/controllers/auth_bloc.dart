@@ -2,19 +2,27 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'auth_event.dart';
 import 'auth_state.dart';
-import '../models/token.dart';
+import '../services/api_service.dart';
+import '../services/cache_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc() : super(const AuthState()) {
+  final ApiService api;
+  final CacheService cache;
+
+  AuthBloc({ApiService? apiService, CacheService? cacheService})
+    : api =
+          apiService ??
+          ApiService(baseUrl: "https://banking-dummy-backend.onrender.com"),
+      cache = cacheService ?? CacheService(),
+      super(const AuthState()) {
     on<AuthRegisterSubmitted>(_onRegisterSubmitted);
-    on<AuthLoginWithGoogle>(_onLoginWithGoogle);
     on<AuthLoginWithCredentials>(_onLoginWithCredentials);
+    on<AuthRequestOTP>(_onRequestOTP);
+    on<AuthConfirmOTP>(_onConfirmOTP);
+    on<AuthFetchRegistrationOptions>(_onFetchRegistrationOptions);
+    on<AuthCreatePassword>(_onCreatePassword);
   }
 
   FutureOr<void> _onRegisterSubmitted(
@@ -22,33 +30,132 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading));
-    await Future.delayed(const Duration(seconds: 1));
-    // Here you would call your repository / API. We'll simulate success.
-    // create a fake token that expires in 1 hour
-    final token = Token(
-      accessToken:
-          'register_simulated_token_${DateTime.now().millisecondsSinceEpoch}',
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-    );
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', json.encode(token.toJson()));
-    emit(state.copyWith(status: AuthStatus.success));
+    try {
+      final token = await api.register(event.payload);
+      await cache.saveToken(token);
+      // optionally save user info if present in payload
+      if (event.payload.isNotEmpty) await cache.saveUser(event.payload);
+      emit(state.copyWith(status: AuthStatus.success));
+    } catch (e) {
+      String msg = 'Registration failed';
+      if (e is AuthException || e is HttpException) msg = e.toString();
+      emit(state.copyWith(status: AuthStatus.failure, message: msg));
+    }
   }
 
-  FutureOr<void> _onLoginWithGoogle(
-    AuthLoginWithGoogle event,
+FutureOr<void> _onRequestOTP(
+  AuthRequestOTP event,
+  Emitter<AuthState> emit,
+) async {
+  emit(state.copyWith(status: AuthStatus.loading));
+
+  try {
+    final result = await api.requestOtp(event.payload);
+
+    final bool success = result['success'] == true;
+    final String message = result['message'] ?? 'Unknown response';
+
+    if (success) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.success,
+          message: message.isNotEmpty ? message : 'OTP sent successfully',
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          message: message.isNotEmpty ? message : 'Failed to request OTP',
+        ),
+      );
+    }
+  } catch (e) {
+    String msg = 'Failed to request OTP';
+    if (e is AuthException || e is HttpException) {
+      msg = e.toString();
+    } else {
+      msg = e.toString();
+    }
+
+    emit(state.copyWith(status: AuthStatus.failure, message: msg));
+  }
+}
+
+
+  FutureOr<void> _onConfirmOTP(
+    AuthConfirmOTP event,
     Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading));
-    await Future.delayed(const Duration(seconds: 1));
-    final token = Token(
-      accessToken:
-          'google_simulated_token_${DateTime.now().millisecondsSinceEpoch}',
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-    );
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', json.encode(token.toJson()));
-    emit(state.copyWith(status: AuthStatus.success));
+    try {
+      final token = await api.confirmOtp(event.destination, event.code);
+      await cache.saveToken(token);
+      emit(
+        state.copyWith(status: AuthStatus.success, message: 'OTP confirmed'),
+      );
+    } catch (e) {
+      String msg = 'OTP confirmation failed';
+      if (e is AuthException || e is HttpException) msg = e.toString();
+      emit(state.copyWith(status: AuthStatus.failure, message: msg));
+    }
+  }
+
+  FutureOr<void> _onCreatePassword(
+    AuthCreatePassword event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+    try {
+      final ok = await api.createPassword(
+        // event.destination, event.code,
+        event.password,
+      );
+      if (ok) {
+        // emit success for create password
+        emit(
+          state.copyWith(
+            status: AuthStatus.success,
+            message: 'Password created',
+          ),
+        );
+        // after successful password creation fetch registration options template
+        add(AuthFetchRegistrationOptions());
+      } else {
+        emit(
+          state.copyWith(
+            status: AuthStatus.failure,
+            message: 'Failed to create password',
+          ),
+        );
+      }
+    } catch (e) {
+      String msg = 'Create password failed';
+      if (e is AuthException || e is HttpException) msg = e.toString();
+      emit(state.copyWith(status: AuthStatus.failure, message: msg));
+    }
+  }
+
+  FutureOr<void> _onFetchRegistrationOptions(
+    AuthFetchRegistrationOptions event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+    try {
+      final options = await api.fetchRegistrationOptions();
+      // cache the raw json for later use by the UI
+      await cache.saveRegistrationOptions(options.toJson());
+      emit(
+        state.copyWith(
+          status: AuthStatus.success,
+          message: 'Registration template fetched',
+        ),
+      );
+    } catch (e) {
+      String msg = 'Failed to fetch registration template';
+      if (e is AuthException || e is HttpException) msg = e.toString();
+      emit(state.copyWith(status: AuthStatus.failure, message: msg));
+    }
   }
 
   FutureOr<void> _onLoginWithCredentials(
@@ -56,19 +163,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading));
-    await Future.delayed(const Duration(seconds: 1));
-    // naive check
-    if (event.email == 'test@example.com' && event.password == 'password') {
-      final token = Token(
-        accessToken:
-            'cred_simulated_token_${DateTime.now().millisecondsSinceEpoch}',
-        expiresAt: DateTime.now().add(const Duration(hours: 1)),
-      );
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token', json.encode(token.toJson()));
+    try {
+      final token = await api.login(event.email, event.password);
+      await cache.saveToken(token);
       emit(state.copyWith(status: AuthStatus.success));
-    } else {
-      emit(state.copyWith(status: AuthStatus.failure, message: 'Invalid cred'));
+    } catch (e) {
+      String msg = 'Login failed';
+      if (e is AuthException || e is HttpException) msg = e.toString();
+      emit(state.copyWith(status: AuthStatus.failure, message: msg));
     }
   }
 }

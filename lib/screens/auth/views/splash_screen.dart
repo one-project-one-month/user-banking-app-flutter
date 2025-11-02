@@ -1,6 +1,5 @@
 import 'dart:convert';
-import 'package:banking_app/screens/auth/views/main_screen.dart';
-import 'package:banking_app/screens/home/home_screen.dart';
+import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/auth/models/token.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,9 +53,8 @@ class _SplashScreenState extends State<SplashScreen>
         final token = Token.fromJson(map);
         if (!token.isExpired) {
           if (!mounted) return;
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-          );
+          AppRoutes.navigateAndReplace(context, AppRoutes.welcome);
+         
           return;
         }
       } catch (_) {
@@ -65,9 +63,8 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
+  AppRoutes.navigateAndReplace(context,// AppRoutes.welcome
+ AppRoutes.main );
   }
 
   @override

@@ -1,7 +1,5 @@
 import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/auth/controllers/auth_state.dart';
-import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
-import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/flushbar.dart';
@@ -11,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../controllers/auth_bloc.dart';
 import '../controllers/auth_event.dart';
-import '../../home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -180,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen>
                     SizedBox(height: CommonSize.s32(context)),
                     Form(
                       key: _formKey,
-                      // autovalidateMode: AutovalidateMode.always,
+                      autovalidateMode: AutovalidateMode.disabled,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -204,12 +201,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter your username';
                                   }
-                                  // // Simple email validation
-                                  // if (!RegExp(
-                                  //   r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$',
-                                  // ).hasMatch(value)) {
-                                  //   return 'Please enter a valid email';
-                                  // }
+
                                   return null;
                                 },
                                 onEditingComplete:
@@ -249,9 +241,9 @@ class _LoginScreenState extends State<LoginScreen>
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter your password';
                                   }
-                                  // if (value.length < 6) {
-                                  //   return 'Password must be at least 6 characters';
-                                  // }
+                                  if (value.length < 6) {
+                                    return 'Password must be at least 6 characters';
+                                  }
                                   return null;
                                 },
                                 // onChanged: (value) {
@@ -349,9 +341,8 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () {
-                                    AppRoutes.navigateTo(context, AppRoutes.login);
-                                  },
+                                  onTap: ()=> AppRoutes.navigateTo(context, AppRoutes.signup),
+
                                   child: Text(
                                     "Sign up",
                                     style: TextStyle(

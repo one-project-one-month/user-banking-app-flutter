@@ -1,20 +1,17 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/auth/views/login_screen.dart';
-import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:flutter/material.dart';
-import 'personalinfo_screen.dart';
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class WelcomeScreen extends StatefulWidget {
+  const WelcomeScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<WelcomeScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen>
+class _MainScreenState extends State<WelcomeScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _logoFade;
@@ -92,7 +89,6 @@ class _MainScreenState extends State<MainScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(height: CommonSize.s20(context)),
-
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -110,7 +106,6 @@ class _MainScreenState extends State<MainScreen>
                         ),
                       ),
                       SizedBox(height: CommonSize.s32(context)),
-
                       FadeTransition(
                         opacity: _contentFade,
                         child: SlideTransition(
@@ -142,7 +137,6 @@ class _MainScreenState extends State<MainScreen>
                     ],
                   ),
                 ),
-
                 FadeTransition(
                   opacity: _buttonFade,
                   child: SlideTransition(
@@ -151,13 +145,21 @@ class _MainScreenState extends State<MainScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         customElevatedButton(
-                          onPressed: () {
-                            AppRoutes.navigateTo(
-                              context,
-                              AppRoutes.personalInfo,
-                            );
-                          },
+                          // onPressed: () {
+                          //   AppRoutes.navigateTo(
+                          //     context,
+                          //     AppRoutes.personalInfo,
+                          //   );
+                          // },
+                          
+                          onPressed: () => AppRoutes.navigateTo(context, AppRoutes.signup),
 
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (_) => const SignupScreen(),
+                          //   ),
+                          // ),
                           text: "Create Account",
                           color: Colors.white,
                           textColor: const Color(0xFF1E3C72),
@@ -181,12 +183,14 @@ class _MainScreenState extends State<MainScreen>
                               ),
                             ),
                             GestureDetector(
-                              onTap: () {
-                                AppRoutes.navigateTo(
-                                  context,
-                                  AppRoutes.login,
-                                );
-                              },
+                              onTap: () => AppRoutes.navigateTo(context, AppRoutes.login),
+
+                              // {
+                              //   AppRoutes.navigateTo(
+                              //     context,
+                              //     AppRoutes.login,
+                              //   );
+                              // },
                               child: Text(
                                 "Log in",
                                 style: TextStyle(

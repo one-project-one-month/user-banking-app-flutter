@@ -1,6 +1,6 @@
 import 'package:banking_app/Routes/app_routes.dart';
-import 'package:banking_app/screens/auth/views/login_screen.dart';
-import 'package:banking_app/screens/auth/views/personalinfo_screen.dart';
+import 'package:banking_app/screens/auth/controllers/auth_event.dart';
+import 'package:banking_app/screens/auth/views/opt_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -170,7 +170,7 @@ class _SignupScreenState extends State<SignupScreen>
                   SizedBox(height: CommonSize.s32(context)),
                   Form(
                     key: _formKey,
-                    // autovalidateMode: AutovalidateMode.always,
+                     autovalidateMode: AutovalidateMode.disabled,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -183,7 +183,7 @@ class _SignupScreenState extends State<SignupScreen>
                               errorStyle: const TextStyle(
                                 color: Color.fromARGB(255, 240, 252, 2),
                               ),
-                              hintText: 'test@example.com',
+                              hintText: 'Enter your email',
                               textStyle: const TextStyle(color: Colors.white),
                               keyboardType: TextInputType.emailAddress,
                               prefixIcon: const Icon(Icons.email),
@@ -194,7 +194,7 @@ class _SignupScreenState extends State<SignupScreen>
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter your email';
                                 }
-                                // Simple email validation
+
                                 if (!RegExp(
                                   r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$',
                                 ).hasMatch(value)) {
@@ -204,12 +204,12 @@ class _SignupScreenState extends State<SignupScreen>
                               },
                               onEditingComplete:
                                   () => FocusScope.of(context).nextFocus(),
-                              // onChanged: (value) {
-                              //   // Trigger validator on every change
-                              //   if (_formKey.currentState != null) {
-                              //     _formKey.currentState!.validate();
-                              //   }
-                              // },
+                              onChanged: (value) {
+                                // Trigger validator on every change
+                                if (_formKey.currentState != null) {
+                                  _formKey.currentState!.validate();
+                                }
+                              },
                             ),
                           ),
                         ),
@@ -305,20 +305,38 @@ class _SignupScreenState extends State<SignupScreen>
 
                               return customElevatedButton(
                                 onPressed: () {
-                                  AppRoutes.navigateTo(
-                                    context,
-                                    AppRoutes.personalInfo,
-                                  );
+                                  // AppRoutes.navigateTo(
+                                  //   context,
+                                  //   AppRoutes.personalInfo,
+                                  // );
 
                                   //TODO: submit email registration
-                                  // if (_formKey.currentState!.validate()) {
-                                  //   context.read<AuthBloc>().add(
-                                  //     AuthLoginWithCredentials(
-                                  //       _emailController.text.trim(),
-                                  //       _passwordController.text,
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<AuthBloc>().add(
+                                      AuthRequestOTP(
+                                        _emailController.text.trim(),
+                                      ),
+                                    );
+
+                                    AppRoutes.navigateTo(
+                                      context,
+                                      AppRoutes.otp ,
+                                    arguments: {
+                                      'destination': _emailController.text.trim(),
+                                    }         
+                                    );
+
+                                  //   Navigator.push(
+                                  //     context,
+                                  //     MaterialPageRoute(
+                                  //       builder:
+                                  //           (_) => OtpScreen(
+                                  //             destination:
+                                  //                 _emailController.text.trim(),
+                                  //           ),
                                   //     ),
                                   //   );
-                                  // }
+                                   }
                                 },
                                 text: "Continue",
                                 color: Colors.white,
