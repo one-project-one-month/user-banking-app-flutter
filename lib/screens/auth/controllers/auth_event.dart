@@ -9,12 +9,28 @@ abstract class AuthEvent extends Equatable {
 
 class AuthInitialEvent extends AuthEvent {}
 
-class AuthRegisterSubmitted extends AuthEvent {
-  final Map<String, dynamic> payload;
-  const AuthRegisterSubmitted(this.payload);
+// For submitting personal details (final registration step)
+class AuthSubmitPersonalDetails extends AuthEvent {
+  final String verificationToken;
+  final String fullname;
+  final String dateOfBirth; // format: "2025-11-03"
+  final int genderId;
+  final int nationalityId;
+  final String kycType;
+  final String kycData;
+
+  const AuthSubmitPersonalDetails({
+    required this.verificationToken,
+    required this.fullname,
+    required this.dateOfBirth,
+    required this.genderId,
+    required this.nationalityId,
+    required this.kycType,
+    required this.kycData,
+  });
 
   @override
-  List<Object?> get props => [payload];
+  List<Object?> get props => [verificationToken, fullname, dateOfBirth, genderId, nationalityId, kycType, kycData];
 }
 
 class AuthLoginWithGoogle extends AuthEvent {}
@@ -28,37 +44,32 @@ class AuthLoginWithCredentials extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+// Request OTP to be sent to email
 class AuthRequestOTP extends AuthEvent {
-  final String payload; // destination (phone or email)
-  const AuthRequestOTP(this.payload);
+  final String email;
+  const AuthRequestOTP(this.email);
 
   @override
-  List<Object?> get props => [payload];
+  List<Object?> get props => [email];
 }
 
-class AuthConfirmOTP extends AuthEvent {
-  final String destination;
-  final String code;
-  const AuthConfirmOTP(this.destination, this.code);
+// Verify OTP code
+class AuthVerifyOTP extends AuthEvent {
+  final String email;
+  final String otp;
+  const AuthVerifyOTP(this.email, this.otp);
 
   @override
-  List<Object?> get props => [destination, code];
+  List<Object?> get props => [email, otp];
 }
 
 class AuthCreatePassword extends AuthEvent {
-  //  final String destination;
-  // final String code;
   final String password;
-  const AuthCreatePassword(
-    //this.destination, this.code,
-    this.password,
-  );
+  const AuthCreatePassword(this.password);
 
   @override
-  List<Object?> get props => [
-    //destination, code,
-    password,
-  ];
+  List<Object?> get props => [password];
 }
 
+// Fetch gender and nationality options
 class AuthFetchRegistrationOptions extends AuthEvent {}

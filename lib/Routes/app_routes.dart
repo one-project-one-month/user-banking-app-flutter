@@ -7,6 +7,7 @@ import 'package:banking_app/screens/KYC/document/views/upload_document_passport.
 import 'package:banking_app/screens/KYC/face_authentication/let_start_screen.dart';
 import 'package:banking_app/screens/Main/home_screen.dart';
 import 'package:banking_app/screens/QR/qr.dart';
+import 'package:banking_app/screens/auth/controllers/auth_bloc.dart';
 
 import 'package:banking_app/screens/auth/views/main_screen.dart';
 import 'package:banking_app/screens/auth/views/login_screen.dart';
@@ -50,11 +51,16 @@ class AppRoutes {
       case signup:
         return MaterialPageRoute(builder: (_) => const SignupScreen(), settings: settings);
 
-      case otp:
-        final args = settings.arguments as Map?;
-        final destination = args?['destination'] as String?;
-        return MaterialPageRoute(builder: (_) => OtpScreen(destination: destination), settings: settings);
-
+      case AppRoutes.otp:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder:
+              (_) => OtpScreen(
+                destination: args['destination'],
+                realOtp: args['realOtp'], // ← real OTP
+                authBloc: args['authBloc'],
+              ),
+        );
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen(), settings: settings);
       case main:
@@ -63,9 +69,9 @@ class AppRoutes {
       case home_screen:
         return MaterialPageRoute(builder: (_) => const HomeScreen(), settings: settings);
 
-      case personalInfo:
-        return MaterialPageRoute(builder: (_) => const PersonalInfoScreen(), settings: settings);
-
+      case AppRoutes.personalInfo:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(builder: (_) => PersonalInfoScreen(authBloc: args!['authBloc'] as AuthBloc));
       case uploadDocument:
         return MaterialPageRoute(builder: (_) => const UploadDocument(), settings: settings);
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 Widget customElevatedButton({
   required String text,
-  required VoidCallback onPressed,
+  VoidCallback? onPressed,
   
   bool isLoading = false,
   Color? color,
