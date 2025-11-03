@@ -9,15 +9,13 @@ import '../models/registration_options.dart';
 /// If [baseUrl] is not provided the service will simulate responses locally
 /// (useful for development without a backend).
 class ApiService {
-  String? baseUrl = "https://banking-dummy-backend.onrender.com";
+  String? baseUrl = "http://localhost:7777";
   final http.Client _client;
 
-  ApiService({this.baseUrl, http.Client? client})
-    : _client = client ?? http.Client();
+  ApiService({this.baseUrl, http.Client? client}) : _client = client ?? http.Client();
 
   Uri _uri(String path) {
-    if (baseUrl == null)
-      throw StateError('No baseUrl configured for ApiService');
+    if (baseUrl == null) throw StateError('No baseUrl configured for ApiService');
     return Uri.parse(baseUrl! + path);
   }
 
@@ -45,17 +43,9 @@ class ApiService {
     try {
       final decoded = json.decode(res.body);
       if (decoded is Map<String, dynamic>) {
-        final serverMsg =
-            decoded['message'] ??
-            decoded['error'] ??
-            decoded['detail'] ??
-            decoded['errors'] ??
-            null;
+        final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'] ?? decoded['errors'] ?? null;
         if (serverMsg != null) {
-          throw HttpException(
-            'Register failed: $serverMsg',
-            uri: _uri('/register'),
-          );
+          throw HttpException('Register failed: $serverMsg', uri: _uri('/register'));
         }
       }
     } catch (_) {}
@@ -80,17 +70,9 @@ class ApiService {
     try {
       final decoded = json.decode(res.body);
       if (decoded is Map<String, dynamic>) {
-        final serverMsg =
-            decoded['message'] ??
-            decoded['error'] ??
-            decoded['detail'] ??
-            decoded['errors'] ??
-            null;
+        final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'] ?? decoded['errors'] ?? null;
         if (serverMsg != null) {
-          throw HttpException(
-            'Login failed: $serverMsg',
-            uri: _uri('/api/auth/login'),
-          );
+          throw HttpException('Login failed: $serverMsg', uri: _uri('/api/auth/login'));
         }
       }
     } catch (_) {
@@ -98,53 +80,45 @@ class ApiService {
     }
 
     final fallback = res.reasonPhrase ?? 'HTTP ${res.statusCode}';
-    throw HttpException(
-      'Login failed: $fallback',
-      uri: _uri('/api/auth/login'),
-    );
+    throw HttpException('Login failed: $fallback', uri: _uri('/api/auth/login'));
   }
 
   /// Request an OTP to be sent to [destination] (phone or email).
   /// Returns true when the request was accepted.
- Future<Map<String, dynamic>>  requestOtp(String destination) async {
-  if (baseUrl == null) {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return {'success': true, 'message': 'Simulated OTP request (no base URL)'};
-  }
-
-  final res = await _client.post(
-    _uri('/api/auth/register/email/verify'),
-    headers: {'Content-Type': 'application/json'},
-    body: json.encode(
-      {'email': destination}),
-  );
-
-  try {
-    final decoded = json.decode(res.body);
-
-    if (decoded is Map<String, dynamic>) {
-      final code = decoded['code'];
-      final message = decoded['message'] ?? 'Unknown response';
-      final data = decoded['data'];
-
-      if (res.statusCode >= 200 && res.statusCode < 300 && code == 0) {
-        // success response from server
-        return {'success': true, 'message': message, 'data': data};
-      } else {
-        // server error or non-200 code
-        return {'success': false, 'message': message ?? 'Request failed'};
-      }
+  Future<Map<String, dynamic>> requestOtp(String destination) async {
+    if (baseUrl == null) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return {'success': true, 'message': 'Simulated OTP request (no base URL)'};
     }
-  } catch (e) {
-    return {'success': false, 'message': 'Invalid server response: $e'};
+
+    final res = await _client.post(
+      _uri('/api/auth/register/email/verify'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': destination}),
+    );
+
+    try {
+      final decoded = json.decode(res.body);
+
+      if (decoded is Map<String, dynamic>) {
+        final code = decoded['code'];
+        final message = decoded['message'] ?? 'Unknown response';
+        final data = decoded['data'];
+
+        if (res.statusCode >= 200 && res.statusCode < 300 && code == 0) {
+          // success response from server
+          return {'success': true, 'message': message, 'data': data};
+        } else {
+          // server error or non-200 code
+          return {'success': false, 'message': message ?? 'Request failed'};
+        }
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Invalid server response: $e'};
+    }
+
+    return {'success': false, 'message': 'Unexpected error: ${res.reasonPhrase ?? res.statusCode}'};
   }
-
-  return {
-    'success': false,
-    'message': 'Unexpected error: ${res.reasonPhrase ?? res.statusCode}'
-  };
-}
-
 
   /// Confirm OTP [code] for [destination]. Returns a [Token] on success.
   Future<Token> confirmOtp(String destination, String code) async {
@@ -181,13 +155,9 @@ class ApiService {
     try {
       final decoded = json.decode(res.body);
       if (decoded is Map<String, dynamic>) {
-        final serverMsg =
-            decoded['message'] ?? decoded['error'] ?? decoded['detail'];
+        final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'];
         if (serverMsg != null) {
-          throw HttpException(
-            'OTP confirmation failed: $serverMsg',
-            uri: _uri('/otp/confirm'),
-          );
+          throw HttpException('OTP confirmation failed: $serverMsg', uri: _uri('/otp/confirm'));
         }
       }
     } catch (_) {}
@@ -222,21 +192,14 @@ class ApiService {
     try {
       final decoded = json.decode(res.body);
       if (decoded is Map<String, dynamic>) {
-        final serverMsg =
-            decoded['message'] ?? decoded['error'] ?? decoded['detail'];
+        final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'];
         if (serverMsg != null) {
-          throw HttpException(
-            'Create password failed: $serverMsg',
-            uri: _uri('/api/auth/create-password'),
-          );
+          throw HttpException('Create password failed: $serverMsg', uri: _uri('/api/auth/create-password'));
         }
       }
     } catch (_) {}
 
-    throw HttpException(
-      'Create password failed',
-      uri: _uri('/api/auth/create-password'),
-    );
+    throw HttpException('Create password failed', uri: _uri('/api/auth/create-password'));
   }
 
   /// Fetch registration template for personal details (gender & nationality options)
@@ -246,9 +209,7 @@ class ApiService {
       return RegistrationOptions.empty();
     }
 
-    final res = await _client.get(
-      _uri('/api/auth/register/personal-details/template'),
-    );
+    final res = await _client.get(_uri('/api/auth/register/personal-details/template'));
     if (res.statusCode >= 200 && res.statusCode < 300) {
       final Map<String, dynamic> jsonBody = json.decode(res.body);
       return RegistrationOptions.fromJson(jsonBody);
@@ -257,8 +218,7 @@ class ApiService {
     try {
       final decoded = json.decode(res.body);
       if (decoded is Map<String, dynamic>) {
-        final serverMsg =
-            decoded['message'] ?? decoded['error'] ?? decoded['detail'];
+        final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'];
         if (serverMsg != null) {
           throw HttpException(
             'Fetch template failed: $serverMsg',
@@ -269,10 +229,7 @@ class ApiService {
     } catch (_) {}
 
     final fallback = res.reasonPhrase ?? 'HTTP ${res.statusCode}';
-    throw HttpException(
-      'Fetch template failed: $fallback',
-      uri: _uri('/auth/register/personal-details/template'),
-    );
+    throw HttpException('Fetch template failed: $fallback', uri: _uri('/auth/register/personal-details/template'));
   }
 
   void dispose() {
@@ -292,6 +249,5 @@ class HttpException implements Exception {
   final Uri? uri;
   HttpException(this.message, {this.uri});
   @override
-  String toString() =>
-      'HttpException: $message ${uri != null ? "(url: $uri)" : ''}';
+  String toString() => 'HttpException: $message ${uri != null ? "(url: $uri)" : ''}';
 }

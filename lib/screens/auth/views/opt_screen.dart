@@ -14,7 +14,7 @@ import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OtpScreen extends StatefulWidget {
-  final String? destination; // phone or email shown to user
+  final String? destination;
 
   const OtpScreen({Key? key, this.destination}) : super(key: key);
 
