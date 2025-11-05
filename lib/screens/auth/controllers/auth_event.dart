@@ -35,13 +35,14 @@ class AuthSubmitPersonalDetails extends AuthEvent {
 
 class AuthLoginWithGoogle extends AuthEvent {}
 
+// Login with username and password
 class AuthLoginWithCredentials extends AuthEvent {
-  final String email;
+  final String username;
   final String password;
-  const AuthLoginWithCredentials(this.email, this.password);
+  const AuthLoginWithCredentials(this.username, this.password);
 
   @override
-  List<Object?> get props => [email, password];
+  List<Object?> get props => [username, password];
 }
 
 // Request OTP to be sent to email

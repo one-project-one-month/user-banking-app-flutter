@@ -3,7 +3,10 @@ import 'package:banking_app/screens/KYC/document/controllers/upload/upload_bloc.
 import 'package:banking_app/screens/KYC/document/controllers/verification/verification_bloc.dart';
 import 'package:banking_app/screens/KYC/face_authentication/controller/face_auth_bloc.dart';
 import 'package:banking_app/screens/KYC/face_authentication/service/face_auth_service.dart';
-import 'package:banking_app/screens/auth/views/splash_screen.dart';
+import 'package:banking_app/screens/Transfer/controllers/transfer_bloc.dart';
+import 'package:banking_app/screens/auth/controllers/auth_bloc.dart';
+import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
+import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -19,18 +22,30 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        // KYC Blocs
         BlocProvider<UploadBloc>(create: (context) => UploadBloc()),
         BlocProvider<VerificationBloc>(create: (context) => VerificationBloc()),
         BlocProvider<FaceAuthBloc>(create: (context) => FaceAuthBloc(FaceAuthService())),
+
+        // CORE BLOCS — MUST BE HERE
+        BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+        BlocProvider<UserBloc>(
+          create: (context) => UserBloc(),
+          lazy: false, 
+        ),
+        BlocProvider<TransferBloc>(
+          create: (context) => TransferBloc(),
+        ),
+        BlocProvider<SettingsBloc>(
+          create: (context) => SettingsBloc(),
+        ),
       ],
       child: MaterialApp(
         title: 'Banking App',
         theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple), useMaterial3: true),
         debugShowCheckedModeBanner: false,
-        home: const SplashScreen(),
-        // Use named routes for better navigation management
         onGenerateRoute: AppRoutes.generateRoute,
-        initialRoute: AppRoutes.splash, 
+        initialRoute: AppRoutes.splash,
       ),
     );
   }

@@ -12,8 +12,7 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen>
-    with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _logoFade;
   late Animation<double> _contentFade;
@@ -26,38 +25,26 @@ class _MainScreenState extends State<MainScreen>
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
 
     // Staggered animation intervals
-    _logoFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
-    );
-    _contentFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
-    );
-    _buttonFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-    );
+    _logoFade = CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4, curve: Curves.easeOut));
+    _contentFade = CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7, curve: Curves.easeOut));
+    _buttonFade = CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeOut));
 
     // Slide from bottom slightly
-    _logoSlide = Tween(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4)),
-    );
+    _logoSlide = Tween(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4)));
     _contentSlide = Tween(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7)),
-    );
-    _buttonSlide = Tween(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7)));
+    _buttonSlide = Tween(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)));
 
     _controller.forward();
   }
@@ -74,11 +61,7 @@ class _MainScreenState extends State<MainScreen>
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF227DBE),
-              Color.fromARGB(255, 10, 89, 146),
-              Color(0xFF0A3D62),
-            ], // Blue gradient
+            colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)], // Blue gradient
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -98,12 +81,7 @@ class _MainScreenState extends State<MainScreen>
                         opacity: _logoFade,
                         child: SlideTransition(
                           position: _logoSlide,
-                          child: AppLogo(
-                            width: 110,
-                            height: 110,
-                            borderRadius: 24,
-                            showShadow: true,
-                          ),
+                          child: AppLogo(width: 110, height: 110, borderRadius: 24, showShadow: true),
                         ),
                       ),
                       SizedBox(height: CommonSize.s32(context)),
@@ -126,10 +104,7 @@ class _MainScreenState extends State<MainScreen>
                               SizedBox(height: CommonSize.s16(context)),
                               Text(
                                 "Secure. Fast. Borderless.",
-                                style: TextStyle(
-                                  fontSize: CommonSize.s16(context),
-                                  color: Colors.white70,
-                                ),
+                                style: TextStyle(fontSize: CommonSize.s16(context), color: Colors.white70),
                               ),
                             ],
                           ),
@@ -152,19 +127,12 @@ class _MainScreenState extends State<MainScreen>
                           //     AppRoutes.personalInfo,
                           //   );
                           // },
-
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SignupScreen(),
-                            ),
-                          ),
+                          onPressed:
+                              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignupScreen())),
                           text: "Create Account",
                           color: Colors.white,
                           textColor: const Color(0xFF1E3C72),
-                          borderRadius: BorderRadius.circular(
-                            CommonSize.s10(context),
-                          ),
+                          borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                           height: CommonSize.s48(context),
                           width: double.infinity,
                           fontSize: CommonSize.s18(context),
@@ -176,17 +144,11 @@ class _MainScreenState extends State<MainScreen>
                           children: [
                             Text(
                               "Already have an account? ",
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: CommonSize.s16(context),
-                              ),
+                              style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: CommonSize.s16(context)),
                             ),
                             GestureDetector(
                               onTap: () {
-                                AppRoutes.navigateTo(
-                                  context,
-                                  AppRoutes.faceAuthentication,
-                                );
+                                AppRoutes.navigateTo(context, AppRoutes.login);
                               },
                               child: Text(
                                 "Log in",

@@ -39,7 +39,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           state.copyWith(
             status: AuthStatus.success,
             message: message.isNotEmpty ? message : 'OTP sent successfully',
-            otpCode: otpCode, // Store OTP for display (in dev/testing)
+            otpCode: otpCode,
           ),
         );
       } else {
@@ -89,8 +89,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (ok) {
         emit(state.copyWith(status: AuthStatus.success, message: 'Password created successfully'));
-
-        // Automatically fetch registration options after password creation
         add(AuthFetchRegistrationOptions());
       } else {
         emit(state.copyWith(status: AuthStatus.failure, message: 'Failed to create password'));
@@ -157,18 +155,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  /// Login with credentials
+  /// Login with username and password
   FutureOr<void> _onLoginWithCredentials(AuthLoginWithCredentials event, Emitter<AuthState> emit) async {
     emit(state.copyWith(status: AuthStatus.loading));
 
     try {
-      final token = await api.login(event.email, event.password);
+      // Call API login endpoint - returns full response data
+      final responseData = await api.loginAndGetUserData(event.username, event.password);
+
+      // Extract and save token
+      final token = Token(
+        accessToken: responseData['accessToken'] ?? responseData['access_token'] ?? '',
+        refreshToken: responseData['refreshToken'] ?? responseData['refresh_token'],
+        tokenType: 'Bearer',
+      );
+
       await cache.saveToken(token);
+
+      // Save user data from login response
+      final userData = {
+        'email': responseData['email'] ?? '',
+        'username': responseData['username'] ?? event.username,
+        'currentBalance': responseData['currentBalance'] ?? 0,
+      };
+
+      await cache.saveUser(userData);
 
       emit(state.copyWith(status: AuthStatus.success, message: 'Login successful'));
     } catch (e) {
       String msg = 'Login failed';
-      if (e is AuthException || e is HttpException) msg = e.toString();
+      if (e is AuthException || e is HttpException) {
+        msg = e.toString();
+      } else {
+        msg = e.toString();
+      }
       emit(state.copyWith(status: AuthStatus.failure, message: msg));
     }
   }

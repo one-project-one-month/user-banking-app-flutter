@@ -61,7 +61,6 @@ class ApiService {
       return 'sim_verification_token_${DateTime.now().millisecondsSinceEpoch}';
     }
 
-    // Debug logging
     print('🔍 Verifying OTP:');
     print('   Email: $email');
     print('   OTP: $otp');
@@ -70,14 +69,7 @@ class ApiService {
     final res = await _client.post(
       _uri('/api/auth/register/otp/verify'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'email': email,
-        'otp': otp,
-        // If your backend expects different fields, uncomment one of these:
-        // 'otpCode': otp,
-        // 'code': otp,
-        // 'otp': int.parse(otp),  // If backend expects number
-      }),
+      body: json.encode({'email': email, 'otp': otp}),
     );
 
     print('📥 Response Status: ${res.statusCode}');
@@ -90,17 +82,15 @@ class ApiService {
         if (decoded is Map<String, dynamic>) {
           String? token;
 
-          // Strategy 1: Check if response has 'data' wrapper
           if (decoded.containsKey('data')) {
             final data = decoded['data'];
             if (data is Map<String, dynamic>) {
               token = data['verificationToken'] ?? data['verification_token'] ?? data['token'];
             } else if (data is String) {
-              token = data; // Sometimes data is directly the token
+              token = data;
             }
           }
 
-          // Strategy 2: Check root level
           if (token == null) {
             token = decoded['verificationToken'] ?? decoded['verification_token'] ?? decoded['token'];
           }
@@ -119,11 +109,9 @@ class ApiService {
       throw HttpException('Invalid response: verificationToken not found', uri: _uri('/api/auth/register/otp/verify'));
     }
 
-    // Handle error responses
     try {
       final decoded = json.decode(res.body);
       if (decoded is Map<String, dynamic>) {
-        // Try to extract error message
         final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'] ?? decoded['msg'];
 
         if (serverMsg != null) {
@@ -144,26 +132,6 @@ class ApiService {
 
   /// Submit personal details (final registration step)
   /// POST /api/auth/register/personal-details
-  /// Body: {
-  ///   "verificationToken": "string",
-  ///   "fullname": "string",
-  ///   "dateOfBirth": "2025-11-03",
-  ///   "genderId": 0,
-  ///   "nationalityId": 0,
-  ///   "kycType": "string",
-  ///   "kycData": "string"
-  /// }
-  /// Response: {
-  ///   "code": 0,
-  ///   "message": "string",
-  ///   "data": {
-  ///     "accessToken": "string",
-  ///     "refreshToken": "string",
-  ///     "email": "string",
-  ///     "username": "string",
-  ///     "currentBalance": 0
-  ///   }
-  /// }
   Future<Map<String, dynamic>> submitPersonalDetails({
     required String verificationToken,
     required String fullname,
@@ -205,7 +173,6 @@ class ApiService {
         if (data is Map<String, dynamic>) {
           return data;
         }
-        // If response is direct data without wrapper
         return decoded;
       }
     }
@@ -223,30 +190,51 @@ class ApiService {
     throw HttpException('Registration failed', uri: _uri('/api/auth/register/personal-details'));
   }
 
-  /// Login with credentials
+  /// Login with credentials and get full user data
   /// POST /api/auth/login
   /// Body: { "username": "string", "password": "string" }
-  Future<Token> login(String username, String password) async {
+  Future<Map<String, dynamic>> loginAndGetUserData(String username, String password) async {
+    if (baseUrl == null) {
+      await Future.delayed(const Duration(milliseconds: 400));
+      return {
+        'accessToken': 'sim_access_${DateTime.now().millisecondsSinceEpoch}',
+        'refreshToken': 'sim_refresh',
+        'email': 'user@example.com',
+        'username': username,
+        'currentBalance': 1000,
+      };
+    }
+
     final res = await _client.post(
       _uri('/api/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'username': username, 'password': password}),
     );
 
+    print('🔐 Login Response Status: ${res.statusCode}');
+    print('🔐 Login Response Body: ${res.body}');
+
     if (res.statusCode >= 200 && res.statusCode < 300) {
       final decoded = json.decode(res.body);
 
-      // Handle wrapped response
-      if (decoded is Map<String, dynamic> && decoded.containsKey('data')) {
-        final data = decoded['data'];
-        if (data is Map<String, dynamic>) {
-          return Token.fromJson(data);
-        }
-      }
-
-      // Handle direct token response
       if (decoded is Map<String, dynamic>) {
-        return Token.fromJson(decoded);
+        final code = decoded['code'];
+        if (code != null && code != 0 && code != 200) {
+          final message = decoded['message'] ?? 'Login failed';
+          throw HttpException('Login failed: $message', uri: _uri('/api/auth/login'));
+        }
+
+        if (decoded.containsKey('data')) {
+          final data = decoded['data'];
+          if (data is Map<String, dynamic>) {
+            print('✅ Login successful! User: ${data['username']}, Balance: ${data['currentBalance']}');
+            return data;
+          }
+        }
+
+        if (decoded.containsKey('accessToken') || decoded.containsKey('access_token')) {
+          return decoded;
+        }
       }
     }
 
@@ -258,15 +246,21 @@ class ApiService {
           throw HttpException('Login failed: $serverMsg', uri: _uri('/api/auth/login'));
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      if (e is HttpException) rethrow;
+    }
 
     final fallback = res.reasonPhrase ?? 'HTTP ${res.statusCode}';
     throw HttpException('Login failed: $fallback', uri: _uri('/api/auth/login'));
   }
 
+  /// Login with credentials (legacy - returns Token only)
+  Future<Token> login(String username, String password) async {
+    final data = await loginAndGetUserData(username, password);
+    return Token.fromJson(data);
+  }
+
   /// Create password
-  /// POST /api/auth/create-password
-  /// Body: { "password": "string" }
   Future<bool> createPassword(String password) async {
     if (baseUrl == null) {
       await Future.delayed(const Duration(milliseconds: 400));
@@ -294,12 +288,7 @@ class ApiService {
     throw HttpException('Create password failed', uri: _uri('/api/auth/create-password'));
   }
 
-  /// Fetch registration template (gender & nationality options)
-  /// GET /api/auth/register/personal-details/template
-  /// Response: {
-  ///   "genderOptions": [{"id": 0, "name": "string"}],
-  ///   "nationalityOptions": [{"id": 0, "name": "string"}]
-  /// }
+  /// Fetch registration template
   Future<RegistrationOptions> fetchRegistrationOptions() async {
     if (baseUrl == null) {
       return RegistrationOptions.empty();
@@ -310,7 +299,6 @@ class ApiService {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       final decoded = json.decode(res.body);
 
-      // Handle wrapped response
       if (decoded is Map<String, dynamic> && decoded.containsKey('data')) {
         final data = decoded['data'];
         if (data is Map<String, dynamic>) {
@@ -318,7 +306,6 @@ class ApiService {
         }
       }
 
-      // Handle direct options response
       if (decoded is Map<String, dynamic>) {
         return RegistrationOptions.fromJson(decoded);
       }
