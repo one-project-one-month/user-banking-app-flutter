@@ -1,6 +1,5 @@
 import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/auth/controllers/auth_event.dart';
-import 'package:banking_app/screens/auth/views/opt_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,6 +7,7 @@ import '../controllers/auth_bloc.dart';
 import '../controllers/auth_state.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
+import 'package:banking_app/screens/auth/widgets/flushbar.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/textfield.dart';
 
@@ -18,81 +18,48 @@ class SignupScreen extends StatefulWidget {
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen>
-    with SingleTickerProviderStateMixin {
+class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  //for animations
   late AnimationController _controller;
   late Animation<double> _logoFade;
   late Animation<double> _contentFade;
   late Animation<double> _buttonFade;
   late Animation<double> _1TextFieldFade;
-  late Animation<double> _2TextFieldFade;
   late Animation<Offset> _logoSlide;
   late Animation<Offset> _contentSlide;
   late Animation<Offset> _buttonSlide;
   late Animation<Offset> _1TextFieldSlide;
-  late Animation<Offset> _2TextFieldSlide;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
 
-    // Staggered animation intervals
-    _logoFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
-    );
-    _contentFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
-    );
-    _buttonFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-    );
-    _1TextFieldFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-    );
-    _2TextFieldFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-    );
+    _logoFade = CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4, curve: Curves.easeOut));
+    _contentFade = CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7, curve: Curves.easeOut));
+    _buttonFade = CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeOut));
+    _1TextFieldFade = CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeOut));
 
-    // Slide from bottom slightly
-    _logoSlide = Tween(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4)),
-    );
+    _logoSlide = Tween(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4)));
     _contentSlide = Tween(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7)),
-    );
-    _buttonSlide = Tween(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7)));
+    _buttonSlide = Tween(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)));
     _1TextFieldSlide = Tween(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)),
-    );
-    _2TextFieldSlide = Tween(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)));
+
     _controller.forward();
   }
 
@@ -100,7 +67,6 @@ class _SignupScreenState extends State<SignupScreen>
   void dispose() {
     _controller.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -112,11 +78,7 @@ class _SignupScreenState extends State<SignupScreen>
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Color(0xFF227DBE),
-                Color.fromARGB(255, 10, 89, 146),
-                Color(0xFF0A3D62),
-              ],
+              colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -127,13 +89,11 @@ class _SignupScreenState extends State<SignupScreen>
               child: Column(
                 children: [
                   Align(
-                    alignment: AlignmentGeometry.topLeft,
+                    alignment: Alignment.topLeft,
                     child: IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: Icon(
-                        Theme.of(context).platform == TargetPlatform.iOS
-                            ? Icons.arrow_back_ios
-                            : Icons.arrow_back,
+                        Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back,
                         color: Colors.white,
                       ),
                     ),
@@ -143,12 +103,7 @@ class _SignupScreenState extends State<SignupScreen>
                     opacity: _logoFade,
                     child: SlideTransition(
                       position: _logoSlide,
-                      child: AppLogo(
-                        width: 110,
-                        height: 110,
-                        borderRadius: 24,
-                        showShadow: true,
-                      ),
+                      child: AppLogo(width: 110, height: 110, borderRadius: 24, showShadow: true),
                     ),
                   ),
                   SizedBox(height: CommonSize.s20(context)),
@@ -166,11 +121,10 @@ class _SignupScreenState extends State<SignupScreen>
                       ),
                     ),
                   ),
-
                   SizedBox(height: CommonSize.s32(context)),
                   Form(
                     key: _formKey,
-                     autovalidateMode: AutovalidateMode.disabled,
+                    autovalidateMode: AutovalidateMode.disabled,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -180,9 +134,7 @@ class _SignupScreenState extends State<SignupScreen>
                             position: _1TextFieldSlide,
                             child: customTextField(
                               controller: _emailController,
-                              errorStyle: const TextStyle(
-                                color: Color.fromARGB(255, 240, 252, 2),
-                              ),
+                              errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
                               hintText: 'Enter your email',
                               textStyle: const TextStyle(color: Colors.white),
                               keyboardType: TextInputType.emailAddress,
@@ -194,18 +146,13 @@ class _SignupScreenState extends State<SignupScreen>
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter your email';
                                 }
-
-                                if (!RegExp(
-                                  r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$',
-                                ).hasMatch(value)) {
+                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$').hasMatch(value)) {
                                   return 'Please enter a valid email';
                                 }
                                 return null;
                               },
-                              onEditingComplete:
-                                  () => FocusScope.of(context).nextFocus(),
+                              onEditingComplete: () => FocusScope.of(context).unfocus(),
                               onChanged: (value) {
-                                // Trigger validator on every change
                                 if (_formKey.currentState != null) {
                                   _formKey.currentState!.validate();
                                 }
@@ -213,57 +160,6 @@ class _SignupScreenState extends State<SignupScreen>
                             ),
                           ),
                         ),
-
-                        SizedBox(height: CommonSize.s20(context)),
-
-                        // FadeTransition(
-                        //   opacity: _2TextFieldFade,
-                        //   child: SlideTransition(
-                        //     position: _2TextFieldSlide,
-                        //     child: customTextField(
-                        //       controller: _passwordController,
-                        //       hintText: 'Password',
-                        //       errorStyle: const TextStyle(
-                        //         color: Color.fromARGB(255, 240, 252, 2),
-                        //       ),
-                        //       textStyle: const TextStyle(color: Colors.white),
-                        //       prefixIconColor: Colors.white,
-                        //       suffixIconColor: Colors.white,
-                        //       hintStyle: const TextStyle(color: Colors.white),
-                        //       borderColor: Colors.white,
-                        //       keyboardType: TextInputType.text,
-                        //       prefixIcon: const Icon(Icons.lock),
-                        //       isPassword: true,
-                        //       showPasswordToggle: true,
-                        //       validator: (value) {
-                        //         if (value == null || value.isEmpty) {
-                        //           return 'Please enter your password';
-                        //         }
-                        //         // if (value.length < 6) {
-                        //         //   return 'Password must be at least 6 characters';
-                        //         // }
-                        //         return null;
-                        //       },
-                        //       // onChanged: (value) {
-                        //       //   // Trigger validator on every change
-                        //       //   if (_formKey.currentState != null) {
-                        //       //     _formKey.currentState!.validate();
-                        //       //   }
-                        //       // },
-                        //       onEditingComplete: () {
-                        //         FocusScope.of(context).unfocus();
-                        //         if (_formKey.currentState!.validate()) {
-                        //           context.read<AuthBloc>().add(
-                        //             AuthLoginWithCredentials(
-                        //               _emailController.text.trim(),
-                        //               _passwordController.text,
-                        //             ),
-                        //           );
-                        //         }
-                        //       },
-                        //     ),
-                        //   ),
-                        // ),
                       ],
                     ),
                   ),
@@ -276,74 +172,49 @@ class _SignupScreenState extends State<SignupScreen>
                         children: [
                           BlocConsumer<AuthBloc, AuthState>(
                             listener: (context, state) {
-                              // if (state.status == AuthStatus.success) {
-                              //   customFlushbar(
-                              //     context: context,
-                              //     message: "Login Successful!",
-                              //     backgroundColor: Colors.green,
-                              //     icon: const Icon(
-                              //       Icons.check_circle,
-                              //       color: Colors.white,
-                              //     ),
-                              //   );
-                              //   // navigate to home
-                              //   Navigator.of(context).pushReplacement(
-                              //     MaterialPageRoute(
-                              //       builder: (_) => const HomeScreen(),
-                              //     ),
-                              //   );
-                              // } else if (state.status == AuthStatus.failure) {
-                              //   customFlushbar(
-                              //     context: context,
-                              //     message: state.message ?? "Login Failed",
-                              //   );
-                              // }
+                              if (state.status == AuthStatus.success) {
+                                customFlushbar(
+                                  context: context,
+                                  message: state.message ?? "OTP sent to your email!",
+                                  backgroundColor: Colors.green,
+                                  icon: const Icon(Icons.check_circle, color: Colors.white),
+                                );
+
+                                // Get the same AuthBloc instance
+                                final authBloc = context.read<AuthBloc>();
+
+                                Future.delayed(const Duration(milliseconds: 500), () {
+                                  AppRoutes.navigateTo(
+                                    context,
+                                    AppRoutes.otp,
+                                    arguments: {
+                                      'destination': _emailController.text.trim(),
+                                      'realOtp': state.otpCode,
+                                      'authBloc': authBloc, // Pass the bloc
+                                    },
+                                  );
+                                });
+                              } else if (state.status == AuthStatus.failure) {
+                                customFlushbar(
+                                  context: context,
+                                  message: state.message ?? "Failed to send OTP",
+                                  backgroundColor: Colors.redAccent,
+                                );
+                              }
                             },
                             builder: (context, state) {
-                              final isLoading =
-                                  state.status == AuthStatus.loading;
+                              final isLoading = state.status == AuthStatus.loading;
 
                               return customElevatedButton(
                                 onPressed: () {
-                                  // AppRoutes.navigateTo(
-                                  //   context,
-                                  //   AppRoutes.personalInfo,
-                                  // );
-
-                                  //TODO: submit email registration
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<AuthBloc>().add(
-                                      AuthRequestOTP(
-                                        _emailController.text.trim(),
-                                      ),
-                                    );
-
-                                    AppRoutes.navigateTo(
-                                      context,
-                                      AppRoutes.otp ,
-                                    arguments: {
-                                      'destination': _emailController.text.trim(),
-                                    }         
-                                    );
-
-                                  //   Navigator.push(
-                                  //     context,
-                                  //     MaterialPageRoute(
-                                  //       builder:
-                                  //           (_) => OtpScreen(
-                                  //             destination:
-                                  //                 _emailController.text.trim(),
-                                  //           ),
-                                  //     ),
-                                  //   );
-                                   }
+                                  if (!isLoading && _formKey.currentState!.validate()) {
+                                    context.read<AuthBloc>().add(AuthRequestOTP(_emailController.text.trim()));
+                                  }
                                 },
                                 text: "Continue",
                                 color: Colors.white,
                                 textColor: const Color(0xFF1E3C72),
-                                borderRadius: BorderRadius.circular(
-                                  CommonSize.s10(context),
-                                ),
+                                borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                                 height: CommonSize.s48(context),
                                 width: double.infinity,
                                 fontSize: CommonSize.s18(context),
@@ -364,12 +235,7 @@ class _SignupScreenState extends State<SignupScreen>
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () {
-                                  AppRoutes.navigateTo(
-                                    context,
-                                    AppRoutes.login,
-                                  );
-                                },
+                                onTap: () => AppRoutes.navigateTo(context, AppRoutes.login),
                                 child: Text(
                                   "Log in",
                                   style: TextStyle(

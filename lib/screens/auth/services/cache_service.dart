@@ -10,6 +10,10 @@ class CacheService {
   static const _keyUser = 'auth_user';
   static const _keyRegistrationOptions = 'registration_options';
 
+  // ═══════════════════════════════════════════════════════════
+  // TOKEN METHODS
+  // ═══════════════════════════════════════════════════════════
+
   Future<void> saveToken(Token token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyToken, json.encode(token.toJson()));
@@ -32,11 +36,18 @@ class CacheService {
     await prefs.remove(_keyToken);
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // USER METHODS
+  // ═══════════════════════════════════════════════════════════
+
+  /// Save user data
+  /// Example: {"email": "...", "username": "...", "currentBalance": 0}
   Future<void> saveUser(Map<String, dynamic> user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyUser, json.encode(user));
   }
 
+  /// Get user data as Map
   Future<Map<String, dynamic>?> getUser() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_keyUser);
@@ -48,6 +59,16 @@ class CacheService {
       return null;
     }
   }
+
+  /// Clear user data
+  Future<void> clearUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyUser);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // REGISTRATION OPTIONS METHODS
+  // ═══════════════════════════════════════════════════════════
 
   Future<void> saveRegistrationOptions(Map<String, dynamic> options) async {
     final prefs = await SharedPreferences.getInstance();
@@ -66,14 +87,15 @@ class CacheService {
     }
   }
 
-  Future<void> clearUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyUser);
-  }
+  // ═══════════════════════════════════════════════════════════
+  // CLEAR ALL
+  // ═══════════════════════════════════════════════════════════
 
+  /// Clear all auth-related data (logout)
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyUser);
     await prefs.remove(_keyToken);
+    // Keep registration options - they don't need to be cleared
   }
 }

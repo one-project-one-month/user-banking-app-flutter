@@ -18,8 +18,7 @@ class CreatePasswordScreen extends StatefulWidget {
   State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
 }
 
-class _CreatePasswordScreenState extends State<CreatePasswordScreen>
-    with SingleTickerProviderStateMixin {
+class _CreatePasswordScreenState extends State<CreatePasswordScreen> with SingleTickerProviderStateMixin {
   final _pwdController = TextEditingController();
   final _confirmController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -37,43 +36,29 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
 
-    _logoFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.25),
-    );
-    _contentFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.15, 0.45),
-    );
-    _fieldsFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.35, 0.75),
-    );
-    _buttonFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.6, 1.0),
-    );
+    _logoFade = CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.25));
+    _contentFade = CurvedAnimation(parent: _controller, curve: const Interval(0.15, 0.45));
+    _fieldsFade = CurvedAnimation(parent: _controller, curve: const Interval(0.35, 0.75));
+    _buttonFade = CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0));
 
-    _logoSlide = Tween(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.25)),
-    );
+    _logoSlide = Tween(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.25)));
     _contentSlide = Tween(
       begin: const Offset(0, 0.2),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.15, 0.45)),
-    );
-    _fieldsSlide = Tween(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.35, 0.75)),
-    );
-    _buttonSlide = Tween(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.15, 0.45)));
+    _fieldsSlide = Tween(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.35, 0.75)));
+    _buttonSlide = Tween(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)));
 
     _controller.forward();
   }
@@ -88,9 +73,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
 
   void _submit(BuildContext ctx) {
     if (!_formKey.currentState!.validate()) return;
-    ctx.read<AuthBloc>().add(
-      AuthCreatePassword(_confirmController.text.trim()),
-    );
+    ctx.read<AuthBloc>().add(AuthCreatePassword(_confirmController.text.trim()));
   }
 
   String? _validatePassword(String? v) {
@@ -121,16 +104,10 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
               iconTheme: const IconThemeData(color: Colors.white),
             ),
             body: Container(
-              constraints: BoxConstraints.expand(
-                height: MediaQuery.of(context).size.height,
-              ),
+              constraints: BoxConstraints.expand(height: MediaQuery.of(context).size.height),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF227DBE),
-                    Color.fromARGB(255, 10, 89, 146),
-                    Color(0xFF0A3D62),
-                  ],
+                  colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -146,11 +123,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                           opacity: _logoFade,
                           child: SlideTransition(
                             position: _logoSlide,
-                            child: AppLogo(
-                              width: 90,
-                              height: 90,
-                              borderRadius: 20,
-                            ),
+                            child: AppLogo(width: 90, height: 90, borderRadius: 20),
                           ),
                         ),
                         SizedBox(height: CommonSize.s24(context)),
@@ -191,26 +164,21 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                                   context: context,
                                   message: "Password created successfully",
                                   backgroundColor: Colors.green,
-                                  icon: const Icon(
-                                    Icons.check_circle,
-                                    color: Colors.white,
-                                  ),
+                                  icon: const Icon(Icons.check_circle, color: Colors.white),
                                 );
-                        
-                                Future.delayed(const Duration(seconds: 1), () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => PersonalInfoScreen(),
-                                    ),
-                                  );
-                                });
+
+                                // Future.delayed(const Duration(seconds: 1), () {
+                                //   Navigator.pushReplacement(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //       builder: (_) => PersonalInfoScreen(),
+                                //     ),
+                                //   );
+                                // });
                               } else if (state.status == AuthStatus.failure) {
                                 customFlushbar(
                                   context: context,
-                                  message:
-                                      state.message ??
-                                      'Password creation failed, Retry',
+                                  message: state.message ?? 'Password creation failed, Retry',
                                 );
                               }
                             },
@@ -220,13 +188,9 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                                 child: SlideTransition(
                                   position: _fieldsSlide,
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        'Password',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
+                                      Text('Password', style: TextStyle(color: Colors.white)),
                                       SizedBox(height: CommonSize.s8(context)),
                                       customTextField(
                                         controller: _pwdController,
@@ -234,24 +198,13 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                                         isPassword: true,
                                         showPasswordToggle: true,
                                         borderColor: Colors.white,
-                                        hintStyle: const TextStyle(
-                                          color: Colors.white54,
-                                        ),
-                                        textStyle: const TextStyle(
-                                          color: Colors.white,
-                                        ),
+                                        hintStyle: const TextStyle(color: Colors.white54),
+                                        textStyle: const TextStyle(color: Colors.white),
                                         validator: _validatePassword,
-                                        onEditingComplete:
-                                            () =>
-                                                FocusScope.of(
-                                                  context,
-                                                ).nextFocus(),
+                                        onEditingComplete: () => FocusScope.of(context).nextFocus(),
                                       ),
                                       SizedBox(height: CommonSize.s16(context)),
-                                      Text(
-                                        'Confirm password',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
+                                      Text('Confirm password', style: TextStyle(color: Colors.white)),
                                       SizedBox(height: CommonSize.s8(context)),
                                       customTextField(
                                         controller: _confirmController,
@@ -259,12 +212,8 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                                         isPassword: true,
                                         showPasswordToggle: true,
                                         borderColor: Colors.white,
-                                        hintStyle: const TextStyle(
-                                          color: Colors.white54,
-                                        ),
-                                        textStyle: const TextStyle(
-                                          color: Colors.white,
-                                        ),
+                                        hintStyle: const TextStyle(color: Colors.white54),
+                                        textStyle: const TextStyle(color: Colors.white),
                                         validator: _validateConfirm,
                                         onEditingComplete: () {
                                           _submit(context);
@@ -289,9 +238,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                               text: 'Create password',
                               color: Colors.white,
                               textColor: const Color(0xFF1E3C72),
-                              borderRadius: BorderRadius.circular(
-                                CommonSize.s10(context),
-                              ),
+                              borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                               height: CommonSize.s48(context),
                               width: double.infinity,
                             ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
-import '../widgets/transaction_info_row.dart';
-import '../widgets/account_info_card.dart';
-import '../widgets/nickname_bottom_sheet.dart';
+import 'widgets/transaction_info_row.dart';
+import 'widgets/account_info_card.dart';
+import 'widgets/nickname_bottom_sheet.dart';
 
 class TransactionSuccessScreen extends StatefulWidget {
   final Map<String, dynamic>? transactionData;

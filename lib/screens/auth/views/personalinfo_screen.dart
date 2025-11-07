@@ -7,151 +7,179 @@ import '../controllers/auth_bloc.dart';
 import '../controllers/auth_event.dart';
 import '../controllers/auth_state.dart';
 import '../services/cache_service.dart';
+import '../models/registration_options.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/flushbar.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/textfield.dart';
 
+/// ---------------------------------------------------------------
+///  PersonalInfoScreen – receives the SAME AuthBloc from OTP screen
+/// ---------------------------------------------------------------
 class PersonalInfoScreen extends StatefulWidget {
-  const PersonalInfoScreen({super.key});
+  final AuthBloc authBloc; // <-- SAME instance
+
+  const PersonalInfoScreen({super.key, required this.authBloc});
 
   @override
   State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
 }
 
-class _PersonalInfoScreenState extends State<PersonalInfoScreen>
-    with SingleTickerProviderStateMixin {
+class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTickerProviderStateMixin {
+  // ──────────────────────────────────────────────────────────────────────
+  // Controllers & Form
+  // ──────────────────────────────────────────────────────────────────────
   final _fullNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   final _dayController = TextEditingController();
   final _monthController = TextEditingController();
   final _yearController = TextEditingController();
 
-  String? _gender;
-  String? _nationality;
-  List<String> _genderItems = ['Male', 'Female', 'Other'];
-  List<String> _nationalityItems = [
-    'Myanmar',
-    'Thailand',
-    'Singapore',
-    'Malaysia',
-    'Indonesia',
-    'Philippines',
-    'Vietnam',
-    'Japan',
-    'South Korea',
-    'China',
-  ];
   final _formKey = GlobalKey<FormState>();
 
-  late AnimationController _controller;
-  late Animation<double> _logoFade;
-  late Animation<double> _contentFade;
-  late Animation<double> _buttonFade;
-  late Animation<double> _fieldsFade;
-  late Animation<Offset> _logoSlide;
-  late Animation<Offset> _contentSlide;
-  late Animation<Offset> _buttonSlide;
-  late Animation<Offset> _fieldsSlide;
+  // ──────────────────────────────────────────────────────────────────────
+  // Dropdown data
+  // ──────────────────────────────────────────────────────────────────────
+  int? _selectedGenderId;
+  int? _selectedNationalityId;
+  List<OptionItem> _genderOptions = [];
+  List<OptionItem> _nationalityOptions = [];
+
+  // ──────────────────────────────────────────────────────────────────────
+  // State helpers
+  // ──────────────────────────────────────────────────────────────────────
+  String? _verificationToken;
+  bool _isLoadingOptions = true;
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Animations (exactly as you had them)
+  // ──────────────────────────────────────────────────────────────────────
+  late final AnimationController _controller;
+  late final Animation<double> _logoFade;
+  late final Animation<double> _contentFade;
+  late final Animation<double> _fieldsFade;
+  late final Animation<double> _buttonFade;
+  late final Animation<Offset> _logoSlide;
+  late final Animation<Offset> _contentSlide;
+  late final Animation<Offset> _fieldsSlide;
+  late final Animation<Offset> _buttonSlide;
 
   @override
   void initState() {
     super.initState();
 
-    // load registration options from cache (populated after password creation)
-    _loadRegistrationOptions();
+    // ---------- animations ----------
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
+    _logoFade = CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.3));
+    _contentFade = CurvedAnimation(parent: _controller, curve: const Interval(0.2, 0.6));
+    _fieldsFade = CurvedAnimation(parent: _controller, curve: const Interval(0.5, 0.85));
+    _buttonFade = CurvedAnimation(parent: _controller, curve: const Interval(0.8, 1.0));
 
-    _logoFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.3),
-    );
-    _contentFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.2, 0.6),
-    );
-    _fieldsFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.5, 0.85),
-    );
-    _buttonFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.8, 1.0),
-    );
-
-    _logoSlide = Tween(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.3)),
-    );
+    _logoSlide = Tween(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.3)));
     _contentSlide = Tween(
       begin: const Offset(0, 0.2),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.2, 0.6)),
-    );
-    _fieldsSlide = Tween(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.5, 0.85)),
-    );
-    _buttonSlide = Tween(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.8, 1.0)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.2, 0.6)));
+    _fieldsSlide = Tween(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.5, 0.85)));
+    _buttonSlide = Tween(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.8, 1.0)));
 
     _controller.forward();
+
+    // ---------- load data ----------
+    _loadInitialData();
   }
 
-  Future<void> _loadRegistrationOptions() async {
-    try {
-      final cache = CacheService();
-      final opts = await cache.getRegistrationOptions();
-      if (opts != null) {
-        setState(() {
-          _genderItems = opts.genderOptions.map((e) => e.name).toList();
-          _nationalityItems =
-              opts.nationalityOptions.map((e) => e.name).toList();
-          // set defaults if not selected
-          _gender ??= _genderItems.isNotEmpty ? _genderItems.first : null;
-          _nationality ??=
-              _nationalityItems.isNotEmpty ? _nationalityItems.first : null;
-        });
-      }
-    } catch (_) {
-      // ignore and keep defaults
+  // ──────────────────────────────────────────────────────────────────────
+  // Load verification token + registration options
+  // ──────────────────────────────────────────────────────────────────────
+  Future<void> _loadInitialData() async {
+    // 1. Token – from the SAME BLoC state
+    final state = widget.authBloc.state;
+    _verificationToken = state.verificationToken;
+
+    if (_verificationToken == null || _verificationToken!.isEmpty) {
+      _showError('Verification token missing – please start registration again.');
+      return;
+    }
+
+    // 2. Options – try cache first
+    final cache = CacheService();
+    final cached = await cache.getRegistrationOptions();
+
+    if (cached != null && cached.genderOptions.isNotEmpty) {
+      _applyCachedOptions(cached);
+    } else {
+      // No cache → ask the SAME BLoC to fetch them
+      widget.authBloc.add(AuthFetchRegistrationOptions());
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _fullNameController.dispose();
-    _dayController.dispose();
-    _monthController.dispose();
-    _yearController.dispose();
-    super.dispose();
+  void _applyCachedOptions(RegistrationOptions opts) {
+    setState(() {
+      _genderOptions = opts.genderOptions;
+      _nationalityOptions = opts.nationalityOptions;
+      _selectedGenderId = _genderOptions.isNotEmpty ? _genderOptions.first.id : null;
+      _selectedNationalityId = _nationalityOptions.isNotEmpty ? _nationalityOptions.first.id : null;
+      _isLoadingOptions = false;
+    });
   }
 
+  void _showError(String msg) {
+    customFlushbar(
+      context: context,
+      message: msg,
+      backgroundColor: Colors.redAccent,
+      icon: const Icon(Icons.error_outline, color: Colors.white),
+    );
+    setState(() => _isLoadingOptions = false);
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Submit
+  // ──────────────────────────────────────────────────────────────────────
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    final payload = {
-      'fullName': _fullNameController.text.trim(),
-      'dob':
-          '${_dayController.text}-${_monthController.text}-${_yearController.text}',
-      'gender': _gender,
-      'nationality': _nationality,
-    };
+    if (_verificationToken == null) {
+      _showError('Verification token missing.');
+      return;
+    }
 
-    context.read<AuthBloc>().add(AuthRegisterSubmitted(payload));
+    final day = _dayController.text.padLeft(2, '0');
+    final month = _monthController.text.padLeft(2, '0');
+    final year = _yearController.text;
+    final dob = '$year-$month-$day';
+
+    widget.authBloc.add(
+      AuthSubmitPersonalDetails(
+        verificationToken: _verificationToken!,
+        fullname: _fullNameController.text.trim(),
+        dateOfBirth: dob,
+        genderId: _selectedGenderId!,
+        nationalityId: _selectedNationalityId!,
+        kycType: 'passport',
+        kycData: '',
+      ),
+    );
   }
 
+  // ──────────────────────────────────────────────────────────────────────
+  // UI
+  // ──────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => AuthBloc(),
+    return BlocProvider.value(
+      value: widget.authBloc, // <-- SAME BLoC
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -159,18 +187,19 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.white),
+          leading: IconButton(
+            icon: Icon(
+              Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back,
+              color: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         body: Container(
-          constraints: BoxConstraints.expand(
-            height: MediaQuery.of(context).size.height,
-          ),
+          constraints: BoxConstraints.expand(height: MediaQuery.of(context).size.height),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Color(0xFF227DBE),
-                Color.fromARGB(255, 10, 89, 146),
-                Color(0xFF0A3D62),
-              ],
+              colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -182,6 +211,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // ───── LOGO ─────
                     FadeTransition(
                       opacity: _logoFade,
                       child: SlideTransition(
@@ -190,6 +220,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                       ),
                     ),
                     SizedBox(height: CommonSize.s20(context)),
+
+                    // ───── TITLE ─────
                     FadeTransition(
                       opacity: _contentFade,
                       child: SlideTransition(
@@ -205,7 +237,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                               ),
                             ),
                             Text(
-                              'Tell about yourself!',
+                              'Tell us about yourself!',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: CommonSize.s14(context),
@@ -216,334 +248,232 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
                         ),
                       ),
                     ),
-
                     SizedBox(height: CommonSize.s20(context)),
-                    Form(
-                      key: _formKey,
-                      child: FadeTransition(
-                        opacity: _fieldsFade,
-                        child: SlideTransition(
-                          position: _fieldsSlide,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Full name',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              SizedBox(height: CommonSize.s8(context)),
-                              customTextField(
-                                errorStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 240, 252, 2),
-                                ),
-                                controller: _fullNameController,
-                                hintText: 'Mr/Mrs/Miss',
-                                textStyle: const TextStyle(color: Colors.white),
-                                hintStyle: const TextStyle(color: Colors.white),
-                                prefixIcon: const Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                ),
-                                onEditingComplete:
-                                    () => FocusScope.of(context).nextFocus(),
 
-                                borderColor: Colors.white,
-                                validator: (v) {
-                                  if (v == null || v.isEmpty)
-                                    return 'Enter your full name';
-                                  return null;
-                                },
-                              ),
+                    // ───── LOADING / FORM ─────
+                    if (_isLoadingOptions)
+                      const CircularProgressIndicator(color: Colors.white)
+                    else
+                      Form(
+                        key: _formKey,
+                        child: FadeTransition(
+                          opacity: _fieldsFade,
+                          child: SlideTransition(
+                            position: _fieldsSlide,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // ── Full name ──
+                                Text('Full name', style: TextStyle(color: Colors.white)),
+                                SizedBox(height: CommonSize.s8(context)),
+                                customTextField(
+                                  controller: _fullNameController,
+                                  hintText: 'Mr/Mrs/Miss Full Name',
+                                  textStyle: const TextStyle(color: Colors.white),
+                                  hintStyle: const TextStyle(color: Colors.white),
+                                  prefixIcon: const Icon(Icons.person, color: Colors.white),
+                                  borderColor: Colors.white,
+                                  errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                  onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                                  validator: (v) => v?.isEmpty ?? true ? 'Enter your full name' : null,
+                                ),
+                                SizedBox(height: CommonSize.s12(context)),
 
-                              SizedBox(height: CommonSize.s12(context)),
-                              Text(
-                                'Date of birth',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              SizedBox(height: CommonSize.s8(context)),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: customTextField(
-                                      controller: _dayController,
-                                      hintText: 'DD',
-                                      onEditingComplete:
-                                          () =>
-                                              FocusScope.of(
-                                                context,
-                                              ).nextFocus(),
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                        LengthLimitingTextInputFormatter(2),
-                                      ],
-                                      errorStyle: const TextStyle(
-                                        color: Color.fromARGB(255, 240, 252, 2),
+                                // ── Date of birth ──
+                                Text('Date of birth', style: TextStyle(color: Colors.white)),
+                                SizedBox(height: CommonSize.s8(context)),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: customTextField(
+                                        controller: _dayController,
+                                        hintText: 'DD',
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          LengthLimitingTextInputFormatter(2),
+                                        ],
+                                        borderColor: Colors.white,
+                                        hintStyle: const TextStyle(color: Colors.white),
+                                        textStyle: const TextStyle(color: Colors.white),
+                                        errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                        onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                                        validator: (v) {
+                                          if (v == null || v.isEmpty) return 'DD';
+                                          final n = int.tryParse(v);
+                                          if (n == null || n < 1 || n > 31) return 'Invalid';
+                                          return null;
+                                        },
                                       ),
-                                      hintStyle: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      textStyle: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      borderColor: Colors.white,
-                                      validator: (v) {
-                                        if (v == null || v.isEmpty) return 'DD';
-                                        final val = int.tryParse(v);
-                                        if (val == null || val < 1 || val > 31)
-                                          return 'Invalid';
-                                        return null;
-                                      },
                                     ),
-                                  ),
-                                  SizedBox(width: CommonSize.s8(context)),
-                                  Expanded(
-                                    child: customTextField(
-                                      controller: _monthController,
-                                      hintText: 'MM',
-                                      onEditingComplete:
-                                          () =>
-                                              FocusScope.of(
-                                                context,
-                                              ).nextFocus(),
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                        LengthLimitingTextInputFormatter(2),
-                                      ],
-                                      errorStyle: const TextStyle(
-                                        color: Color.fromARGB(255, 240, 252, 2),
+                                    SizedBox(width: CommonSize.s8(context)),
+                                    Expanded(
+                                      child: customTextField(
+                                        controller: _monthController,
+                                        hintText: 'MM',
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          LengthLimitingTextInputFormatter(2),
+                                        ],
+                                        borderColor: Colors.white,
+                                        hintStyle: const TextStyle(color: Colors.white),
+                                        textStyle: const TextStyle(color: Colors.white),
+                                        errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                        onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                                        validator: (v) {
+                                          if (v == null || v.isEmpty) return 'MM';
+                                          final n = int.tryParse(v);
+                                          if (n == null || n < 1 || n > 12) return 'Invalid';
+                                          return null;
+                                        },
                                       ),
-                                      hintStyle: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      textStyle: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      borderColor: Colors.white,
-                                      validator: (v) {
-                                        if (v == null || v.isEmpty) return 'MM';
-                                        final val = int.tryParse(v);
-                                        if (val == null || val < 1 || val > 12)
-                                          return 'Invalid';
-                                        return null;
-                                      },
                                     ),
-                                  ),
-                                  SizedBox(width: CommonSize.s8(context)),
-                                  Expanded(
-                                    child: customTextField(
-                                      controller: _yearController,
-                                      hintText: 'YYYY',
-                                      onEditingComplete:
-                                          () =>
-                                              FocusScope.of(context).unfocus(),
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                        LengthLimitingTextInputFormatter(4),
-                                      ],
-                                      errorStyle: const TextStyle(
-                                        color: Color.fromARGB(255, 240, 252, 2),
+                                    SizedBox(width: CommonSize.s8(context)),
+                                    Expanded(
+                                      child: customTextField(
+                                        controller: _yearController,
+                                        hintText: 'YYYY',
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          LengthLimitingTextInputFormatter(4),
+                                        ],
+                                        borderColor: Colors.white,
+                                        hintStyle: const TextStyle(color: Colors.white),
+                                        textStyle: const TextStyle(color: Colors.white),
+                                        errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                        onEditingComplete: () => FocusScope.of(context).unfocus(),
+                                        validator: (v) {
+                                          if (v == null || v.isEmpty) return 'YYYY';
+                                          final n = int.tryParse(v);
+                                          final now = DateTime.now().year;
+                                          if (n == null || n < 1900 || n > now) return 'Invalid';
+                                          return null;
+                                        },
                                       ),
-                                      hintStyle: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      textStyle: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      borderColor: Colors.white,
-                                      validator: (v) {
-                                        if (v == null || v.isEmpty)
-                                          return 'YYYY';
-                                        final val = int.tryParse(v);
-                                        final current = DateTime.now().year;
-                                        if (val == null ||
-                                            val < 1900 ||
-                                            val > current)
-                                          return 'Invalid';
-                                        return null;
-                                      },
                                     ),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                ),
+                                SizedBox(height: CommonSize.s12(context)),
 
-                              SizedBox(height: CommonSize.s12(context)),
-                              DropdownButtonFormField<String>(
-                                value: _gender,
-                                items:
-                                    _genderItems
-                                        .map(
-                                          (g) => DropdownMenuItem(
-                                            value: g,
-                                            child: Text(g),
-                                          ),
-                                        )
-                                        .toList(),
-                                onChanged: (v) => setState(() => _gender = v),
-                                decoration: InputDecoration(
-                                  labelText: 'Gender',
-                                  labelStyle: const TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                  prefixIcon: const Icon(
-                                    Icons.wc,
-                                    color: Colors.white,
-                                  ),
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    borderSide: const BorderSide(
-                                      color: Colors.white,
+                                // ── Gender ──
+                                DropdownButtonFormField<int>(
+                                  value: _selectedGenderId,
+                                  items:
+                                      _genderOptions
+                                          .map((g) => DropdownMenuItem(value: g.id, child: Text(g.name)))
+                                          .toList(),
+                                  onChanged: (v) => setState(() => _selectedGenderId = v),
+                                  decoration: InputDecoration(
+                                    labelText: 'Gender',
+                                    labelStyle: const TextStyle(color: Colors.white),
+                                    prefixIcon: const Icon(Icons.wc, color: Colors.white),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: Colors.white),
+                                    ),
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: const BorderSide(color: Colors.white, width: 2),
                                     ),
                                   ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                  ),
+                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                                  dropdownColor: const Color(0xFF0A3D62),
+                                  style: const TextStyle(color: Colors.white),
+                                  validator: (v) => v == null ? 'Select gender' : null,
                                 ),
-                                icon: const Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Colors.white,
-                                ),
-                                errorBuilder: (context, errorText) {
-                                  return Text(
-                                    errorText,
-                                    style: const TextStyle(
-                                      color: Color.fromARGB(255, 240, 252, 2),
-                                      fontSize: 12,
-                                    ),
-                                  );
-                                },
-                                dropdownColor: const Color(0xFF0A3D62),
-                                style: const TextStyle(color: Colors.white),
-                                validator: (v) {
-                                  if (v == null || v.isEmpty)
-                                    return 'Select gender';
-                                  return null;
-                                },
-                              ),
+                                SizedBox(height: CommonSize.s12(context)),
 
-                              SizedBox(height: CommonSize.s12(context)),
-                              DropdownButtonFormField<String>(
-                                value: _nationality,
-                                items:
-                                    _nationalityItems
-                                        .map(
-                                          (n) => DropdownMenuItem(
-                                            value: n,
-                                            child: Text(n),
-                                          ),
-                                        )
-                                        .toList(),
-                                onChanged:
-                                    (v) => setState(() => _nationality = v),
-                                decoration: InputDecoration(
-                                  labelText: 'Nationality',
-                                  labelStyle: const TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                  prefixIcon: const Icon(
-                                    Icons.people,
-                                    color: Colors.white,
-                                  ),
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    borderSide: const BorderSide(
-                                      color: Colors.white,
+                                // ── Nationality ──
+                                DropdownButtonFormField<int>(
+                                  value: _selectedNationalityId,
+                                  items:
+                                      _nationalityOptions
+                                          .map((n) => DropdownMenuItem(value: n.id, child: Text(n.name)))
+                                          .toList(),
+                                  onChanged: (v) => setState(() => _selectedNationalityId = v),
+                                  decoration: InputDecoration(
+                                    labelText: 'Nationality',
+                                    labelStyle: const TextStyle(color: Colors.white),
+                                    prefixIcon: const Icon(Icons.people, color: Colors.white),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: Colors.white),
+                                    ),
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: const BorderSide(color: Colors.white, width: 2),
                                     ),
                                   ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                  ),
+                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                                  dropdownColor: const Color(0xFF0A3D62),
+                                  style: const TextStyle(color: Colors.white),
+                                  validator: (v) => v == null ? 'Select nationality' : null,
                                 ),
-                                icon: const Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Colors.white,
-                                ),
-                                errorBuilder: (context, errorText) {
-                                  return Text(
-                                    errorText,
-                                    style: const TextStyle(
-                                      color: Color.fromARGB(255, 240, 252, 2),
-                                      fontSize: 12,
-                                    ),
-                                  );
-                                },
-                                dropdownColor: const Color(0xFF0A3D62),
-                                style: const TextStyle(color: Colors.white),
-                                validator: (v) {
-                                  if (v == null || v.isEmpty)
-                                    return 'Select Nationality';
-                                  return null;
-                                },
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
                     SizedBox(height: CommonSize.s32(context)),
+
+                    // ───── SUBMIT BUTTON ─────
                     FadeTransition(
                       opacity: _buttonFade,
                       child: SlideTransition(
                         position: _buttonSlide,
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            bottom: CommonSize.s8(context),
-                          ),
-                          child: BlocConsumer<AuthBloc, AuthState>(
-                            listener: (context, state) {
-                              if (state.status == AuthStatus.success) {
-                                customFlushbar(
-                                  context: context,
-                                  message: 'Registration successful',
-                                  backgroundColor: Colors.green,
-                                  icon: const Icon(
-                                    Icons.check_circle,
-                                    color: Colors.white,
-                                  ),
-                                );
-                                // Navigator.of(context).pushReplacement(
-                                //   MaterialPageRoute(
-                                //     builder: (_) => const UploadDocumentDl(),
-                                //   ),
-                                // );
-                              } else if (state.status == AuthStatus.failure) {
-                                customFlushbar(
-                                  context: context,
-                                  message:
-                                      state.message ?? 'Registration failed',
-                                );
-                              }
-                            },
-                            builder: (context, state) {
-                              return customElevatedButton(
-                                onPressed: () {
-                                  AppRoutes.navigateTo(
-                                    context,
-                                    AppRoutes.uploadDocument,
-                                  );
-                                }, //_submit,
-                                text: 'Next',
-                                color: Colors.white,
-                                textColor: const Color(0xFF0A3D62),
-                                borderRadius: BorderRadius.circular(
-                                  CommonSize.s10(context),
-                                ),
-                                height: CommonSize.s48(context),
-                                width: double.infinity,
-                                fontSize: CommonSize.s18(context),
-                                fontWeight: FontWeight.w600,
-                                // isLoading: isLoading,
+                        child: BlocConsumer<AuthBloc, AuthState>(
+                          listener: (context, state) {
+                            // ---- Options fetched from server ----
+                            if (state.status == AuthStatus.success && _genderOptions.isEmpty) {
+                              CacheService().getRegistrationOptions().then((opts) {
+                                if (opts != null) _applyCachedOptions(opts);
+                              });
+                            }
+
+                            // ---- Registration finished ----
+                            if (state.status == AuthStatus.success &&
+                                state.message == 'Registration completed successfully') {
+                              customFlushbar(
+                                context: context,
+                                message: 'Registration successful!',
+                                backgroundColor: Colors.green,
+                                icon: const Icon(Icons.check_circle, color: Colors.white),
                               );
-                            },
-                          ),
+
+                              Future.delayed(const Duration(seconds: 1), () {
+                                AppRoutes.navigateTo(context, AppRoutes.home_screen);
+                              });
+                            }
+
+                            // ---- Errors ----
+                            if (state.status == AuthStatus.failure) {
+                              customFlushbar(
+                                context: context,
+                                message: state.message ?? 'Registration failed',
+                                backgroundColor: Colors.redAccent,
+                              );
+                            }
+                          },
+                          builder: (context, state) {
+                            final isLoading = state.status == AuthStatus.loading;
+
+                            return customElevatedButton(
+                              onPressed: () {
+                                if (!isLoading) {
+                                  _submit();
+                                }
+                              },
+                              text: 'Next',
+                              color: Colors.white,
+                              textColor: const Color(0xFF0A3D62),
+                              borderRadius: BorderRadius.circular(CommonSize.s10(context)),
+                              height: CommonSize.s48(context),
+                              width: double.infinity,
+                              fontSize: CommonSize.s18(context),
+                              fontWeight: FontWeight.w600,
+                              isLoading: isLoading,
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -555,5 +485,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen>
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _fullNameController.dispose();
+    _dayController.dispose();
+    _monthController.dispose();
+    _yearController.dispose();
+    super.dispose();
   }
 }

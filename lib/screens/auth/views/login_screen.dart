@@ -1,4 +1,6 @@
 import 'package:banking_app/Routes/app_routes.dart';
+import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
+import 'package:banking_app/screens/Main/controllers/user_event.dart';
 import 'package:banking_app/screens/auth/controllers/auth_state.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
@@ -17,8 +19,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
-    with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -40,58 +41,36 @@ class _LoginScreenState extends State<LoginScreen>
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
 
     // Staggered animation intervals
-    _logoFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
-    );
-    _contentFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
-    );
-    _buttonFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-    );
-    _1TextFieldFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-    );
-    _2TextFieldFade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-    );
+    _logoFade = CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4, curve: Curves.easeOut));
+    _contentFade = CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7, curve: Curves.easeOut));
+    _buttonFade = CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeOut));
+    _1TextFieldFade = CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeOut));
+    _2TextFieldFade = CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0, curve: Curves.easeOut));
 
     // Slide from bottom slightly
-    _logoSlide = Tween(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4)),
-    );
+    _logoSlide = Tween(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.4)));
     _contentSlide = Tween(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7)),
-    );
-    _buttonSlide = Tween(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.7)));
+    _buttonSlide = Tween(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)));
     _1TextFieldSlide = Tween(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)));
     _2TextFieldSlide = Tween(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.6, 1.0)));
     _controller.forward();
   }
 
@@ -103,22 +82,20 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
+  void _handleLogin() {
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthBloc>().add(AuthLoginWithCredentials(_emailController.text.trim(), _passwordController.text));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => AuthBloc(),
-      child: Scaffold(
-        body: Container(
-          constraints: BoxConstraints.expand(
-            height: MediaQuery.of(context).size.height,
-          ),
+    return Scaffold(
+      body: Container(
+          constraints: BoxConstraints.expand(height: MediaQuery.of(context).size.height),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Color(0xFF227DBE),
-                Color.fromARGB(255, 10, 89, 146),
-                Color(0xFF0A3D62),
-              ],
+              colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -128,19 +105,15 @@ class _LoginScreenState extends State<LoginScreen>
               padding: EdgeInsets.all(CommonSize.s20(context)),
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                 child: Column(
                   children: [
                     Align(
-                      alignment: AlignmentGeometry.topLeft,
+                      alignment: Alignment.topLeft,
                       child: IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
-                          Theme.of(context).platform == TargetPlatform.iOS
-                              ? Icons.arrow_back_ios
-                              : Icons.arrow_back,
+                          Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back,
                           color: Colors.white,
                         ),
                       ),
@@ -150,12 +123,7 @@ class _LoginScreenState extends State<LoginScreen>
                       opacity: _logoFade,
                       child: SlideTransition(
                         position: _logoSlide,
-                        child: AppLogo(
-                          width: 110,
-                          height: 110,
-                          borderRadius: 24,
-                          showShadow: true,
-                        ),
+                        child: AppLogo(width: 110, height: 110, borderRadius: 24, showShadow: true),
                       ),
                     ),
                     SizedBox(height: CommonSize.s20(context)),
@@ -187,9 +155,7 @@ class _LoginScreenState extends State<LoginScreen>
                               position: _1TextFieldSlide,
                               child: customTextField(
                                 controller: _emailController,
-                                errorStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 240, 252, 2),
-                                ),
+                                errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
                                 hintText: 'Username',
                                 textStyle: const TextStyle(color: Colors.white),
                                 keyboardType: TextInputType.emailAddress,
@@ -201,17 +167,9 @@ class _LoginScreenState extends State<LoginScreen>
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter your username';
                                   }
-
                                   return null;
                                 },
-                                onEditingComplete:
-                                    () => FocusScope.of(context).nextFocus(),
-                                // onChanged: (value) {
-                                //   // Trigger validator on every change
-                                //   if (_formKey.currentState != null) {
-                                //     _formKey.currentState!.validate();
-                                //   }
-                                // },
+                                onEditingComplete: () => FocusScope.of(context).nextFocus(),
                               ),
                             ),
                           ),
@@ -225,9 +183,7 @@ class _LoginScreenState extends State<LoginScreen>
                               child: customTextField(
                                 controller: _passwordController,
                                 hintText: 'Password',
-                                errorStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 240, 252, 2),
-                                ),
+                                errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
                                 textStyle: const TextStyle(color: Colors.white),
                                 prefixIconColor: Colors.white,
                                 suffixIconColor: Colors.white,
@@ -246,22 +202,9 @@ class _LoginScreenState extends State<LoginScreen>
                                   }
                                   return null;
                                 },
-                                // onChanged: (value) {
-                                //   // Trigger validator on every change
-                                //   if (_formKey.currentState != null) {
-                                //     _formKey.currentState!.validate();
-                                //   }
-                                // },
                                 onEditingComplete: () {
                                   FocusScope.of(context).unfocus();
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<AuthBloc>().add(
-                                      AuthLoginWithCredentials(
-                                        _emailController.text.trim(),
-                                        _passwordController.text,
-                                      ),
-                                    );
-                                  }
+                                  _handleLogin();
                                 },
                               ),
                             ),
@@ -279,48 +222,42 @@ class _LoginScreenState extends State<LoginScreen>
                             BlocConsumer<AuthBloc, AuthState>(
                               listener: (context, state) {
                                 if (state.status == AuthStatus.success) {
+                                  // ✅ Login successful - token and user data saved to cache
                                   customFlushbar(
                                     context: context,
                                     message: "Login Successful!",
                                     backgroundColor: Colors.green,
-                                    icon: const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.white,
-                                    ),
+                                    icon: const Icon(Icons.check_circle, color: Colors.white),
                                   );
-                                  // navigate to home
-                                  AppRoutes.navigateTo(
-                                    context,
-                                    AppRoutes.main,
-                                  );
+
+                                  // Load user data into UserBloc from cache
+                                  context.read<UserBloc>().add(UserLoadData());
+
+                                  // Navigate to home
+                                  Future.delayed(const Duration(milliseconds: 500), () {
+                                    if (mounted) {
+                                      AppRoutes.navigateAndRemoveUntil(context, AppRoutes.home_screen);
+                                    }
+                                  });
                                 } else if (state.status == AuthStatus.failure) {
+                                  // ❌ Login failed - show error from backend
                                   customFlushbar(
                                     context: context,
                                     message: state.message ?? "Login Failed",
+                                    backgroundColor: Colors.red,
+                                    icon: const Icon(Icons.error, color: Colors.white),
                                   );
                                 }
                               },
                               builder: (context, state) {
-                                final isLoading =
-                                    state.status == AuthStatus.loading;
+                                final isLoading = state.status == AuthStatus.loading;
 
                                 return customElevatedButton(
-                                  onPressed: () {
-                                    if (_formKey.currentState!.validate()) {
-                                      context.read<AuthBloc>().add(
-                                        AuthLoginWithCredentials(
-                                          _emailController.text.trim(),
-                                          _passwordController.text,
-                                        ),
-                                      );
-                                    }
-                                  },
+                                  onPressed: isLoading ? null : _handleLogin,
                                   text: "Login",
                                   color: Colors.white,
                                   textColor: const Color(0xFF1E3C72),
-                                  borderRadius: BorderRadius.circular(
-                                    CommonSize.s10(context),
-                                  ),
+                                  borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                                   height: CommonSize.s48(context),
                                   width: double.infinity,
                                   fontSize: CommonSize.s18(context),
@@ -341,8 +278,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: ()=> AppRoutes.navigateTo(context, AppRoutes.signup),
-
+                                  onTap: () => AppRoutes.navigateTo(context, AppRoutes.signup),
                                   child: Text(
                                     "Sign up",
                                     style: TextStyle(
@@ -366,7 +302,6 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

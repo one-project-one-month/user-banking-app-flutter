@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/flushbar.dart';
-import '../widgets/pin_input_display.dart';
-import '../widgets/numeric_keypad.dart';
+import 'widgets/pin_input_display.dart';
+import 'widgets/numeric_keypad.dart';
 import 'transaction_success_screen.dart';
 
 class PinConfirmationScreen extends StatefulWidget {
