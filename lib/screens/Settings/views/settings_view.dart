@@ -13,19 +13,18 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => SettingsBloc()..add(LoadSettings()),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          centerTitle: true,
-          title: Text('Settings', style: GoogleFonts.inter(color: Colors.black, fontWeight: FontWeight.w600)),
-          iconTheme: const IconThemeData(color: Colors.black),
-        ),
-        body: const SafeArea(child: _SettingsBody()),
+    // Use the SettingsBloc provided at the app root so theme changes propagate
+    // in real-time. Do not create a new SettingsBloc here.
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Colors.white,
+        centerTitle: true,
+  title: Text('Settings', style: GoogleFonts.inter(color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black, fontWeight: FontWeight.w600)),
+        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color ?? Colors.black),
       ),
+      body: const SafeArea(child: _SettingsBody()),
     );
   }
 }
@@ -60,9 +59,9 @@ class _ProfileCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0,2)),
         ],
@@ -71,22 +70,22 @@ class _ProfileCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
             child: Text(user.name.isNotEmpty ? user.name.split(' ').map((e) => e.isNotEmpty?e[0]:'').take(2).join() : 'S',
-                style: const TextStyle(fontWeight: FontWeight.w600)),
+                style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user.name, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+                Text(user.name, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).textTheme.titleLarge?.color)),
                 const SizedBox(height: 4),
-                Text(user.phone, style: GoogleFonts.inter(color: Colors.grey, fontSize: 14)),
+                Text(user.phone, style: GoogleFonts.inter(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 14)),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right),
+          Icon(Icons.chevron_right, color: Theme.of(context).iconTheme.color),
         ],
       ),
     );
@@ -101,9 +100,9 @@ class _TogglesCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         children: [
