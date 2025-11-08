@@ -7,6 +7,9 @@ class SettingsState extends Equatable {
   final String? message;
   final String? errorMessage;
   final bool autoSaveReceipt;
+   final bool darkMode;
+  final bool autoSave;
+  final bool loading;
 
   const SettingsState({
     this.status = SettingsStatus.initial,
@@ -21,6 +24,34 @@ class SettingsState extends Equatable {
       message: message,
       errorMessage: errorMessage,
       autoSaveReceipt: autoSaveReceipt ?? this.autoSaveReceipt,
+      required this.darkMode,
+    required this.autoSave,
+   
+    this.loading = false,
+  });
+
+    factory SettingsState.initial() => SettingsState(
+        darkMode: true,
+        autoSave: true,
+        loading: false,
+      );
+
+  SettingsState copyWith({
+    SettingsStatus? status,
+    String? message,
+    String? errorMessage,
+     bool? darkMode,
+    bool? autoSave,
+    bool? loading,
+  }) {
+    return SettingsState(
+      status: status ?? this.status,
+      message: message ?? this.message,
+      errorMessage: errorMessage ?? this.errorMessage,
+            darkMode: darkMode ?? this.darkMode,
+      autoSave: autoSave ?? this.autoSave,
+   
+      loading: loading ?? this.loading,
     );
   }
 
@@ -30,4 +61,5 @@ class SettingsState extends Equatable {
 
   @override
   List<Object?> get props => [status, message, errorMessage, autoSaveReceipt];
+  List<Object?> get props => [status, message, errorMessage,darkMode, autoSave, loading];
 }

@@ -7,6 +7,10 @@ import 'package:banking_app/screens/Main/controllers/user_event.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_event.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_state.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'controllers/settings_bloc.dart';
+import 'controllers/settings_event.dart';
+import 'controllers/settings_state.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -47,6 +51,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   AppRoutes.navigateAndRemoveUntil(context, AppRoutes.login);
                 },
                 child: const Text('Logout', style: TextStyle(color: Colors.red)),
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  //  UI
+  // ──────────────────────────────────────────────────────────────
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Colors.white,
+        title:  Text('Settings', style: GoogleFonts.inter(color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black, fontWeight: FontWeight.w600)),
+        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color ?? Colors.black),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // ───── Profile Card ─────
+            FadeTransition(
+              opacity: _profileFade,
+              child: SlideTransition(
+                position: _profileSlide,
+                child: BlocBuilder<UserBloc, UserState>(
+                  builder: (context, userState) {
+                    final user = userState.user;
+                    final accountNumber = user?.selectedAccountDetails?.accountNumber ?? 'N/A';
+                    final fullName = user?.username ?? 'User';
+                    
+                    return Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          radius: 25,
+                          child: Icon(Icons.person, color: Colors.white),
+                          backgroundColor: Colors.blue,
+                        ),
+                        title: Text(fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(accountNumber),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                        onTap: () {
+                          // TODO: navigate to edit profile
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ───── Dark Mode ─────
+            FadeTransition(
+              opacity: _darkModeFade,
+              child: SlideTransition(
+                position: _darkModeSlide,
+                child: 
+                 BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  return 
+                SwitchListTile(
+                  title: const Text('Dark Mode'),
+                  value: state.darkMode,
+                    activeColor: Color(0xFF3366FF),
+                    onChanged: (v) => context.read<SettingsBloc>().add(ToggleDarkMode(v)),
+                );}),
               ),
             ],
           ),
@@ -87,10 +161,97 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Navigator.of(context).pop();
                     },
                   ),
+              ),
+            ),
+
+            // ───── Change Password ─────
+            _animatedTile(
+              fade: _changePwdFade,
+              slide: _changePwdSlide,
+              title: 'Change Password',
+              onTap: () => _showChangePasswordDialog(context),
+            ),
+
+            // ───── Select Account (dropdown) ─────
+            _animatedTile(
+              fade: _selectAccFade,
+              slide: _selectAccSlide,
+              title: 'Select Account',
+              trailing: const Icon(Icons.arrow_drop_down),
+              onTap: () {},
+            ),
+
+            // ───── Set Transaction Pin ─────
+            _animatedTile(
+              fade: _transPinFade,
+              slide: _transPinSlide,
+              title: 'Set Transaction PIN',
+              onTap: () => _showSetPinDialog(context),
+            ),
+
+            // ───── Nickname ─────
+            _animatedTile(fade: _nickFade, slide: _nickSlide, title: 'Nickname', onTap: () {
+              AppRoutes.navigateTo(context, AppRoutes.nickname);
+            }),
+
+            const SizedBox(height: 10),
+
+            // ───── Logout ─────
+            FadeTransition(
+              opacity: _logoutFade,
+              child: SlideTransition(
+                position: _logoutSlide,
+                child: _buildSettingsTile(
+                  title: 'Log Out',
+                  titleColor: Colors.red,
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  onTap: () => _handleLogout(context),
                 ),
               ],
             ),
           ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  //  Helper widgets
+  // ──────────────────────────────────────────────────────────────
+  Widget _animatedTile({
+    required Animation<double> fade,
+    required Animation<Offset> slide,
+    required String title,
+    Widget? trailing,
+    required VoidCallback onTap,
+  }) {
+    return FadeTransition(
+      opacity: fade,
+      child: SlideTransition(
+        position: slide,
+        child: _buildSettingsTile(title: title, trailing: trailing, onTap: onTap),
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile({
+    required String title,
+    Widget? trailing,
+    Widget? leading,
+    Color? titleColor,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: leading,
+        title: Text(title, style:
+        GoogleFonts.inter(color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black, fontWeight: FontWeight.w500),),
+      //   TextStyle(color: titleColor ?? Colors.black, fontWeight: FontWeight.w500)),
+        trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
+      ),
     );
   }
 

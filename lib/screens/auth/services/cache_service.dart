@@ -87,6 +87,22 @@ class CacheService {
     }
   }
 
+  // Generic helpers for simple key/value types so other services can reuse
+  Future<void> setBool(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+
+  Future<bool?> getBool(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(key);
+  }
+
+  Future<void> remove(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(key);
+  }
+
   // ═══════════════════════════════════════════════════════════
   // CLEAR ALL
   // ═══════════════════════════════════════════════════════════

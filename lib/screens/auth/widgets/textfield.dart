@@ -24,15 +24,16 @@ Widget customTextField({
   TextStyle? hintStyle = const TextStyle(color: Colors.grey),
   Color? prefixIconColor = Colors.grey,
   Color? suffixIconColor = Colors.grey,
+  Color? cursorColor = Colors.white,
   VoidCallback? onEditingComplete,
   TextStyle? textStyle,
   TextStyle? errorStyle,
+
 }) {
   return _CustomTextField(
     controller: controller,
     hintText: hintText,
     isPassword: isPassword,
-
     readOnly: readOnly,
     keyboardType: keyboardType,
     textInputAction: textInputAction,
@@ -52,6 +53,7 @@ Widget customTextField({
     hintStyle: hintStyle,
     prefixIconColor: prefixIconColor,
     suffixIconColor: suffixIconColor,
+    cursorColor: cursorColor,
     onEditingComplete: onEditingComplete,
     textStyle: textStyle,
     errorStyle: errorStyle,
@@ -81,6 +83,7 @@ class _CustomTextField extends StatefulWidget {
   final TextStyle? hintStyle;
   final Color? prefixIconColor;
   final Color? suffixIconColor;
+  final Color? cursorColor;
   final VoidCallback? onEditingComplete;
   final TextStyle? textStyle;
   final TextStyle? errorStyle;
@@ -108,6 +111,7 @@ class _CustomTextField extends StatefulWidget {
     this.hintStyle,
     this.prefixIconColor = Colors.grey,
     this.suffixIconColor = Colors.grey,
+    this.cursorColor = Colors.white,
     this.onEditingComplete,
     this.textStyle,
     this.errorStyle,
@@ -134,7 +138,7 @@ class _CustomTextFieldState extends State<_CustomTextField> {
       controller: widget.controller,
       obscureText: _obscureText,
       readOnly: widget.readOnly,
-      cursorColor: Colors.white,
+      cursorColor: widget.cursorColor,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
       validator: widget.validator,
