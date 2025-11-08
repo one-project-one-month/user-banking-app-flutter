@@ -167,6 +167,77 @@ class SettingsApiService {
     return token.accessToken;
   }
 
+  /// Auto Save Receipt
+  /// PUT /personal-banking/users/autoSaveRecepit?flag=true
+  /// Response: { "code": 0, "message": "string", "data": "string" }
+  Future<Map<String, dynamic>> autoSaveReceipt(bool flag) async {
+    if (baseUrl == null) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return {'success': true, 'message': 'Receipt saved successfully'};
+    }
+
+    try {
+      final token = await _getToken();
+      final url = _uri('/personal-banking/users/autoSaveRecepit?flag=$flag');
+
+      print('💾 Saving receipt...');
+      print('   URL: $url');
+      print('   Flag: $flag');
+
+      final res = await _client.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('📥 Save Receipt Response Status: ${res.statusCode}');
+      print('📥 Save Receipt Response Body: ${res.body}');
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        try {
+          final decoded = json.decode(res.body);
+          if (decoded is Map<String, dynamic>) {
+            final code = decoded['code'];
+            final message = decoded['message'] ?? 'Receipt saved successfully';
+            
+            if (code == 0 || code == 200) {
+              print('✅ Receipt saved successfully: $message');
+              return {'success': true, 'message': message};
+            } else {
+              print('❌ Save receipt failed: $message');
+              return {'success': false, 'message': message};
+            }
+          }
+        } catch (e) {
+          print('❌ JSON parsing error: $e');
+          return {'success': false, 'message': 'Invalid server response: $e'};
+        }
+      }
+
+      try {
+        final decoded = json.decode(res.body);
+        if (decoded is Map<String, dynamic>) {
+          final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'];
+          if (serverMsg != null) {
+            print('❌ Server error: $serverMsg');
+            return {'success': false, 'message': serverMsg.toString()};
+          }
+        }
+      } catch (e) {
+        print('❌ Error parsing error response: $e');
+      }
+
+      print('❌ Save receipt failed with status: ${res.statusCode}');
+      return {'success': false, 'message': 'Failed to save receipt (Status: ${res.statusCode})'};
+    } catch (e) {
+      print('❌ Exception during save receipt: $e');
+      if (e is SettingsApiException) rethrow;
+      return {'success': false, 'message': 'Failed to save receipt: $e'};
+    }
+  }
+
   void dispose() {
     _client.close();
   }

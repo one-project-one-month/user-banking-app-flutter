@@ -31,3 +31,13 @@ class SettingsChangePassword extends SettingsEvent {
   List<Object?> get props => [oldPassword, newPassword];
 }
 
+/// Auto Save Receipt
+class SettingsAutoSaveReceipt extends SettingsEvent {
+  final bool flag;
+
+  const SettingsAutoSaveReceipt(this.flag);
+
+  @override
+  List<Object?> get props => [flag];
+}
+

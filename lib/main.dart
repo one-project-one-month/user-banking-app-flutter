@@ -4,6 +4,7 @@ import 'package:banking_app/screens/KYC/document/controllers/verification/verifi
 import 'package:banking_app/screens/KYC/face_authentication/controller/face_auth_bloc.dart';
 import 'package:banking_app/screens/KYC/face_authentication/service/face_auth_service.dart';
 import 'package:banking_app/screens/Transfer/controllers/transfer_bloc.dart';
+import 'package:banking_app/screens/Transactions/controllers/transaction_bloc.dart';
 import 'package:banking_app/screens/auth/controllers/auth_bloc.dart';
 import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
@@ -27,18 +28,12 @@ class MyApp extends StatelessWidget {
         BlocProvider<VerificationBloc>(create: (context) => VerificationBloc()),
         BlocProvider<FaceAuthBloc>(create: (context) => FaceAuthBloc(FaceAuthService())),
 
-        // CORE BLOCS — MUST BE HERE
+        // CORE BLOCS – MUST BE HERE
         BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
-        BlocProvider<UserBloc>(
-          create: (context) => UserBloc(),
-          lazy: false, 
-        ),
-        BlocProvider<TransferBloc>(
-          create: (context) => TransferBloc(),
-        ),
-        BlocProvider<SettingsBloc>(
-          create: (context) => SettingsBloc(),
-        ),
+        BlocProvider<UserBloc>(create: (context) => UserBloc(), lazy: false),
+        BlocProvider<TransactionBloc>(create: (context) => TransactionBloc(), lazy: false),
+        BlocProvider<TransferBloc>(create: (context) => TransferBloc()),
+        BlocProvider<SettingsBloc>(create: (context) => SettingsBloc()),
       ],
       child: MaterialApp(
         title: 'Banking App',
