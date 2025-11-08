@@ -31,3 +31,32 @@ class SettingsChangePassword extends SettingsEvent {
   List<Object?> get props => [oldPassword, newPassword];
 }
 
+
+
+
+class LoadSettings extends SettingsEvent {
+  /// If true, force reading persisted settings and emit them even on first run.
+  /// By default the first app run will persist `SettingsState.initial()` defaults.
+  final bool force;
+
+  const LoadSettings({this.force = false});
+
+  @override
+  List<Object?> get props => [force];
+}
+
+class ToggleDarkMode extends SettingsEvent {
+  final bool enabled;
+  ToggleDarkMode(this.enabled);
+  @override
+  List<Object?> get props => [enabled];
+}
+
+class ToggleAutoSave extends SettingsEvent {
+  final bool enabled;
+  ToggleAutoSave(this.enabled);
+  @override
+  List<Object?> get props => [enabled];
+}
+
+class LogoutPressed extends SettingsEvent {}
