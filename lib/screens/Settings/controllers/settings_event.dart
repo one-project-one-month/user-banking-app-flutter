@@ -33,7 +33,6 @@ class SettingsChangePassword extends SettingsEvent {
 
 
 
-
 class LoadSettings extends SettingsEvent {
   /// If true, force reading persisted settings and emit them even on first run.
   /// By default the first app run will persist `SettingsState.initial()` defaults.
@@ -60,3 +59,13 @@ class ToggleAutoSave extends SettingsEvent {
 }
 
 class LogoutPressed extends SettingsEvent {}
+/// Auto Save Receipt
+class SettingsAutoSaveReceipt extends SettingsEvent {
+  final bool flag;
+
+  const SettingsAutoSaveReceipt(this.flag);
+
+  @override
+  List<Object?> get props => [flag];
+}
+

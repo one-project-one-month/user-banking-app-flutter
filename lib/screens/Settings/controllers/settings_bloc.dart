@@ -24,6 +24,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     // operations
     on<SettingsSetPin>(_onSetPin);
     on<SettingsChangePassword>(_onChangePassword);
+    on<SettingsAutoSaveReceipt>(_onAutoSaveReceipt);
   }
 
   Future<void> _onLoad(LoadSettings event, Emitter<SettingsState> emit) async {
@@ -139,6 +140,51 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       }
     } catch (e) {
       String errorMsg = 'Failed to change password';
+      if (e is SettingsApiException) {
+        errorMsg = e.message;
+      } else {
+        errorMsg = e.toString();
+      }
+
+      emit(
+        state.copyWith(
+          status: SettingsStatus.failure,
+          errorMessage: errorMsg,
+          message: null,
+        ),
+      );
+    }
+  }
+
+  /// Auto Save Receipt
+  FutureOr<void> _onAutoSaveReceipt(
+    SettingsAutoSaveReceipt event,
+    Emitter<SettingsState> emit,
+  ) async {
+    emit(state.copyWith(status: SettingsStatus.loading));
+
+    try {
+      final result = await api.autoSaveReceipt(event.flag);
+
+      if (result['success'] == true) {
+        emit(
+          state.copyWith(
+            status: SettingsStatus.success,
+            message: result['message'] ?? 'Receipt saved successfully',
+            errorMessage: null,
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            status: SettingsStatus.failure,
+            errorMessage: result['message'] ?? 'Failed to save receipt',
+            message: null,
+          ),
+        );
+      }
+    } catch (e) {
+      String errorMsg = 'Failed to save receipt';
       if (e is SettingsApiException) {
         errorMsg = e.message;
       } else {
