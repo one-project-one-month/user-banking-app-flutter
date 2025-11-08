@@ -7,6 +7,7 @@ import 'package:banking_app/screens/KYC/document/views/upload_document_passport.
 import 'package:banking_app/screens/KYC/face_authentication/let_start_screen.dart';
 import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
 import 'package:banking_app/screens/Main/home_screen.dart';
+import 'package:banking_app/screens/Nickname/views/nickname_list.dart';
 import 'package:banking_app/screens/QR/qr.dart';
 import 'package:banking_app/screens/Settings/settings_screen.dart';
 import 'package:banking_app/screens/Transfer/views/transfer_screen.dart';
@@ -43,6 +44,7 @@ class AppRoutes {
   static const String transfer = '/transfer';
   static const String pin = '/pin';
   static const String settings = '/settings';
+  static const String nickname = '/nickname';
 
   // Add more routes as your app grows
   // static const String login = '/login';
@@ -62,14 +64,13 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder:
-              (_) => OtpScreen(
-                destination: args['destination'],
-                realOtp: args['realOtp'], 
-                authBloc: args['authBloc'],
-              ),
+              (_) => OtpScreen(destination: args['destination'], realOtp: args['realOtp'], authBloc: args['authBloc']),
         );
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen(), settings: settings);
+      case nickname:
+        return MaterialPageRoute(builder: (_) => const NicknameListScreen(), settings: settings);
+
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen(), settings: settings);
       case main:
