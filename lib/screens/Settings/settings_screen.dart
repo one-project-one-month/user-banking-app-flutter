@@ -204,7 +204,9 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
             ),
 
             // ───── Nickname ─────
-            _animatedTile(fade: _nickFade, slide: _nickSlide, title: 'Nickname', onTap: () {}),
+            _animatedTile(fade: _nickFade, slide: _nickSlide, title: 'Nickname', onTap: () {
+              AppRoutes.navigateTo(context, AppRoutes.nickname);
+            }),
 
             const SizedBox(height: 10),
 
