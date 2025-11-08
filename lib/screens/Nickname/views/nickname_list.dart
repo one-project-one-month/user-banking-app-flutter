@@ -62,7 +62,7 @@ class _NicknameListView extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        icon: const Icon(Icons.edit, color: Color.fromARGB(255, 11, 138, 242)),
                         onPressed: () async {
                           final res = await Navigator.of(context).push(MaterialPageRoute(
                               builder: (_) => NicknameEditScreen(option: item)));
