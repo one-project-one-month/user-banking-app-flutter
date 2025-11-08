@@ -140,7 +140,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
                     ),
 
                     SizedBox(height: CommonSize.s32(context)),
