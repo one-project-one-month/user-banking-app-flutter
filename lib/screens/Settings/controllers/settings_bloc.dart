@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:banking_app/constant.dart';
 import 'package:banking_app/screens/Settings/services/settings_api_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../auth/services/cache_service.dart';
@@ -7,24 +8,26 @@ import 'settings_state.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SettingsApiService api;
-  static const _kDark = 'settings_dark_mode';
-  static const _kAuto = 'settings_auto_save';
+  static const _kDark = Constant.cacheSettingDarkModeKey;
+  static const _kAuto = Constant.cacheSettingAutoSaveKey;
   final CacheService cache;
 
-  SettingsBloc({SettingsApiService? apiService, CacheService? cacheService})
-      : api = apiService ?? SettingsApiService(),
+   SettingsBloc({
+    SettingsApiService? apiService,
+    CacheService? cacheService,
+    SettingsState? initialState, // 👈 Add this parameter
+  })  : api = apiService ?? SettingsApiService(),
         cache = cacheService ?? CacheService(),
-        super(SettingsState.initial()) {
-    // persistence handlers
+        super(initialState ?? SettingsState.initial()) { // 👈 Use it here
+    // Event handlers
     on<LoadSettings>(_onLoad);
     on<ToggleDarkMode>(_onToggleDark);
     on<ToggleAutoSave>(_onToggleAuto);
     on<LogoutPressed>(_onLogout);
-
-    // operations
     on<SettingsSetPin>(_onSetPin);
     on<SettingsChangePassword>(_onChangePassword);
   }
+
 
   Future<void> _onLoad(LoadSettings event, Emitter<SettingsState> emit) async {
     // If app runs for the first time, persist initial defaults then emit them.

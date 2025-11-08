@@ -42,7 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // Dispatch once after first frame so we don't call it on every build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<UserBloc>().add(const UserLoadData());
+        ///TODO: need to open
+       // context.read<UserBloc>().add(const UserLoadData());
       }
     });
   }
@@ -53,6 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeContent() {
+    final theme = Theme.of(context);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -63,13 +66,13 @@ class _HomeScreenState extends State<HomeScreen> {
             final username = state.user?.username ?? 'User';
             return Row(
               children: [
-                const Icon(Icons.account_circle, size: 45, color: Colors.white),
+                Icon(Icons.account_circle, size: 45, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_getGreeting(), style: const TextStyle(fontSize: 12, color: Colors.white)),
-                    Text(username, style: const TextStyle(fontSize: 12, color: Colors.white)),
+                    Text(_getGreeting(), style: theme.textTheme.bodySmall?.copyWith(color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary)),
+                    Text(username, style: theme.textTheme.bodySmall?.copyWith(color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary)),
                   ],
                 ),
               ],
@@ -79,13 +82,11 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Row(
             children: [
-              const Icon(Icons.notifications_active, size: 30, color: Colors.white),
+              Icon(Icons.notifications_active, size: 30, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
               const SizedBox(width: 15),
               IconButton(
-                icon:  const Icon(Icons.settings, size: 30, color: Colors.white),
-                onPressed: () {
-                  AppRoutes.navigateTo(context, AppRoutes.settings);
-                },
+                icon:  Icon(Icons.settings, size: 30, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
+                onPressed: ()=> AppRoutes.navigateTo(context, AppRoutes.settings),
               ),
               const SizedBox(width: 10),
             ],
@@ -117,20 +118,20 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xff0A3D62), Color(0xff1888D9), Color(0xff1888D9), Color(0xff0A3D62)],
+                  colors: [theme.colorScheme.primary,theme.colorScheme.tertiary,theme.colorScheme.onTertiary,theme.colorScheme.onPrimary,],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
               ),
               child: Column(
                 children: [
-                  SizedBox(height: kToolbarHeight + MediaQuery.of(context).padding.top),
+                  SizedBox(height: kMinInteractiveDimension - 14 + MediaQuery.of(context).padding.top),
 
                   // Balance Card
                   Card(
-                    color: Colors.white,
+                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
                     margin: EdgeInsets.symmetric(
                       horizontal: MediaQuery.of(context).size.width * 0.15,
                       vertical: MediaQuery.of(context).size.width * 0.1,
@@ -141,12 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             "E-Wallet Balance (MMK)",
-                            style: TextStyle(
-                              fontFamily: 'DMsansSB',
-                              fontSize: MediaQuery.of(context).size.width * 0.04,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xff072B46),
-                            ),
+                            style: theme.textTheme.titleLarge?.copyWith(fontFamily: 'DMsansSB'),
                             textAlign: TextAlign.center,
                           ),
                           Row(
@@ -157,12 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               else
                                 Text(
                                   isVisible ? "${state.user?.formattedBalance ?? '0'} MMK" : "xx,xxx MMK",
-                                  style: TextStyle(
-                                    fontFamily: 'DMsansSB',
-                                    fontSize: MediaQuery.of(context).size.width * 0.04,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xff072B46),
-                                  ),
+                                  style: theme.textTheme.titleLarge?.copyWith(fontFamily: 'DMsansSB'),
                                 ),
                               IconButton(
                                 onPressed: () {
@@ -173,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: Icon(
                                   isVisible ? Icons.visibility_off : Icons.visibility,
                                   size: 24,
-                                  color: const Color(0xff072B46),
+                                  color: theme.iconTheme.color,
                                 ),
                               ),
                             ],
@@ -182,6 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
+ SizedBox(height: 40),
 
                   Expanded(
                     child: Container(
@@ -241,14 +233,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 effect: WormEffect(
                                   dotHeight: 10,
                                   dotWidth: 10,
-                                  activeDotColor: const Color(0xff0A3D62),
+                                  activeDotColor: theme.colorScheme.primary,
                                   dotColor: Colors.grey.shade300,
                                 ),
                                 onDotClicked: (index) {},
                               ),
                               const SizedBox(height: 15),
                               Container(
-                                color: const Color(0xff0A3D62),
+                                color: theme.colorScheme.primary,
                                 height: 40,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

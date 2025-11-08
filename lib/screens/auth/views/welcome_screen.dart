@@ -1,4 +1,5 @@
 import 'package:banking_app/Routes/app_routes.dart';
+import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/widgets/app_logo.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
@@ -69,16 +70,13 @@ class _MainScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration:  BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF227DBE),
-              Color.fromARGB(255, 10, 89, 146),
-              Color(0xFF0A3D62),
-            ], // Blue gradient
-            begin: Alignment.topCenter,
+            colors: [theme.colorScheme.primary, theme.colorScheme.tertiary, theme.colorScheme.primary],
+          begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
@@ -97,12 +95,7 @@ class _MainScreenState extends State<WelcomeScreen>
                         opacity: _logoFade,
                         child: SlideTransition(
                           position: _logoSlide,
-                          child: AppLogo(
-                            width: 110,
-                            height: 110,
-                            borderRadius: 24,
-                            showShadow: true,
-                          ),
+                          child: AppLogo(width: 110, height: 110, borderRadius: 24, showShadow: true),
                         ),
                       ),
                       SizedBox(height: CommonSize.s32(context)),
@@ -115,20 +108,13 @@ class _MainScreenState extends State<WelcomeScreen>
                               Text(
                                 "Move Money\nAnywhere, Instantly",
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: CommonSize.s20(context),
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  height: 1.3,
-                                ),
+                                style: theme.textTheme.headlineMedium
+                            
                               ),
                               SizedBox(height: CommonSize.s16(context)),
                               Text(
                                 "Secure. Fast. Borderless.",
-                                style: TextStyle(
-                                  fontSize: CommonSize.s16(context),
-                                  color: Colors.white70,
-                                ),
+                                style: TextStyle(fontSize: CommonSize.s16(context), color: theme.colorScheme.onPrimary.withOpacity(0.8)),
                               ),
                             ],
                           ),
@@ -151,21 +137,11 @@ class _MainScreenState extends State<WelcomeScreen>
                           //     AppRoutes.personalInfo,
                           //   );
                           // },
-                          
-                          onPressed: () => AppRoutes.navigateTo(context, AppRoutes.signup),
-
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (_) => const SignupScreen(),
-                          //   ),
-                          // ),
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignupScreen())),
                           text: "Create Account",
-                          color: Colors.white,
-                          textColor: const Color(0xFF1E3C72),
-                          borderRadius: BorderRadius.circular(
-                            CommonSize.s10(context),
-                          ),
+                          color: theme.colorScheme.onPrimary,
+                          textColor: theme.colorScheme.primary,
+                          borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                           height: CommonSize.s48(context),
                           width: double.infinity,
                           fontSize: CommonSize.s18(context),
@@ -177,27 +153,19 @@ class _MainScreenState extends State<WelcomeScreen>
                           children: [
                             Text(
                               "Already have an account? ",
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: CommonSize.s16(context),
-                              ),
+                              style: TextStyle(color: theme.colorScheme.onPrimary.withOpacity(0.9), fontSize: CommonSize.s16(context)),
                             ),
                             GestureDetector(
-                              onTap: () => AppRoutes.navigateTo(context, AppRoutes.login),
-
-                              // {
-                              //   AppRoutes.navigateTo(
-                              //     context,
-                              //     AppRoutes.login,
-                              //   );
-                              // },
+                              onTap: () {
+                                AppRoutes.navigateTo(context, AppRoutes.login);
+                              },
                               child: Text(
                                 "Log in",
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: theme.colorScheme.onPrimary,
                                   fontSize: CommonSize.s16(context),
                                   decoration: TextDecoration.underline,
-                                  decorationColor: Colors.white,
+                                  decorationColor: theme.colorScheme.onPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

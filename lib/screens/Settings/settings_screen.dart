@@ -157,8 +157,9 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                   return 
                 SwitchListTile(
                   title: const Text('Dark Mode'),
+                  
                   value: state.darkMode,
-                    activeColor: Color(0xFF3366FF),
+                    activeColor: Theme.of(context).colorScheme.primary,
                     onChanged: (v) => context.read<SettingsBloc>().add(ToggleDarkMode(v)),
                 );}),
               ),
@@ -173,7 +174,8 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                   title: const Text('Auto Save E-Script'),
                   value: true,
                   onChanged: (val) {},
-                  activeColor: Colors.blue,
+                   activeColor: Theme.of(context).colorScheme.primary,
+                 
                 ),
               ),
             ),

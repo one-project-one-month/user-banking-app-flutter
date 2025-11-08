@@ -32,7 +32,6 @@ class AppRoutes {
   static const String signup = '/signup';
   static const String otp = '/otp';
   static const String login = '/login';
-  static const String main = '/main';
   static const String personalInfo = '/personal-info';
   static const String documentVerification = '/document-verification';
   static const String faceAuthenticationNotice = '/face-authentication-notice';
@@ -72,9 +71,7 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const SettingsScreen(), settings: settings);
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen(), settings: settings);
-      case main:
-        return MaterialPageRoute(builder: (_) => const MainScreen(), settings: settings);
-      case AppRoutes.home_screen:
+          case AppRoutes.home_screen:
         return MaterialPageRoute(builder: (_) => const HomeScreen(), settings: settings);
 
       case AppRoutes.transfer:
