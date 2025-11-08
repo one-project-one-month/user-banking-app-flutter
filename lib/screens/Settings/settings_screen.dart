@@ -4,6 +4,7 @@ import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
 import 'package:banking_app/screens/Main/controllers/user_event.dart';
 import 'package:banking_app/screens/Main/controllers/user_state.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'controllers/settings_bloc.dart';
 import 'controllers/settings_event.dart';
 import 'controllers/settings_state.dart';
@@ -102,11 +103,11 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text('Settings', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Colors.white,
+        title:  Text('Settings', style: GoogleFonts.inter(color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black, fontWeight: FontWeight.w600)),
+        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color ?? Colors.black),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -150,12 +151,16 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
               opacity: _darkModeFade,
               child: SlideTransition(
                 position: _darkModeSlide,
-                child: SwitchListTile(
+                child: 
+                 BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  return 
+                SwitchListTile(
                   title: const Text('Dark Mode'),
-                  value: true,
-                  onChanged: (val) {},
-                  activeColor: Colors.blue,
-                ),
+                  value: state.darkMode,
+                    activeColor: Color(0xFF3366FF),
+                    onChanged: (v) => context.read<SettingsBloc>().add(ToggleDarkMode(v)),
+                );}),
               ),
             ),
 
@@ -252,7 +257,9 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: leading,
-        title: Text(title, style: TextStyle(color: titleColor ?? Colors.black, fontWeight: FontWeight.w500)),
+        title: Text(title, style:
+        GoogleFonts.inter(color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black, fontWeight: FontWeight.w500),),
+      //   TextStyle(color: titleColor ?? Colors.black, fontWeight: FontWeight.w500)),
         trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
       ),
