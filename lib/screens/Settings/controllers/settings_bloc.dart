@@ -3,153 +3,70 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
 import '../services/settings_api_service.dart';
+import '../../auth/services/cache_service.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SettingsApiService api;
+  final CacheService cache;
 
-  SettingsBloc({SettingsApiService? apiService})
-      : api = apiService ?? SettingsApiService(),
-        super(const SettingsState()) {
-    on<SettingsSetPin>(_onSetPin);
-    on<SettingsChangePassword>(_onChangePassword);
+  SettingsBloc({SettingsApiService? apiService, CacheService? cacheService})
+    : api = apiService ?? SettingsApiService(baseUrl: "http://10.0.2.2:7777"),
+      cache = cacheService ?? CacheService(),
+      super(const SettingsState()) {
     on<SettingsAutoSaveReceipt>(_onAutoSaveReceipt);
   }
 
-  /// Set Transaction PIN
-  FutureOr<void> _onSetPin(
-    SettingsSetPin event,
-    Emitter<SettingsState> emit,
-  ) async {
+  /// Handle auto-save receipt preference
+  FutureOr<void> _onAutoSaveReceipt(SettingsAutoSaveReceipt event, Emitter<SettingsState> emit) async {
     emit(state.copyWith(status: SettingsStatus.loading));
 
     try {
-      final result = await api.setPin(event.pin);
+      // Get token from cache
+      final token = await cache.getToken();
+
+      if (token == null || token.accessToken.isEmpty) {
+        emit(
+          state.copyWith(status: SettingsStatus.error, errorMessage: 'No authentication token found. Please login.'),
+        );
+        return;
+      }
+
+      // Check if token is expired
+      if (token.isExpired) {
+        emit(state.copyWith(status: SettingsStatus.error, errorMessage: 'Session expired. Please login again.'));
+        return;
+      }
+
+      // Call API to set auto-save preference
+      final result = await api.setAutoSaveReceipt(token.accessToken, event.enabled);
 
       if (result['success'] == true) {
         emit(
           state.copyWith(
             status: SettingsStatus.success,
-            message: result['message'] ?? 'PIN set successfully',
-            errorMessage: null,
+            message: result['message'] ?? 'Receipt auto-save ${event.enabled ? 'enabled' : 'disabled'} successfully',
+            autoSaveReceipt: event.enabled,
           ),
         );
       } else {
         emit(
           state.copyWith(
-            status: SettingsStatus.failure,
-            errorMessage: result['message'] ?? 'Failed to set PIN',
-            message: null,
+            status: SettingsStatus.error,
+            errorMessage: result['message'] ?? 'Failed to update auto-save preference',
           ),
         );
       }
     } catch (e) {
-      String errorMsg = 'Failed to set PIN';
+      String errorMsg = 'Failed to update auto-save preference';
       if (e is SettingsApiException) {
         errorMsg = e.message;
       } else {
         errorMsg = e.toString();
       }
 
-      emit(
-        state.copyWith(
-          status: SettingsStatus.failure,
-          errorMessage: errorMsg,
-          message: null,
-        ),
-      );
-    }
-  }
+      print('❌ SettingsBloc error: $errorMsg');
 
-  /// Change Password
-  FutureOr<void> _onChangePassword(
-    SettingsChangePassword event,
-    Emitter<SettingsState> emit,
-  ) async {
-    print('🔐 SettingsBloc: Change password event received');
-    emit(state.copyWith(status: SettingsStatus.loading));
-
-    try {
-      print('🔐 SettingsBloc: Calling API to change password...');
-      final result = await api.changePassword(event.oldPassword, event.newPassword);
-      print('🔐 SettingsBloc: API call completed, result: ${result['success']}');
-
-      if (result['success'] == true) {
-        emit(
-          state.copyWith(
-            status: SettingsStatus.success,
-            message: result['message'] ?? 'Password changed successfully',
-            errorMessage: null,
-          ),
-        );
-      } else {
-        emit(
-          state.copyWith(
-            status: SettingsStatus.failure,
-            errorMessage: result['message'] ?? 'Failed to change password',
-            message: null,
-          ),
-        );
-      }
-    } catch (e) {
-      String errorMsg = 'Failed to change password';
-      if (e is SettingsApiException) {
-        errorMsg = e.message;
-      } else {
-        errorMsg = e.toString();
-      }
-
-      emit(
-        state.copyWith(
-          status: SettingsStatus.failure,
-          errorMessage: errorMsg,
-          message: null,
-        ),
-      );
-    }
-  }
-
-  /// Auto Save Receipt
-  FutureOr<void> _onAutoSaveReceipt(
-    SettingsAutoSaveReceipt event,
-    Emitter<SettingsState> emit,
-  ) async {
-    emit(state.copyWith(status: SettingsStatus.loading));
-
-    try {
-      final result = await api.autoSaveReceipt(event.flag);
-
-      if (result['success'] == true) {
-        emit(
-          state.copyWith(
-            status: SettingsStatus.success,
-            message: result['message'] ?? 'Receipt saved successfully',
-            errorMessage: null,
-          ),
-        );
-      } else {
-        emit(
-          state.copyWith(
-            status: SettingsStatus.failure,
-            errorMessage: result['message'] ?? 'Failed to save receipt',
-            message: null,
-          ),
-        );
-      }
-    } catch (e) {
-      String errorMsg = 'Failed to save receipt';
-      if (e is SettingsApiException) {
-        errorMsg = e.message;
-      } else {
-        errorMsg = e.toString();
-      }
-
-      emit(
-        state.copyWith(
-          status: SettingsStatus.failure,
-          errorMessage: errorMsg,
-          message: null,
-        ),
-      );
+      emit(state.copyWith(status: SettingsStatus.error, errorMessage: errorMsg));
     }
   }
 
@@ -159,4 +76,3 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     return super.close();
   }
 }
-

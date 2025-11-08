@@ -2,466 +2,504 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
-import 'package:banking_app/screens/Main/controllers/user_event.dart';
 import 'package:banking_app/screens/Main/controllers/user_state.dart';
-import 'controllers/settings_bloc.dart';
-import 'controllers/settings_event.dart';
-import 'controllers/settings_state.dart';
+import 'package:banking_app/screens/Main/controllers/user_event.dart';
+import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
+import 'package:banking_app/screens/Settings/controllers/settings_event.dart';
+import 'package:banking_app/screens/Settings/controllers/settings_state.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProviderStateMixin {
-  // ──────────────────────────────────────────────────────────────
-  //  Animation controller & definitions
-  // ──────────────────────────────────────────────────────────────
-  late final AnimationController _controller;
-  late final Animation<double> _profileFade;
-  late final Animation<Offset> _profileSlide;
-
-  late final Animation<double> _darkModeFade;
-  late final Animation<Offset> _darkModeSlide;
-
-  late final Animation<double> _autoSaveFade;
-  late final Animation<Offset> _autoSaveSlide;
-
-  late final Animation<double> _changePwdFade;
-  late final Animation<Offset> _changePwdSlide;
-
-  late final Animation<double> _selectAccFade;
-  late final Animation<Offset> _selectAccSlide;
-
-  late final Animation<double> _transPinFade;
-  late final Animation<Offset> _transPinSlide;
-
-  late final Animation<double> _nickFade;
-  late final Animation<Offset> _nickSlide;
-
-  late final Animation<double> _logoutFade;
-  late final Animation<Offset> _logoutSlide;
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _autoSaveReceipt = false;
+  bool _notifications = true;
+  bool _biometricAuth = false;
+  String _language = 'English';
+  String _currency = 'MMK (Kyat)';
 
   @override
   void initState() {
     super.initState();
-
-    // 1 second total, reverse on dispose
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-
-    // Helper to create staggered fade + slide for each row
-    Animation<double> _fade(int begin, int end) => Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _controller, curve: Interval(begin / 100, end / 100, curve: Curves.easeOut)));
-
-    Animation<Offset> _slide(int begin, int end) => Tween<Offset>(
-      begin: const Offset(0, 0.6),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Interval(begin / 100, end / 100, curve: Curves.easeOut)));
-
-    // Stagger values (0-100)
-    _profileFade = _fade(0, 25);
-    _profileSlide = _slide(0, 25);
-
-    _darkModeFade = _fade(10, 35);
-    _darkModeSlide = _slide(10, 35);
-
-    _autoSaveFade = _fade(15, 40);
-    _autoSaveSlide = _slide(15, 40);
-
-    _changePwdFade = _fade(20, 45);
-    _changePwdSlide = _slide(20, 45);
-
-    _selectAccFade = _fade(25, 50);
-    _selectAccSlide = _slide(25, 50);
-
-    _transPinFade = _fade(30, 55);
-    _transPinSlide = _slide(30, 55);
-
-    _nickFade = _fade(35, 60);
-    _nickSlide = _slide(35, 60);
-
-    _logoutFade = _fade(55, 80);
-    _logoutSlide = _slide(55, 80);
-
-    // Start the animation when the screen appears
-    _controller.forward();
+    // Initialize settings from saved preferences if needed
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Logout'),
+            content: const Text('Are you sure you want to logout?'),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+              TextButton(
+                onPressed: () {
+                  // Clear user data
+                  context.read<UserBloc>().add(const UserClearData());
+
+                  // Navigate to login and clear navigation stack
+                  Navigator.of(context).pop(); // Close dialog
+                  AppRoutes.navigateAndRemoveUntil(context, AppRoutes.login);
+                },
+                child: const Text('Logout', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+    );
   }
 
-  // ──────────────────────────────────────────────────────────────
-  //  UI
-  // ──────────────────────────────────────────────────────────────
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Select Language'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text('English'),
+                  leading: Radio<String>(
+                    value: 'English',
+                    groupValue: _language,
+                    onChanged: (value) {
+                      setState(() {
+                        _language = value!;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Myanmar (ဗမာ)'),
+                  leading: Radio<String>(
+                    value: 'Myanmar',
+                    groupValue: _language,
+                    onChanged: (value) {
+                      setState(() {
+                        _language = value!;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
+  void _showCurrencyDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Select Currency'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text('MMK (Kyat)'),
+                  leading: Radio<String>(
+                    value: 'MMK (Kyat)',
+                    groupValue: _currency,
+                    onChanged: (value) {
+                      setState(() {
+                        _currency = value!;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: const Text('USD (Dollar)'),
+                  leading: Radio<String>(
+                    value: 'USD (Dollar)',
+                    groupValue: _currency,
+                    onChanged: (value) {
+                      setState(() {
+                        _currency = value!;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: const Text('THB (Baht)'),
+                  leading: Radio<String>(
+                    value: 'THB (Baht)',
+                    groupValue: _currency,
+                    onChanged: (value) {
+                      setState(() {
+                        _currency = value!;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text('Settings', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // ───── Profile Card ─────
-            FadeTransition(
-              opacity: _profileFade,
-              child: SlideTransition(
-                position: _profileSlide,
-                child: BlocBuilder<UserBloc, UserState>(
-                  builder: (context, userState) {
-                    final user = userState.user;
-                    final accountNumber = user?.selectedAccountDetails?.accountNumber ?? 'N/A';
-                    final fullName = user?.username ?? 'User';
-                    
-                    return Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      child: ListTile(
-                        leading: const CircleAvatar(
-                          radius: 25,
-                          child: Icon(Icons.person, color: Colors.white),
-                          backgroundColor: Colors.blue,
-                        ),
-                        title: Text(fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(accountNumber),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
-                        onTap: () {
-                          // TODO: navigate to edit profile
-                        },
-                      ),
+    return MultiBlocProvider(
+      providers: [BlocProvider(create: (_) => SettingsBloc())],
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0A3D62),
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
+          title: const Text(
+            'Settings',
+            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+          ),
+          centerTitle: true,
+        ),
+        body: BlocListener<SettingsBloc, SettingsState>(
+          listener: (context, state) {
+            if (state.isSuccess && state.message != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message!),
+                  backgroundColor: const Color(0xFF16A34A),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            } else if (state.hasError && state.errorMessage != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage!),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile Section
+                _buildProfileSection(),
+
+                const SizedBox(height: 8),
+                const Divider(height: 1, thickness: 1),
+
+                // Account Settings Section
+                _buildSectionHeader('Account'),
+                _buildSettingsTile(
+                  icon: Icons.person_outline,
+                  title: 'Profile Information',
+                  subtitle: 'View and edit your profile',
+                  onTap: () {
+                    // Navigate to profile edit screen
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Profile Information - Coming soon')));
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.security,
+                  title: 'Change PIN',
+                  subtitle: 'Update your transaction PIN',
+                  onTap: () {
+                    // Navigate to change PIN screen
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Change PIN - Coming soon')));
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.lock_outline,
+                  title: 'Change Password',
+                  subtitle: 'Update your account password',
+                  onTap: () {
+                    // Navigate to change password screen
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Change Password - Coming soon')));
+                  },
+                ),
+
+                const Divider(height: 1, thickness: 1),
+
+                // Preferences Section
+                _buildSectionHeader('Preferences'),
+
+                BlocBuilder<SettingsBloc, SettingsState>(
+                  builder: (context, state) {
+                    return _buildSwitchTile(
+                      icon: Icons.receipt_long,
+                      title: 'Auto-Save Receipts',
+                      subtitle: 'Automatically save transaction receipts',
+                      value: state.autoSaveReceipt,
+                      onChanged: (value) {
+                        setState(() {
+                          _autoSaveReceipt = value;
+                        });
+                        // Call API to update preference
+                        context.read<SettingsBloc>().add(SettingsAutoSaveReceipt(value));
+                      },
                     );
                   },
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
 
-            // ───── Dark Mode ─────
-            FadeTransition(
-              opacity: _darkModeFade,
-              child: SlideTransition(
-                position: _darkModeSlide,
-                child: SwitchListTile(
-                  title: const Text('Dark Mode'),
-                  value: true,
-                  onChanged: (val) {},
-                  activeColor: Colors.blue,
+                _buildSwitchTile(
+                  icon: Icons.notifications_outlined,
+                  title: 'Notifications',
+                  subtitle: 'Enable push notifications',
+                  value: _notifications,
+                  onChanged: (value) {
+                    setState(() {
+                      _notifications = value;
+                    });
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Notifications ${value ? 'enabled' : 'disabled'}')));
+                  },
                 ),
-              ),
-            ),
-
-            // ───── Auto Save E-Script ─────
-            FadeTransition(
-              opacity: _autoSaveFade,
-              child: SlideTransition(
-                position: _autoSaveSlide,
-                child: SwitchListTile(
-                  title: const Text('Auto Save E-Script'),
-                  value: true,
-                  onChanged: (val) {},
-                  activeColor: Colors.blue,
+                _buildSwitchTile(
+                  icon: Icons.fingerprint,
+                  title: 'Biometric Authentication',
+                  subtitle: 'Use fingerprint or face ID',
+                  value: _biometricAuth,
+                  onChanged: (value) {
+                    setState(() {
+                      _biometricAuth = value;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Biometric authentication ${value ? 'enabled' : 'disabled'}')),
+                    );
+                  },
                 ),
-              ),
-            ),
+                _buildSettingsTile(
+                  icon: Icons.language,
+                  title: 'Language',
+                  subtitle: _language,
+                  onTap: _showLanguageDialog,
+                  showTrailing: true,
+                ),
+                _buildSettingsTile(
+                  icon: Icons.attach_money,
+                  title: 'Currency',
+                  subtitle: _currency,
+                  onTap: _showCurrencyDialog,
+                  showTrailing: true,
+                ),
 
-            // ───── Change Password ─────
-            _animatedTile(
-              fade: _changePwdFade,
-              slide: _changePwdSlide,
-              title: 'Change Password',
-              onTap: () => _showChangePasswordDialog(context),
-            ),
+                const Divider(height: 1, thickness: 1),
 
-            // ───── Select Account (dropdown) ─────
-            _animatedTile(
-              fade: _selectAccFade,
-              slide: _selectAccSlide,
-              title: 'Select Account',
-              trailing: const Icon(Icons.arrow_drop_down),
-              onTap: () {},
-            ),
+                // Support Section
+                _buildSectionHeader('Support'),
+                _buildSettingsTile(
+                  icon: Icons.help_outline,
+                  title: 'Help & Support',
+                  subtitle: 'Get help with your account',
+                  onTap: () {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Help & Support - Coming soon')));
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.info_outline,
+                  title: 'About',
+                  subtitle: 'App version and information',
+                  onTap: () {
+                    showAboutDialog(
+                      context: context,
+                      applicationName: 'Banking App',
+                      applicationVersion: '1.0.0',
+                      applicationIcon: const Icon(Icons.account_balance, size: 48, color: Color(0xFF0A3D62)),
+                      children: [const Text('A secure and convenient banking application.')],
+                    );
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy Policy',
+                  subtitle: 'Read our privacy policy',
+                  onTap: () {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Privacy Policy - Coming soon')));
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.description_outlined,
+                  title: 'Terms & Conditions',
+                  subtitle: 'Read terms and conditions',
+                  onTap: () {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Terms & Conditions - Coming soon')));
+                  },
+                ),
 
-            // ───── Set Transaction Pin ─────
-            _animatedTile(
-              fade: _transPinFade,
-              slide: _transPinSlide,
-              title: 'Set Transaction PIN',
-              onTap: () => _showSetPinDialog(context),
-            ),
+                const Divider(height: 1, thickness: 1),
 
-            // ───── Nickname ─────
-            _animatedTile(fade: _nickFade, slide: _nickSlide, title: 'Nickname', onTap: () {}),
-
-            const SizedBox(height: 10),
-
-            // ───── Logout ─────
-            FadeTransition(
-              opacity: _logoutFade,
-              child: SlideTransition(
-                position: _logoutSlide,
-                child: _buildSettingsTile(
-                  title: 'Log Out',
+                // Logout Section
+                _buildSectionHeader('Account Actions'),
+                _buildSettingsTile(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  subtitle: 'Sign out of your account',
+                  onTap: _showLogoutDialog,
                   titleColor: Colors.red,
-                  leading: const Icon(Icons.logout, color: Colors.red),
-                  onTap: () => _handleLogout(context),
+                  iconColor: Colors.red,
                 ),
-              ),
+
+                const SizedBox(height: 40),
+
+                // Version Info
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Banking App',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 4),
+                      Text('Version 1.0.0', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  // ──────────────────────────────────────────────────────────────
-  //  Helper widgets
-  // ──────────────────────────────────────────────────────────────
-  Widget _animatedTile({
-    required Animation<double> fade,
-    required Animation<Offset> slide,
-    required String title,
-    Widget? trailing,
-    required VoidCallback onTap,
-  }) {
-    return FadeTransition(
-      opacity: fade,
-      child: SlideTransition(
-        position: slide,
-        child: _buildSettingsTile(title: title, trailing: trailing, onTap: onTap),
+  Widget _buildProfileSection() {
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        final user = state.user;
+        final username = user?.username ?? 'User';
+        final email = user?.email ?? 'user@example.com';
+        final balance = user?.formattedBalance ?? '0';
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0A3D62), Color(0xFF1888D9)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+          ),
+          child: Column(
+            children: [
+              // Profile Avatar
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, size: 48, color: const Color(0xFF0A3D62)),
+              ),
+              const SizedBox(height: 12),
+
+              // Username
+              Text(username, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+              const SizedBox(height: 4),
+
+              // Email
+              Text(email, style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9))),
+              const SizedBox(height: 12),
+
+              // Balance Card
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Balance: $balance MMK',
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF6B7280), letterSpacing: 0.5),
       ),
     );
   }
 
   Widget _buildSettingsTile({
+    required IconData icon,
     required String title,
-    Widget? trailing,
-    Widget? leading,
-    Color? titleColor,
+    required String subtitle,
     required VoidCallback onTap,
+    bool showTrailing = true,
+    Color? titleColor,
+    Color? iconColor,
   }) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: leading,
-        title: Text(title, style: TextStyle(color: titleColor ?? Colors.black, fontWeight: FontWeight.w500)),
-        trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onTap,
-      ),
-    );
-  }
-
-  // ──────────────────────────────────────────────────────────────
-  //  Dialogs & Handlers
-  // ──────────────────────────────────────────────────────────────
-
-  void _showSetPinDialog(BuildContext context) {
-    final pinController = TextEditingController();
-    final confirmPinController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => BlocProvider.value(
-        value: context.read<SettingsBloc>(),
-        child: BlocListener<SettingsBloc, SettingsState>(
-          listener: (context, state) {
-            if (state.isSuccess) {
-              Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message ?? 'PIN set successfully'), backgroundColor: Colors.green),
-              );
-            } else if (state.hasError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.errorMessage ?? 'Failed to set PIN'), backgroundColor: Colors.red),
-              );
-            }
-          },
-          child: AlertDialog(
-            title: const Text('Set Transaction PIN'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: pinController,
-                  decoration: const InputDecoration(labelText: 'PIN', hintText: 'Enter 4-6 digit PIN'),
-                  keyboardType: TextInputType.number,
-                  obscureText: true,
-                  maxLength: 6,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: confirmPinController,
-                  decoration: const InputDecoration(labelText: 'Confirm PIN', hintText: 'Re-enter PIN'),
-                  keyboardType: TextInputType.number,
-                  obscureText: true,
-                  maxLength: 6,
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
-              ),
-              BlocBuilder<SettingsBloc, SettingsState>(
-                builder: (context, state) {
-                  return ElevatedButton(
-                    onPressed: state.isLoading
-                        ? null
-                        : () {
-                            if (pinController.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please enter a PIN'), backgroundColor: Colors.red),
-                              );
-                              return;
-                            }
-                            if (pinController.text != confirmPinController.text) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('PINs do not match'), backgroundColor: Colors.red),
-                              );
-                              return;
-                            }
-                            context.read<SettingsBloc>().add(SettingsSetPin(pinController.text));
-                          },
-                    child: state.isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator()) : const Text('Set PIN'),
-                  );
-                },
-              ),
-            ],
-          ),
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: (iconColor ?? const Color(0xFF0A3D62)).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
         ),
+        child: Icon(icon, color: iconColor ?? const Color(0xFF0A3D62), size: 22),
       ),
+      title: Text(
+        title,
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: titleColor ?? Colors.black87),
+      ),
+      subtitle: Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+      trailing: showTrailing ? Icon(Icons.chevron_right, color: Colors.grey[400]) : null,
+      onTap: onTap,
     );
   }
 
-  void _showChangePasswordDialog(BuildContext context) {
-    final oldPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => BlocProvider.value(
-        value: context.read<SettingsBloc>(),
-        child: BlocListener<SettingsBloc, SettingsState>(
-          listener: (context, state) {
-            if (state.isSuccess) {
-              Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message ?? 'Password changed successfully'), backgroundColor: Colors.green),
-              );
-            } else if (state.hasError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.errorMessage ?? 'Failed to change password'), backgroundColor: Colors.red),
-              );
-            }
-          },
-          child: AlertDialog(
-            title: const Text('Change Password'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: oldPasswordController,
-                  decoration: const InputDecoration(labelText: 'Old Password'),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: newPasswordController,
-                  decoration: const InputDecoration(labelText: 'New Password'),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: confirmPasswordController,
-                  decoration: const InputDecoration(labelText: 'Confirm New Password'),
-                  obscureText: true,
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
-              ),
-              BlocBuilder<SettingsBloc, SettingsState>(
-                builder: (context, state) {
-                  return ElevatedButton(
-                    onPressed: state.isLoading
-                        ? null
-                        : () {
-                            if (oldPasswordController.text.isEmpty || newPasswordController.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please fill all fields'), backgroundColor: Colors.red),
-                              );
-                              return;
-                            }
-                            if (newPasswordController.text != confirmPasswordController.text) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Passwords do not match'), backgroundColor: Colors.red),
-                              );
-                              return;
-                            }
-                            if (newPasswordController.text.length < 6) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Password must be at least 6 characters'), backgroundColor: Colors.red),
-                              );
-                              return;
-                            }
-                            print('🔐 UI: Dispatching SettingsChangePassword event');
-                            context.read<SettingsBloc>().add(
-                                  SettingsChangePassword(
-                                    oldPassword: oldPasswordController.text,
-                                    newPassword: newPasswordController.text,
-                                  ),
-                                );
-                          },
-                    child: state.isLoading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator())
-                        : const Text('Change Password'),
-                  );
-                },
-              ),
-            ],
-          ),
+  Widget _buildSwitchTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A3D62).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
         ),
+        child: Icon(icon, color: const Color(0xFF0A3D62), size: 22),
       ),
-    );
-  }
-
-  void _handleLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              // Clear user data
-              context.read<UserBloc>().add(const UserClearData());
-              Navigator.pop(dialogContext);
-              Navigator.pop(context);
-              // Navigate to login
-              AppRoutes.navigateAndRemoveUntil(context, AppRoutes.login);
-            },
-            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      title: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87)),
+      subtitle: Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+      trailing: Switch(value: value, onChanged: onChanged, activeColor: const Color(0xFF0A3D62)),
     );
   }
 }
