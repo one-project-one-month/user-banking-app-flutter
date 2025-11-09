@@ -7,7 +7,7 @@ class SettingsState extends Equatable {
   final String? message;
   final String? errorMessage;
   final bool autoSaveReceipt;
-   final bool darkMode;
+  final bool darkMode;
   final bool autoSave;
   final bool loading;
 
@@ -16,31 +16,19 @@ class SettingsState extends Equatable {
     this.message,
     this.errorMessage,
     this.autoSaveReceipt = false,
-  });
-
-  SettingsState copyWith({SettingsStatus? status, String? message, String? errorMessage, bool? autoSaveReceipt}) {
-    return SettingsState(
-      status: status ?? this.status,
-      message: message,
-      errorMessage: errorMessage,
-      autoSaveReceipt: autoSaveReceipt ?? this.autoSaveReceipt,
-      required this.darkMode,
+    required this.darkMode,
     required this.autoSave,
-   
     this.loading = false,
   });
 
-    factory SettingsState.initial() => SettingsState(
-        darkMode: true,
-        autoSave: true,
-        loading: false,
-      );
+  factory SettingsState.initial() => const SettingsState(darkMode: true, autoSave: true, loading: false);
 
   SettingsState copyWith({
     SettingsStatus? status,
     String? message,
     String? errorMessage,
-     bool? darkMode,
+    bool? autoSaveReceipt,
+    bool? darkMode,
     bool? autoSave,
     bool? loading,
   }) {
@@ -48,9 +36,9 @@ class SettingsState extends Equatable {
       status: status ?? this.status,
       message: message ?? this.message,
       errorMessage: errorMessage ?? this.errorMessage,
-            darkMode: darkMode ?? this.darkMode,
+      autoSaveReceipt: autoSaveReceipt ?? this.autoSaveReceipt,
+      darkMode: darkMode ?? this.darkMode,
       autoSave: autoSave ?? this.autoSave,
-   
       loading: loading ?? this.loading,
     );
   }
@@ -60,6 +48,5 @@ class SettingsState extends Equatable {
   bool get hasError => status == SettingsStatus.error;
 
   @override
-  List<Object?> get props => [status, message, errorMessage, autoSaveReceipt];
-  List<Object?> get props => [status, message, errorMessage,darkMode, autoSave, loading];
+  List<Object?> get props => [status, message, errorMessage, autoSaveReceipt, darkMode, autoSave, loading];
 }

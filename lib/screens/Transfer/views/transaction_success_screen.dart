@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
+import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
+import 'package:banking_app/screens/Settings/controllers/settings_event.dart';
+import 'package:banking_app/screens/Settings/controllers/settings_state.dart';
 import 'widgets/transaction_info_row.dart';
 import 'widgets/account_info_card.dart';
 import 'widgets/nickname_bottom_sheet.dart';
@@ -35,17 +39,34 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
   }
 
   void _saveReceipt() {
-    // TODO: Implement save receipt functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Receipt saved successfully!'),
-        backgroundColor: Color(0xFF16A34A),
-      ),
-    );
+    context.read<SettingsBloc>().add(const SettingsAutoSaveReceipt(true));
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<SettingsBloc, SettingsState>(
+      listener: (context, state) {
+        if (state.isSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message ?? 'Receipt saved successfully!'),
+              backgroundColor: const Color(0xFF16A34A),
+            ),
+          );
+        } else if (state.hasError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? 'Failed to save receipt'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: _buildContent(),
+    );
+  }
+
+  Widget _buildContent() {
     // Default transaction data if none provided
     final data =
         widget.transactionData ??

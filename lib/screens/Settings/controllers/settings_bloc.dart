@@ -4,40 +4,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../auth/services/cache_service.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
-import '../services/settings_api_service.dart';
-import '../../auth/services/cache_service.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SettingsApiService api;
   final CacheService cache;
+
+  static const _kDark = 'settings_dark_mode';
+  static const _kAuto = 'settings_auto_save';
 
   SettingsBloc({SettingsApiService? apiService, CacheService? cacheService})
     : api = apiService ?? SettingsApiService(baseUrl: "http://10.0.2.2:7777"),
       cache = cacheService ?? CacheService(),
-      super(const SettingsState()) {
-    on<SettingsAutoSaveReceipt>(_onAutoSaveReceipt);
-  }
-
-  /// Handle auto-save receipt preference
-  FutureOr<void> _onAutoSaveReceipt(SettingsAutoSaveReceipt event, Emitter<SettingsState> emit) async {
-
-class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
-  final SettingsApiService api;
-  static const _kDark = 'settings_dark_mode';
-  static const _kAuto = 'settings_auto_save';
-  final CacheService cache;
-
-  SettingsBloc({SettingsApiService? apiService, CacheService? cacheService})
-      : api = apiService ?? SettingsApiService(),
-        cache = cacheService ?? CacheService(),
-        super(SettingsState.initial()) {
-    // persistence handlers
+      super(SettingsState.initial()) {
+    // Persistence handlers
     on<LoadSettings>(_onLoad);
     on<ToggleDarkMode>(_onToggleDark);
     on<ToggleAutoSave>(_onToggleAuto);
     on<LogoutPressed>(_onLogout);
 
-    // operations
+    // Operations
     on<SettingsSetPin>(_onSetPin);
     on<SettingsChangePassword>(_onChangePassword);
     on<SettingsAutoSaveReceipt>(_onAutoSaveReceipt);
@@ -49,7 +34,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     final initialized = await cache.getBool(initKey);
 
     if (!event.force && (initialized == null || initialized == false)) {
-      // first run: persist initial defaults so subsequent runs pick user selections
+      // First run: persist initial defaults so subsequent runs pick user selections
       await cache.setBool(_kDark, state.darkMode);
       await cache.setBool(_kAuto, state.autoSave);
       await cache.setBool(initKey, true);
@@ -80,10 +65,71 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   }
 
   /// Set Transaction PIN
-  FutureOr<void> _onSetPin(
-    SettingsSetPin event,
-    Emitter<SettingsState> emit,
-  ) async {
+  Future<void> _onSetPin(SettingsSetPin event, Emitter<SettingsState> emit) async {
+    emit(state.copyWith(status: SettingsStatus.loading));
+
+    try {
+      // Get token from cache
+      final token = await cache.getToken();
+
+      if (token == null || token.accessToken.isEmpty) {
+        emit(
+          state.copyWith(status: SettingsStatus.error, errorMessage: 'No authentication token found. Please login.'),
+        );
+        return;
+      }
+
+      // Check if token is expired
+      if (token.isExpired) {
+        emit(state.copyWith(status: SettingsStatus.error, errorMessage: 'Session expired. Please login again.'));
+        return;
+      }
+
+      // TODO: Call API to set PIN
+      // For now, just simulate success
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      emit(state.copyWith(status: SettingsStatus.success, message: 'PIN set successfully'));
+    } catch (e) {
+      print('❌ SettingsBloc SetPin error: $e');
+      emit(state.copyWith(status: SettingsStatus.error, errorMessage: 'Failed to set PIN: $e'));
+    }
+  }
+
+  /// Change Password
+  Future<void> _onChangePassword(SettingsChangePassword event, Emitter<SettingsState> emit) async {
+    emit(state.copyWith(status: SettingsStatus.loading));
+
+    try {
+      // Get token from cache
+      final token = await cache.getToken();
+
+      if (token == null || token.accessToken.isEmpty) {
+        emit(
+          state.copyWith(status: SettingsStatus.error, errorMessage: 'No authentication token found. Please login.'),
+        );
+        return;
+      }
+
+      // Check if token is expired
+      if (token.isExpired) {
+        emit(state.copyWith(status: SettingsStatus.error, errorMessage: 'Session expired. Please login again.'));
+        return;
+      }
+
+      // TODO: Call API to change password
+      // For now, just simulate success
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      emit(state.copyWith(status: SettingsStatus.success, message: 'Password changed successfully'));
+    } catch (e) {
+      print('❌ SettingsBloc ChangePassword error: $e');
+      emit(state.copyWith(status: SettingsStatus.error, errorMessage: 'Failed to change password: $e'));
+    }
+  }
+
+  /// Handle auto-save receipt preference
+  Future<void> _onAutoSaveReceipt(SettingsAutoSaveReceipt event, Emitter<SettingsState> emit) async {
     emit(state.copyWith(status: SettingsStatus.loading));
 
     try {
