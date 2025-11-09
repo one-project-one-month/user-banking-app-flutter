@@ -7,6 +7,7 @@ abstract class SettingsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+/// Set auto-save receipt preference
 /// Set Transaction PIN
 class SettingsSetPin extends SettingsEvent {
   final String pin;
@@ -30,7 +31,6 @@ class SettingsChangePassword extends SettingsEvent {
   @override
   List<Object?> get props => [oldPassword, newPassword];
 }
-
 
 
 
@@ -60,3 +60,12 @@ class ToggleAutoSave extends SettingsEvent {
 }
 
 class LogoutPressed extends SettingsEvent {}
+/// Auto Save Receipt
+class SettingsAutoSaveReceipt extends SettingsEvent {
+  final bool enabled;
+
+  const SettingsAutoSaveReceipt(this.enabled);
+
+  @override
+  List<Object?> get props => [enabled];
+}

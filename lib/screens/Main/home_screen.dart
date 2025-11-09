@@ -3,6 +3,9 @@ import 'package:banking_app/core/utils/main_screen/ads_container.dart';
 import 'package:banking_app/core/utils/main_screen/icon_button.dart';
 import 'package:banking_app/core/utils/main_screen/transaction_card.dart';
 import 'package:banking_app/screens/Transactions/transactions_history.dart';
+import 'package:banking_app/screens/Transactions/controllers/transaction_bloc.dart';
+import 'package:banking_app/screens/Transactions/controllers/transaction_event.dart';
+import 'package:banking_app/screens/Transactions/controllers/transaction_state.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,11 +42,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Dispatch once after first frame so we don't call it on every build
+    // Dispatch once after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ///TODO: need to open
-       // context.read<UserBloc>().add(const UserLoadData());
+        context.read<UserBloc>().add(const UserLoadData());
+        context.read<TransactionBloc>().add(const TransactionLoadData());
       }
     });
   }
@@ -85,8 +88,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(Icons.notifications_active, size: 30, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
               const SizedBox(width: 15),
               IconButton(
-                icon:  Icon(Icons.settings, size: 30, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
-                onPressed: ()=> AppRoutes.navigateTo(context, AppRoutes.settings),
+                icon: const Icon(Icons.settings, size: 30, color: Colors.white),
+                onPressed: () {
+                  AppRoutes.navigateTo(context, AppRoutes.settings);
+                },
               ),
               const SizedBox(width: 10),
             ],
@@ -110,10 +115,11 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           }
         },
-        builder: (context, state) {
+        builder: (context, userState) {
           return RefreshIndicator(
             onRefresh: () async {
               context.read<UserBloc>().add(const UserRefreshData());
+              context.read<TransactionBloc>().add(const TransactionRefreshData());
               await Future.delayed(const Duration(milliseconds: 500));
             },
             child: Container(
@@ -148,12 +154,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              if (state.isLoading || state.isRefreshing)
+                              if (userState.isLoading || userState.isRefreshing)
                                 const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                               else
                                 Text(
-                                  isVisible ? "${state.user?.formattedBalance ?? '0'} MMK" : "xx,xxx MMK",
-                                  style: theme.textTheme.titleLarge?.copyWith(fontFamily: 'DMsansSB'),
+                                  
+                                  isVisible ? "${userState.user?.formattedBalance ?? '0'} MMK" : "xx,xxx MMK",
+                                  style: TextStyle(
+                                    fontFamily: 'DMsansSB',
+                                    fontSize: MediaQuery.of(context).size.width * 0.04,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xff072B46),
+                                  ),
+                                  
                                 ),
                               IconButton(
                                 onPressed: () {
@@ -270,29 +283,51 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
-                              TransactionCard(
-                                name: 'Aung Phyo',
-                                time: '20:22:21',
-                                amount: '45000',
-                                income: true,
-                                walltetNumber: '123456789',
-                                quickPay: false,
-                              ),
-                              TransactionCard(
-                                name: 'Aung Phyo',
-                                time: '20:22:21',
-                                amount: '45000',
-                                income: true,
-                                walltetNumber: '123456789',
-                                quickPay: false,
-                              ),
-                              TransactionCard(
-                                name: 'Aung Phyo',
-                                time: '20:22:21',
-                                amount: '45000',
-                                income: false,
-                                walltetNumber: '123456789',
-                                quickPay: false,
+
+                              // Recent Transactions from API
+                              BlocBuilder<TransactionBloc, TransactionState>(
+                                builder: (context, transactionState) {
+                                  if (transactionState.isLoading) {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(20.0),
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+
+                                  if (transactionState.hasError) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Text(
+                                        transactionState.errorMessage ?? 'Failed to load transactions',
+                                        style: const TextStyle(color: Colors.red),
+                                      ),
+                                    );
+                                  }
+
+                                  if (!transactionState.hasData) {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(20.0),
+                                      child: Text('No recent transactions'),
+                                    );
+                                  }
+
+                                  // Show only the 3 most recent transactions
+                                  final recentTransactions = transactionState.recentTransactions;
+
+                                  return Column(
+                                    children:
+                                        recentTransactions.map((transaction) {
+                                          return TransactionCard(
+                                            name: transaction.user.name,
+                                            time: transaction.time ?? '',
+                                            amount: transaction.account.balance.toStringAsFixed(0),
+                                            income: transaction.isIncome,
+                                            walltetNumber: transaction.account.accountNumber,
+                                            quickPay: transaction.quickPay,
+                                          );
+                                        }).toList(),
+                                  );
+                                },
                               ),
                             ],
                           ),

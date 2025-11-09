@@ -6,49 +6,123 @@ class TransferApiService {
   String? baseUrl = "http://10.0.2.2:7777";
   final http.Client _client;
 
-  TransferApiService({this.baseUrl, http.Client? client}) 
-      : _client = client ?? http.Client();
+  TransferApiService({this.baseUrl, http.Client? client}) : _client = client ?? http.Client();
 
   Uri _uri(String path) {
     if (baseUrl == null) throw StateError('No baseUrl configured');
     return Uri.parse(baseUrl! + path);
   }
 
-  /// Get user's from accounts or selected account
-  /// Preferred: GET /personal-banking/users/me (contains selectedAccountDetails)
-  /// Legacy: GET /personal-banking/users/from-accounts (contains fromAccountOptions)
-  /// Headers: Authorization: Bearer {token}
+  /// NEW METHOD: Fetch nicknames from API
+  /// GET /personal-banking/users/nickname
   /// Response: {
   ///   "code": 0,
   ///   "message": "string",
   ///   "data": {
-  ///     "fromAccountOptions": [
+  ///     "nicknameOptions": [
   ///       {
   ///         "id": 0,
-  ///         "accountNumber": "string",
-  ///         "balance": 0
+  ///         "nickname": "string",
+  ///         "toAccountDetail": {
+  ///           "id": 0,
+  ///           "accountNumber": "string"
+  ///         }
   ///       }
   ///     ]
   ///   }
   /// }
-  Future<List<FromAccount>> getFromAccounts(String accessToken) async {
+  Future<List<FavoriteUser>> fetchNicknames(String accessToken) async {
     if (baseUrl == null) {
       await Future.delayed(const Duration(milliseconds: 300));
       return [
-        FromAccount(id: '1', accountNumber: '234-1-56643-6', balance: 588000),
+        FavoriteUser(nicknameId: '1', nickname: 'Mom', accountNumber: '00123456789', fullName: 'Mrs. Christine'),
+        FavoriteUser(nicknameId: '2', nickname: 'Dad', accountNumber: '00198765432', fullName: 'Mr. John Doe'),
       ];
     }
 
-    // Try the user profile endpoint first (richer response)
-    print('🔍 Fetching user profile for accounts...');
+    print('📋 Fetching nicknames...');
+    print('   URL: ${_uri('/personal-banking/users/nickname')}');
+
+    final res = await _client.get(
+      _uri('/personal-banking/users/nickname'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+    );
+
+    print('📥 Fetch Nicknames Response Status: ${res.statusCode}');
+    print('📥 Fetch Nicknames Response Body: ${res.body}');
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      try {
+        final decoded = json.decode(res.body);
+
+        if (decoded is Map<String, dynamic>) {
+          final code = decoded['code'];
+          if (code != null && code != 0 && code != 200) {
+            final message = decoded['message'] ?? 'Failed to fetch nicknames';
+            throw TransferApiException(message);
+          }
+
+          if (decoded.containsKey('data')) {
+            final data = decoded['data'];
+            if (data is Map<String, dynamic> && data.containsKey('nicknameOptions')) {
+              final nicknamesList = data['nicknameOptions'];
+              if (nicknamesList is List) {
+                print('✅ Found ${nicknamesList.length} nicknames');
+                return nicknamesList.map((item) {
+                  final itemMap = item as Map<String, dynamic>;
+                  final toAccountDetail = itemMap['toAccountDetail'] as Map<String, dynamic>?;
+
+                  return FavoriteUser(
+                    nicknameId: itemMap['id']?.toString() ?? '',
+                    nickname: itemMap['nickname']?.toString() ?? '',
+                    accountNumber: toAccountDetail?['accountNumber']?.toString() ?? '',
+                    fullName: '', // Will be filled by prepare endpoint
+                  );
+                }).toList();
+              }
+            }
+          }
+        }
+
+        print('⚠️ Unexpected response format, returning empty list');
+        return [];
+      } catch (e) {
+        if (e is TransferApiException) rethrow;
+        print('❌ JSON parsing error: $e');
+        throw TransferApiException('Invalid response format: $e');
+      }
+    }
+
+    // Handle error responses
+    try {
+      final decoded = json.decode(res.body);
+      if (decoded is Map<String, dynamic>) {
+        final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'];
+        if (serverMsg != null) {
+          throw TransferApiException('Failed to fetch nicknames: $serverMsg');
+        }
+      }
+    } catch (e) {
+      if (e is TransferApiException) rethrow;
+    }
+
+    final fallback = res.reasonPhrase ?? 'HTTP ${res.statusCode}';
+    throw TransferApiException('Failed to fetch nicknames: $fallback');
+  }
+
+  /// Get user's from accounts or selected account
+  Future<List<FromAccount>> getFromAccounts(String accessToken) async {
+    if (baseUrl == null) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return [FromAccount(id: '3', accountNumber: '1000000002', balance: 75000)];
+    }
+
+    print('📋 Fetching user profile for accounts...');
     print('   URL: ${_uri('/personal-banking/users/me')}');
 
     http.Response res = await _client.get(
       _uri('/personal-banking/users/me'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'},
     );
 
     print('📥 Users/Me Response Status: ${res.statusCode}');
@@ -68,17 +142,15 @@ class TransferApiService {
           if (decoded.containsKey('data')) {
             final data = decoded['data'];
             if (data is Map<String, dynamic>) {
-              // 1) Legacy list key variations
+              // Legacy list key variations
               final listA = data['fromAccountOptions'];
               final listB = data['fromAccountsOptions'];
               final dynamic accountsList = listA ?? listB;
               if (accountsList is List) {
-                return accountsList
-                    .map((acc) => FromAccount.fromJson(Map<String, dynamic>.from(acc)))
-                    .toList();
+                return accountsList.map((acc) => FromAccount.fromJson(Map<String, dynamic>.from(acc))).toList();
               }
 
-              // 2) Selected account details (single)
+              // Selected account details (single)
               final selected = data['selectedAccountDetails'];
               if (selected is Map) {
                 return [FromAccount.fromJson(Map<String, dynamic>.from(selected))];
@@ -93,77 +165,21 @@ class TransferApiService {
       }
     }
 
-    // Fallback to the legacy endpoint only if /me fails
-    print('ℹ️ Falling back to legacy from-accounts endpoint');
-    res = await _client.get(
-      _uri('/personal-banking/users/from-accounts'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
-
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      try {
-        final decoded = json.decode(res.body);
-        if (decoded is Map<String, dynamic>) {
-          final data = decoded['data'];
-          if (data is Map<String, dynamic>) {
-            final listA = data['fromAccountOptions'];
-            final listB = data['fromAccountsOptions'];
-            final dynamic accountsList = listA ?? listB;
-            if (accountsList is List) {
-              return accountsList
-                  .map((acc) => FromAccount.fromJson(Map<String, dynamic>.from(acc)))
-                  .toList();
-            }
-          }
-        }
-      } catch (_) {}
-    }
-
     throw TransferApiException('Failed to fetch accounts');
   }
 
-  /// Prepare transfer by getting recipient details
-  /// POST /personal-banking/transfer/nickname/prepare
-  /// Body: { "nicknameId": 0 }
-  /// Headers: Authorization: Bearer {token}
-  /// Response: {
-  ///   "code": 0,
-  ///   "message": "string",
-  ///   "data": {
-  ///     "authDetails": {
-  ///       "id": 0,
-  ///       "accountNumber": "string"
-  ///     },
-  ///     "userDetails": {
-  ///       "id": 0,
-  ///       "fullName": "string"
-  ///     }
-  ///   }
-  /// }
-  Future<TransferRecipient> prepareTransferByNickname(
-    String accessToken,
-    String nicknameId,
-  ) async {
+  /// Prepare transfer by nickname
+  Future<TransferRecipient> prepareTransferByNickname(String accessToken, String nicknameId) async {
     if (baseUrl == null) {
       await Future.delayed(const Duration(milliseconds: 300));
-      return TransferRecipient(
-        id: nicknameId,
-        accountNumber: '00123456789',
-        fullName: 'Mrs. Christine',
-      );
+      return TransferRecipient(id: '2', accountNumber: '1000000001', fullName: 'System Administrator');
     }
 
-    print('🔍 Preparing transfer for nickname: $nicknameId');
+    print('📋 Preparing transfer for nickname: $nicknameId');
 
     final res = await _client.post(
       _uri('/personal-banking/transfer/nickname/prepare'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'},
       body: json.encode({'nicknameId': int.tryParse(nicknameId) ?? 0}),
     );
 
@@ -184,12 +200,12 @@ class TransferApiService {
           if (decoded.containsKey('data')) {
             final data = decoded['data'];
             if (data is Map<String, dynamic>) {
-              final authDetails = data['authDetails'] as Map<String, dynamic>?;
+              final toAccDetails = data['toAccountDetails'] as Map<String, dynamic>?;
               final userDetails = data['userDetails'] as Map<String, dynamic>?;
 
               return TransferRecipient(
-                id: authDetails?['id']?.toString() ?? '',
-                accountNumber: authDetails?['accountNumber'] ?? '',
+                id: toAccDetails?['id']?.toString() ?? '',
+                accountNumber: toAccDetails?['accountNumber'] ?? '',
                 fullName: userDetails?['fullName'] ?? userDetails?['fullname'] ?? '',
               );
             }
@@ -205,36 +221,23 @@ class TransferApiService {
     throw TransferApiException('Failed to prepare transfer');
   }
 
-  /// Prepare transfer by destination account number
-  /// POST /personal-banking/transfer/account-number/prepare
-  /// Body: { "toAccountNumber": "string" }
-  /// Response data contains { toAccountDetails: {id, accountNumber}, userDetails: {id, fullName/fullname} }
-  Future<TransferRecipient> prepareTransferByAccountNumber(
-    String accessToken,
-    String toAccountNumber,
-  ) async {
+  /// Prepare transfer by account number
+  Future<TransferRecipient> prepareTransferByAccountNumber(String accessToken, String toAccountNumber) async {
     if (baseUrl == null) {
       await Future.delayed(const Duration(milliseconds: 300));
-      return TransferRecipient(id: 'sim', accountNumber: toAccountNumber, fullName: 'Simulated User');
+      return TransferRecipient(id: '2', accountNumber: toAccountNumber, fullName: 'System Administrator');
     }
 
     final candidatePaths = <String>[
-      // Provided endpoint
       '/personal-banking/transfer/to-account-number/prepare',
-      // Reasonable alternates we try if backend differs
       '/personal-banking/transfer/account-number/prepare',
-      '/personal-banking/transfers/account-number/prepare',
-      '/personal-banking/transfer/to-account/prepare',
     ];
 
     for (final path in candidatePaths) {
-      print('🔍 Verifying toAccountNumber on $path');
+      print('📋 Verifying toAccountNumber on $path');
       final res = await _client.post(
         _uri(path),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'},
         body: json.encode({'toAccountNumber': toAccountNumber}),
       );
 
@@ -246,8 +249,7 @@ class TransferApiService {
           if (decoded is Map<String, dynamic>) {
             final code = decoded['code'];
             if (code != null && code != 0 && code != 200) {
-              final message = decoded['message'] ?? 'Failed to prepare transfer';
-              throw TransferApiException(message);
+              continue;
             }
 
             final data = decoded['data'] ?? decoded['result'];
@@ -256,7 +258,10 @@ class TransferApiService {
               final user = (data['userDetails'] ?? data['user_details'] ?? data['recipientDetails']) as Map?;
               return TransferRecipient(
                 id: toAcc != null ? (toAcc['id']?.toString() ?? '') : '',
-                accountNumber: toAcc != null ? (toAcc['accountNumber'] ?? toAcc['account_number'] ?? toAccountNumber) : toAccountNumber,
+                accountNumber:
+                    toAcc != null
+                        ? (toAcc['accountNumber'] ?? toAcc['account_number'] ?? toAccountNumber)
+                        : toAccountNumber,
                 fullName: user != null ? (user['fullName'] ?? user['fullname'] ?? user['name'] ?? '') : '',
               );
             }
@@ -264,13 +269,178 @@ class TransferApiService {
         } catch (e) {
           if (e is TransferApiException) rethrow;
         }
-      } else {
-        // Try next path on non-2xx
-        continue;
       }
     }
 
     throw TransferApiException('Failed to verify account number');
+  }
+
+  /// Validate Transfer
+  Future<Map<String, dynamic>> validateTransfer(String accessToken, int toAccountId) async {
+    if (baseUrl == null) {
+      await Future.delayed(const Duration(milliseconds: 400));
+      return {
+        'success': true,
+        'message': 'Transfer validated successfully',
+        'data': {
+          'fromAccountDetails': {'id': 3, 'accountNumber': '1000000002', 'balance': 75000},
+          'toAccountDetails': {'id': 2, 'accountNumber': '1000000001', 'balance': 50000},
+        },
+      };
+    }
+
+    print('📋 Validating transfer...');
+    print('   URL: ${_uri('/personal-banking/transfer/validate')}');
+    print('   toAccountId: $toAccountId');
+
+    final res = await _client.post(
+      _uri('/personal-banking/transfer/validate'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: json.encode({'toAccountId': toAccountId}),
+    );
+
+    print('📥 Validate Transfer Response Status: ${res.statusCode}');
+    print('📥 Validate Transfer Response Body: ${res.body}');
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      try {
+        final decoded = json.decode(res.body);
+        if (decoded is Map<String, dynamic>) {
+          final code = decoded['code'];
+          final message = decoded['message'] ?? 'Transfer validated successfully';
+
+          if (code == 0 || code == 200) {
+            print('✅ Transfer validated successfully: $message');
+            return {'success': true, 'message': message, 'data': decoded['data'] ?? decoded};
+          } else {
+            print('❌ Transfer validation failed: $message');
+            return {'success': false, 'message': message};
+          }
+        }
+      } catch (e) {
+        print('❌ JSON parsing error: $e');
+        return {'success': false, 'message': 'Invalid server response: $e'};
+      }
+    }
+
+    try {
+      final decoded = json.decode(res.body);
+      if (decoded is Map<String, dynamic>) {
+        final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'];
+        if (serverMsg != null) {
+          print('❌ Server error: $serverMsg');
+          return {'success': false, 'message': serverMsg.toString()};
+        }
+      }
+    } catch (_) {}
+
+    print('❌ Transfer validation failed with status: ${res.statusCode}');
+    return {'success': false, 'message': 'Failed to validate transfer (Status: ${res.statusCode})'};
+  }
+
+  /// Verify Transaction PIN
+  Future<Map<String, dynamic>> verifyPin(String accessToken, String pin) async {
+    if (baseUrl == null) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return {'success': true, 'message': 'PIN verified successfully'};
+    }
+
+    print('📋 Verifying PIN...');
+
+    final res = await _client.post(
+      _uri('/personal-banking/users/verify-pin'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: json.encode({'oldPin': pin}),
+    );
+
+    print('📥 Verify PIN Response Status: ${res.statusCode}');
+    print('📥 Verify PIN Response Body: ${res.body}');
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      try {
+        final decoded = json.decode(res.body);
+        if (decoded is Map<String, dynamic>) {
+          final code = decoded['code'];
+          final message = decoded['message'] ?? 'PIN verified successfully';
+
+          if (code == 0 || code == 200) {
+            return {'success': true, 'message': message};
+          } else {
+            return {'success': false, 'message': message};
+          }
+        }
+      } catch (e) {
+        return {'success': false, 'message': 'Invalid server response: $e'};
+      }
+    }
+
+    return {'success': false, 'message': 'Failed to verify PIN (Status: ${res.statusCode})'};
+  }
+
+  /// Confirm Transfer
+  Future<Map<String, dynamic>> confirmTransfer(
+    String accessToken,
+    int toAccountId,
+    int amount,
+    String note,
+    String pin,
+  ) async {
+    if (baseUrl == null) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return {
+        'success': true,
+        'message': 'Transfer completed successfully',
+        'data': {'transactionId': 'TXN${DateTime.now().millisecondsSinceEpoch}', 'amount': amount, 'note': note},
+      };
+    }
+
+    print('📋 Confirming transfer...');
+    print('   URL: ${_uri('/personal-banking/transfer/confirm')}');
+    print('   toAccountId: $toAccountId, amount: $amount');
+
+    final res = await _client.post(
+      _uri('/personal-banking/transfer/confirm'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken'},
+      body: json.encode({'toAccountId': toAccountId, 'amount': amount, 'note': note, 'pin': pin}),
+    );
+
+    print('📥 Confirm Transfer Response Status: ${res.statusCode}');
+    print('📥 Confirm Transfer Response Body: ${res.body}');
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      try {
+        final decoded = json.decode(res.body);
+        if (decoded is Map<String, dynamic>) {
+          final code = decoded['code'];
+          final message = decoded['message'] ?? 'Transfer completed successfully';
+
+          if (code == 0 || code == 200) {
+            print('✅ Transfer confirmed successfully: $message');
+            return {'success': true, 'message': message, 'data': decoded['data'] ?? decoded};
+          } else {
+            print('❌ Transfer confirmation failed: $message');
+            return {'success': false, 'message': message};
+          }
+        }
+      } catch (e) {
+        print('❌ JSON parsing error: $e');
+        return {'success': false, 'message': 'Invalid server response: $e'};
+      }
+    }
+
+    try {
+      final decoded = json.decode(res.body);
+      if (decoded is Map<String, dynamic>) {
+        final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'];
+        if (serverMsg != null) {
+          print('❌ Server error: $serverMsg');
+          return {'success': false, 'message': serverMsg.toString()};
+        }
+      }
+    } catch (_) {}
+
+    print('❌ Transfer confirmation failed with status: ${res.statusCode}');
+    return {'success': false, 'message': 'Failed to confirm transfer (Status: ${res.statusCode})'};
   }
 
   void dispose() {
@@ -281,7 +451,7 @@ class TransferApiService {
 class TransferApiException implements Exception {
   final String message;
   TransferApiException(this.message);
-  
+
   @override
   String toString() => 'TransferApiException: $message';
 }
