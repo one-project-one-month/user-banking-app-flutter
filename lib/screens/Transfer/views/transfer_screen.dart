@@ -1,7 +1,7 @@
 import 'package:banking_app/Routes/app_routes.dart';
+import 'package:banking_app/screens/Transfer/views/transfer_confirmation_screen.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../controllers/transfer_bloc.dart';
@@ -19,34 +19,69 @@ class TransferScreen extends StatefulWidget {
 }
 
 class _TransferScreenState extends State<TransferScreen> {
-  // Mock favorite users list
-  final List<FavoriteUser> favoriteUsers = [
-    FavoriteUser(nicknameId: '1', nickname: 'Mom', accountNumber: '00123456789', fullName: 'Mrs. Christine'),
-    FavoriteUser(nicknameId: '2', nickname: 'Dad', accountNumber: '00198765432', fullName: 'Mr. John Doe'),
-    FavoriteUser(nicknameId: '3', nickname: 'Bro', accountNumber: '00234567891', fullName: 'Mr. David'),
-    FavoriteUser(nicknameId: '4', nickname: 'Sis', accountNumber: '00311223344', fullName: 'Ms. Julia'),
-  ];
+  // This will hold nicknames fetched from API
+  List<FavoriteUser> favoriteUsers = [];
+  bool isLoadingNicknames = false;
 
   FavoriteUser? selectedFavorite;
   final TextEditingController accountController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
-  final TextEditingController amountController = TextEditingController();
   bool userInput = false;
-  bool showAmountField = false;
+  bool isValidatingAccount = false;
 
   @override
   void initState() {
     super.initState();
     // Load from accounts when screen opens
     context.read<TransferBloc>().add(const TransferLoadFromAccounts());
+    // Load nicknames from API
+    _loadNicknames();
   }
 
   @override
   void dispose() {
     accountController.dispose();
     fullNameController.dispose();
-    amountController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadNicknames() async {
+    setState(() {
+      isLoadingNicknames = true;
+    });
+
+    try {
+      final transferBloc = context.read<TransferBloc>();
+      final nicknames = await transferBloc.api.fetchNicknames((await transferBloc.cache.getToken())!.accessToken);
+
+      setState(() {
+        favoriteUsers = nicknames;
+        isLoadingNicknames = false;
+      });
+    } catch (e) {
+      print('❌ Failed to load nicknames: $e');
+      setState(() {
+        isLoadingNicknames = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load favorites: $e'), backgroundColor: Colors.orange));
+      }
+    }
+  }
+
+  void _validateAccount() {
+    final account = accountController.text.trim();
+    if (account.isNotEmpty) {
+      setState(() {
+        userInput = true;
+        isValidatingAccount = true;
+      });
+      // Call prepare endpoint to validate and get recipient details
+      context.read<TransferBloc>().add(TransferPrepareByAccountNumber(account));
+    }
   }
 
   @override
@@ -62,23 +97,39 @@ class _TransferScreenState extends State<TransferScreen> {
           ),
           title: const Text('Transfer', style: TextStyle(fontSize: 24, fontFamily: 'DMS-B', color: Colors.black)),
           centerTitle: true,
+          actions: [
+            // Refresh nicknames button
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Color(0xFF99A1AF)),
+              onPressed: isLoadingNicknames ? null : _loadNicknames,
+            ),
+          ],
         ),
         body: BlocConsumer<TransferBloc, TransferState>(
           listener: (context, transferState) {
             if (transferState.hasError) {
+              setState(() {
+                isValidatingAccount = false;
+                fullNameController.clear();
+              });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(transferState.errorMessage ?? 'An error occurred'), backgroundColor: Colors.red),
               );
             }
 
-            // When recipient is loaded, populate fields and show amount
-            if (transferState.hasRecipient && transferState.recipient != null) {
+            // When recipient is loaded from account number validation
+            if (transferState.hasRecipient && transferState.recipient != null && isValidatingAccount) {
+              setState(() {
+                isValidatingAccount = false;
+              });
               accountController.text = transferState.recipient!.accountNumber;
               fullNameController.text = transferState.recipient!.fullName;
-              setState(() {
-                showAmountField = true;
-                amountController.text = '1000';
-              });
+            }
+
+            // When recipient is loaded from nickname selection
+            if (transferState.hasRecipient && transferState.recipient != null && selectedFavorite != null) {
+              accountController.text = transferState.recipient!.accountNumber;
+              fullNameController.text = transferState.recipient!.fullName;
             }
           },
           builder: (context, transferState) {
@@ -93,7 +144,15 @@ class _TransferScreenState extends State<TransferScreen> {
                     const SizedBox(height: 20),
 
                     // Favorite Nickname Dropdown
-                    const Text('Favorite nickname Lists', style: TextStyle(fontFamily: 'DMS-SB', fontSize: 18)),
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text('Favorite nickname Lists', style: TextStyle(fontFamily: 'DMS-SB', fontSize: 18)),
+                        ),
+                        if (isLoadingNicknames)
+                          const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                      ],
+                    ),
                     _buildFavoriteDropdown(context, transferState),
                     const SizedBox(height: 25),
 
@@ -107,13 +166,6 @@ class _TransferScreenState extends State<TransferScreen> {
                     // Full Name Field
                     const Text('Full Name : ', style: TextStyle(fontFamily: 'DMS-SB', fontSize: 18)),
                     _buildFullNameField(),
-
-                    // Amount Field (appears after verification)
-                    if (showAmountField) ...[
-                      const SizedBox(height: 25),
-                      const Text('Amount : ', style: TextStyle(fontFamily: 'DMS-SB', fontSize: 18)),
-                      _buildAmountField(transferState),
-                    ],
                   ],
                 ),
               ),
@@ -156,7 +208,6 @@ class _TransferScreenState extends State<TransferScreen> {
               Text(username, style: const TextStyle(fontFamily: 'DMS-R', fontSize: 14)),
               const SizedBox(height: 5),
 
-              // Show loading or account info
               if (transferState.isLoading)
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,29 +253,37 @@ class _TransferScreenState extends State<TransferScreen> {
       decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFD1D5DC)))),
       child: DropdownButtonHideUnderline(
         child: DropdownButton2<FavoriteUser>(
-          hint: const Text(
-            'Select nickname',
-            style: TextStyle(fontSize: 12, fontFamily: 'DMS-R', color: Color(0xFF99A1AF)),
+          hint: Text(
+            favoriteUsers.isEmpty ? (isLoadingNicknames ? 'Loading...' : 'No favorites available') : 'Select nickname',
+            style: TextStyle(
+              fontSize: 12,
+              fontFamily: 'DMS-R',
+              color: favoriteUsers.isEmpty ? Colors.grey : const Color(0xFF99A1AF),
+            ),
           ),
           iconStyleData: const IconStyleData(icon: Icon(Icons.keyboard_arrow_down, size: 28, color: Color(0xFF99A1AF))),
           value: selectedFavorite,
           items:
-              favoriteUsers.map((user) {
-                return DropdownMenuItem<FavoriteUser>(value: user, child: Text(user.nickname));
-              }).toList(),
-          onChanged: (FavoriteUser? value) {
-            if (value != null) {
-              setState(() {
-                selectedFavorite = value;
-                userInput = false;
-                showAmountField = true;
-                amountController.text = '1000';
-              });
-
-              // Prepare transfer with API
-              context.read<TransferBloc>().add(TransferPrepareByNickname(value.nicknameId));
-            }
-          },
+              favoriteUsers.isEmpty
+                  ? null
+                  : favoriteUsers.map((user) {
+                    return DropdownMenuItem<FavoriteUser>(value: user, child: Text(user.nickname));
+                  }).toList(),
+          onChanged:
+              favoriteUsers.isEmpty || transferState.isLoading
+                  ? null
+                  : (FavoriteUser? value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedFavorite = value;
+                        userInput = false;
+                        accountController.clear();
+                        fullNameController.clear();
+                      });
+                      // Prepare transfer with API using nicknameId
+                      context.read<TransferBloc>().add(TransferPrepareByNickname(value.nicknameId));
+                    }
+                  },
         ),
       ),
     );
@@ -237,25 +296,25 @@ class _TransferScreenState extends State<TransferScreen> {
         const Text('To : ', style: TextStyle(fontFamily: 'DMS-SB', fontSize: 18)),
         if (selectedFavorite == null && !transferState.hasRecipient)
           GestureDetector(
-            onTap: () {
-              final account = accountController.text.trim();
-              if (account.isNotEmpty) {
-                setState(() {
-                  userInput = true;
-                  showAmountField = true;
-                  amountController.text = '1000';
-                });
-                context.read<TransferBloc>().add(TransferPrepareByAccountNumber(account));
-              }
-            },
+            onTap: isValidatingAccount ? null : _validateAccount,
             child: Container(
               width: 54,
               height: 36,
               decoration: BoxDecoration(
-                color: userInput ? const Color(0xFF0A3D62) : const Color(0xFFD1D5DC),
+                color:
+                    isValidatingAccount ? Colors.grey : (userInput ? const Color(0xFF0A3D62) : const Color(0xFFD1D5DC)),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Center(child: Icon(Icons.check, color: userInput ? Colors.white : Colors.grey.shade700)),
+              child: Center(
+                child:
+                    isValidatingAccount
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                        : Icon(Icons.check, color: userInput ? Colors.white : Colors.grey.shade700),
+              ),
             ),
           )
         else
@@ -277,8 +336,6 @@ class _TransferScreenState extends State<TransferScreen> {
           userInput = value.trim().isNotEmpty;
           if (value.trim().isEmpty) {
             fullNameController.clear();
-            showAmountField = false;
-            amountController.clear();
           }
         });
       },
@@ -307,62 +364,48 @@ class _TransferScreenState extends State<TransferScreen> {
     );
   }
 
-  Widget _buildAmountField(TransferState transferState) {
-    return TextField(
-      controller: amountController,
-      keyboardType: TextInputType.number,
-      style: const TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: Colors.black),
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      onChanged: (value) {
-        setState(() {});
-      },
-      decoration: const InputDecoration(
-        hintText: 'Enter amount',
-        hintStyle: TextStyle(fontSize: 12, fontFamily: 'DMS-R', color: Color(0xFF99A1AF)),
-        suffixText: 'Ks',
-        suffixStyle: TextStyle(fontFamily: 'DMS-M', fontSize: 14, color: Colors.black),
-        border: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFD1D5DC))),
-        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFD1D5DC))),
-        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF0A3D62), width: 2)),
-      ),
-    );
-  }
-
   Widget _buildContinueButton() {
-    final isAccountValid = accountController.text.trim().isNotEmpty && fullNameController.text.trim().isNotEmpty;
-    final amount = int.tryParse(amountController.text.trim()) ?? 0;
-    final isAmountValid = amount > 0;
-    final isValid = isAccountValid && isAmountValid && showAmountField;
+    final isValid = accountController.text.trim().isNotEmpty && fullNameController.text.trim().isNotEmpty;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: isValid ? const Color(0xFF0A3D62) : const Color(0xFFD1D5DC),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: TextButton(
-          onPressed:
-              isValid
-                  ? () {
-                    print('Continue to next screen');
-                    print('Account: ${accountController.text}');
-                    print('Full Name: ${fullNameController.text}');
-                    print('Amount: ${amountController.text} Ks');
-                    AppRoutes.navigateTo(context, AppRoutes.pin);
-                  }
-                  : null,
-          child: Text(
-            'Continue',
-            style: TextStyle(
-              fontFamily: 'DMS-M',
-              fontSize: 18,
-              color: isValid ? const Color(0xFFE7ECEF) : const Color(0xFF99A1AF),
+    return BlocBuilder<TransferBloc, TransferState>(
+      builder: (context, transferState) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: isValid ? const Color(0xFF0A3D62) : const Color(0xFFD1D5DC),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: TextButton(
+              onPressed:
+                  isValid
+                      ? () {
+                        // Navigate to confirmation screen with recipient data
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => TransferConfirmationScreen(
+                                  recipientAccount: accountController.text,
+                                  recipientName: fullNameController.text,
+                                ),
+                          ),
+                        );
+                      }
+                      : null,
+              child: Text(
+                'Continue',
+                style: TextStyle(
+                  fontFamily: 'DMS-M',
+                  fontSize: 18,
+                  color: isValid ? const Color(0xFFE7ECEF) : const Color(0xFF99A1AF),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

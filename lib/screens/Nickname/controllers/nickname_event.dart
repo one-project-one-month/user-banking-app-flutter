@@ -11,25 +11,31 @@ class LoadNicknames extends NicknameEvent {
 }
 
 class CreateNickname extends NicknameEvent {
-  final String toaccountId;
+  final String toAccountId;
   final String nickname;
-  const CreateNickname({required this.toaccountId, required this.nickname});
+
+  const CreateNickname({required this.toAccountId, required this.nickname});
+
   @override
-  List<Object?> get props => [toaccountId, nickname];
+  List<Object?> get props => [toAccountId, nickname];
 }
 
 class UpdateNickname extends NicknameEvent {
   final String id;
-  final String toaccountId;
+  final String toAccountId;
   final String nickname;
-  const UpdateNickname({required this.id, required this.toaccountId, required this.nickname});
+
+  const UpdateNickname({required this.id, required this.toAccountId, required this.nickname});
+
   @override
-  List<Object?> get props => [id, toaccountId, nickname];
+  List<Object?> get props => [id, toAccountId, nickname];
 }
 
 class DeleteNickname extends NicknameEvent {
   final String id;
+
   const DeleteNickname(this.id);
+
   @override
   List<Object?> get props => [id];
 }

@@ -5,11 +5,10 @@ class ToAccountDetail {
   ToAccountDetail({required this.id, required this.accountNumber});
 
   factory ToAccountDetail.fromJson(Map<String, dynamic> json) {
-    return ToAccountDetail(
-      id: (json['id'] ?? '').toString(),
-      accountNumber: (json['accountNumber'] ?? '').toString(),
-    );
+    return ToAccountDetail(id: (json['id'] ?? '').toString(), accountNumber: (json['accountNumber'] ?? '').toString());
   }
+
+  Map<String, dynamic> toJson() => {'id': id, 'accountNumber': accountNumber};
 }
 
 class NicknameOption {
@@ -23,18 +22,15 @@ class NicknameOption {
     return NicknameOption(
       id: (json['id'] ?? '').toString(),
       nickname: (json['nickname'] ?? '').toString(),
-      toaccountDetail: json['toaccountDetail'] != null
-          ? ToAccountDetail.fromJson(json['toaccountDetail'] as Map<String, dynamic>)
-          : ToAccountDetail(id: '', accountNumber: ''),
+      toaccountDetail:
+          json['toAccountDetail'] != null || json['toaccountDetail'] != null
+              ? ToAccountDetail.fromJson((json['toAccountDetail'] ?? json['toaccountDetail']) as Map<String, dynamic>)
+              : ToAccountDetail(id: '', accountNumber: ''),
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'nickname': nickname,
-        'toaccountDetail': {
-          'id': toaccountDetail.id,
-          'accountNumber': toaccountDetail.accountNumber,
-        }
-      };
+  Map<String, dynamic> toJson() => {'id': id, 'nickname': nickname, 'toAccountDetail': toaccountDetail.toJson()};
+
+  @override
+  String toString() => 'NicknameOption(id: $id, nickname: $nickname, account: ${toaccountDetail.accountNumber})';
 }
