@@ -12,8 +12,6 @@ import 'package:banking_app/screens/QR/qr.dart';
 import 'package:banking_app/screens/Settings/settings_screen.dart';
 import 'package:banking_app/screens/Transfer/views/transfer_screen.dart';
 import 'package:banking_app/screens/auth/controllers/auth_bloc.dart';
-
-import 'package:banking_app/screens/auth/views/main_screen.dart';
 import 'package:banking_app/screens/auth/views/login_screen.dart';
 import 'package:banking_app/screens/auth/views/welcome_screen.dart';
 import 'package:banking_app/screens/auth/views/opt_screen.dart';
