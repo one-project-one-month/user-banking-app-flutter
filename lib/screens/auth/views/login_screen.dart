@@ -142,7 +142,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ),
                     ),
 
-                    SizedBox(height: CommonSize.s32(context)),
+                 //   SizedBox(height: CommonSize.s32(context)
+                    ),
                     Form(
                       key: _formKey,
                       autovalidateMode: AutovalidateMode.disabled,
