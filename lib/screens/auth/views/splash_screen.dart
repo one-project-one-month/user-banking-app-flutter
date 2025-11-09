@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:banking_app/Routes/app_routes.dart';
+import 'package:banking_app/constant.dart';
 import 'package:banking_app/screens/auth/models/token.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -64,39 +65,41 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (!mounted) return;
   AppRoutes.navigateAndReplace(context,// AppRoutes.welcome
- AppRoutes.main );
+ AppRoutes.welcome );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+ 
+
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              // Color.fromARGB(255, 106, 156, 202),
-              Color(0xFF227DBE),
-              Color.fromARGB(255, 10, 89, 146),
-              Color(0xFF0A3D62),
-            ],
+            colors: [theme.colorScheme.primary, theme.colorScheme.tertiary, theme.colorScheme.primary],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         alignment: Alignment.center,
-        child: Center(
-          child: FadeTransition(
-            opacity: _logoFade,
-            child: SlideTransition(
-              position: _logoSlide,
-              child: Image.asset(
-                'assets/font_image/flypay_font.png',
-                width: 150,
-                height: 150,
-                filterQuality: FilterQuality.high,
+        child: Stack(
+          children:[ Center(
+            child: FadeTransition(
+              opacity: _logoFade,
+              child: SlideTransition(
+                position: _logoSlide,
+                child: Image.asset(
+                  'assets/font_image/flypay_font.png',
+                  width: 150,
+                  height: 150,
+                  filterQuality: FilterQuality.high,
+                ),
               ),
             ),
           ),
+          Positioned(bottom: 10, right: 1,left: 1,child:   Center(child: Text(Constant.appVersion)),)
+          ]
         ),
       ),
     );

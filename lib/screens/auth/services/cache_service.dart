@@ -1,14 +1,15 @@
 import 'dart:convert';
 
+import 'package:banking_app/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/token.dart';
 import '../models/registration_options.dart';
 
 /// Simple cache wrapper around SharedPreferences for auth-related data.
 class CacheService {
-  static const _keyToken = 'auth_token';
-  static const _keyUser = 'auth_user';
-  static const _keyRegistrationOptions = 'registration_options';
+  static const _keyToken = Constant.cacheUserTokenKey;
+  static const _keyUser = Constant.cacheUserDataKey;
+  static const _keyRegistrationOptions = Constant.cacheRegistrationOptionsKey;
 
   // ═══════════════════════════════════════════════════════════
   // TOKEN METHODS

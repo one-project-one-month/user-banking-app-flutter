@@ -90,13 +90,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: Container(
           constraints: BoxConstraints.expand(height: MediaQuery.of(context).size.height),
-          decoration: const BoxDecoration(
+          decoration:  BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
-              begin: Alignment.topCenter,
+           colors: [theme.colorScheme.primary, theme.colorScheme.tertiary, theme.colorScheme.primary],
+           begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
@@ -114,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back,
-                          color: Colors.white,
+                          color: theme.colorScheme.onPrimary,
                         ),
                       ),
                     ),
@@ -135,11 +136,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           'Welcome back',
                           style: TextStyle(
                             fontSize: CommonSize.s28(context),
-                            color: Colors.white,
+                            color: theme.colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
                     ),
 
                     SizedBox(height: CommonSize.s32(context)),
@@ -153,16 +153,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             opacity: _1TextFieldFade,
                             child: SlideTransition(
                               position: _1TextFieldSlide,
-                              child: customTextField(
+                                child: customTextField(
                                 controller: _emailController,
-                                errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                errorStyle: TextStyle(color: theme.colorScheme.error),
                                 hintText: 'Username',
-                                textStyle: const TextStyle(color: Colors.white),
+                                textStyle: TextStyle(color: theme.colorScheme.onPrimary),
                                 keyboardType: TextInputType.emailAddress,
-                                prefixIcon: const Icon(Icons.email),
-                                borderColor: Colors.white,
-                                hintStyle: const TextStyle(color: Colors.white),
-                                prefixIconColor: Colors.white,
+                                prefixIcon: Icon(Icons.email, color: theme.colorScheme.onPrimary),
+                                borderColor: theme.colorScheme.onPrimary,
+                                hintStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                prefixIconColor: theme.colorScheme.onPrimary,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter your username';
@@ -180,17 +180,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             opacity: _2TextFieldFade,
                             child: SlideTransition(
                               position: _2TextFieldSlide,
-                              child: customTextField(
+                                child: customTextField(
                                 controller: _passwordController,
                                 hintText: 'Password',
-                                errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
-                                textStyle: const TextStyle(color: Colors.white),
-                                prefixIconColor: Colors.white,
-                                suffixIconColor: Colors.white,
-                                hintStyle: const TextStyle(color: Colors.white),
-                                borderColor: Colors.white,
+                                errorStyle: TextStyle(color: theme.colorScheme.error),
+                                textStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                prefixIconColor: theme.colorScheme.onPrimary,
+                                suffixIconColor: theme.colorScheme.onPrimary,
+                                hintStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                borderColor: theme.colorScheme.onPrimary,
                                 keyboardType: TextInputType.text,
-                                prefixIcon: const Icon(Icons.lock),
+                                prefixIcon: Icon(Icons.lock, color: theme.colorScheme.onPrimary),
                                 isPassword: true,
                                 showPasswordToggle: true,
                                 validator: (value) {
@@ -255,8 +255,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 return customElevatedButton(
                                   onPressed: isLoading ? null : _handleLogin,
                                   text: "Login",
-                                  color: Colors.white,
-                                  textColor: const Color(0xFF1E3C72),
+                                  color: theme.colorScheme.onPrimary,
+                                  textColor: theme.colorScheme.primary,
                                   borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                                   height: CommonSize.s48(context),
                                   width: double.infinity,
@@ -273,19 +273,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 Text(
                                   "If you don't have an account? ",
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontSize: CommonSize.s16(context),
-                                  ),
+                                      color: theme.colorScheme.onPrimary.withOpacity(0.9),
+                                      fontSize: CommonSize.s16(context),
+                                    ),
                                 ),
                                 GestureDetector(
                                   onTap: () => AppRoutes.navigateTo(context, AppRoutes.signup),
-                                  child: Text(
+                                    child: Text(
                                     "Sign up",
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: theme.colorScheme.onPrimary,
                                       fontSize: CommonSize.s16(context),
                                       decoration: TextDecoration.underline,
-                                      decorationColor: Colors.white,
+                                      decorationColor: theme.colorScheme.onPrimary,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),

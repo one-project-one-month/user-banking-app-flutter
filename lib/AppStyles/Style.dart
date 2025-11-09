@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// --------------------------------------------
+/// BRAND COLORS
+/// --------------------------------------------
 class AppColors {
   // Core Brand Colors
   static const Color deepNavy = Color(0xFF0A3D62);
@@ -8,6 +11,7 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
 
   // Blue Shades
+  static const Color blue = Colors.blue;
   static const Color blue50 = Color(0xFFE7ECEF);
   static const Color blue100 = Color(0xFFB3C3CE);
   static const Color blue200 = Color(0xFF8EA6B7);
@@ -19,7 +23,8 @@ class AppColors {
   static const Color blue800 = Color(0xFF062236);
   static const Color blue900 = Color(0xFF041A29);
 
-  // Yellow Shades
+  // Yellow Shades 
+  static const Color yellow = Colors.yellow;
   static const Color yellow50 = Color(0xFFFFF9E6);
   static const Color yellow100 = Color(0xFFFFECB2);
   static const Color yellow200 = Color(0xFFFFE28D);
@@ -41,6 +46,9 @@ class AppColors {
   static const Color divider = Color(0xFFE5E7EB);
 }
 
+/// --------------------------------------------
+/// TYPOGRAPHY
+/// --------------------------------------------
 class AppTypography {
   static final TextTheme textTheme = TextTheme(
     displayLarge: GoogleFonts.dmSans(
@@ -79,18 +87,23 @@ class AppTypography {
   );
 }
 
-// Light theme: uses brightAmber as the prominent accent color (per design request)
+/// --------------------------------------------
+/// LIGHT THEME
+/// --------------------------------------------
 final ThemeData appLightTheme = ThemeData(
   useMaterial3: true,
+  brightness: Brightness.light,
   primaryColor: AppColors.brightAmber,
   scaffoldBackgroundColor: AppColors.background,
 
-  colorScheme: ColorScheme(
+  colorScheme: const ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.brightAmber,
     onPrimary: AppColors.deepNavy,
     secondary: AppColors.deepNavy,
-    onSecondary: AppColors.white,
+    onSecondary: AppColors.yellow,
+        tertiary: AppColors.yellow400,
+    onTertiary: AppColors.yellow500,
     error: AppColors.error,
     onError: AppColors.white,
     background: AppColors.background,
@@ -104,6 +117,8 @@ final ThemeData appLightTheme = ThemeData(
   appBarTheme: AppBarTheme(
     backgroundColor: AppColors.brightAmber,
     foregroundColor: AppColors.deepNavy,
+    centerTitle: true,
+    elevation: 0,
     titleTextStyle: GoogleFonts.dmSans(
       fontSize: 20,
       fontWeight: FontWeight.bold,
@@ -115,10 +130,7 @@ final ThemeData appLightTheme = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: AppColors.deepNavy,
       foregroundColor: AppColors.white,
-      textStyle: GoogleFonts.dmSans(
-        fontWeight: FontWeight.w600,
-        fontSize: 16,
-      ),
+      textStyle: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -140,26 +152,55 @@ final ThemeData appLightTheme = ThemeData(
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.deepNavy, width: 2),
+      borderSide: const BorderSide(color: AppColors.deepNavy, width: 2),
     ),
   ),
 
+  cardTheme: CardThemeData(
+    color: AppColors.white,
+    elevation: 3,
+    margin: const EdgeInsets.all(8),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+  ),
+
+  snackBarTheme: SnackBarThemeData(
+    backgroundColor: AppColors.deepNavy,
+    contentTextStyle: GoogleFonts.inter(color: AppColors.white),
+    behavior: SnackBarBehavior.floating,
+  ),
+
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    backgroundColor: AppColors.white,
+    selectedItemColor: AppColors.deepNavy,
+    unselectedItemColor: AppColors.textSecondary,
+    type: BottomNavigationBarType.fixed,
+  ),
+
+  dividerTheme: const DividerThemeData(color: AppColors.divider),
   iconTheme: const IconThemeData(color: AppColors.deepNavy),
 );
 
-// Dark theme: uses deepNavy as the prominent color
+/// --------------------------------------------
+/// DARK THEME
+/// --------------------------------------------
 final ThemeData appDarkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   primaryColor: AppColors.deepNavy,
   scaffoldBackgroundColor: AppColors.blue900,
 
-  colorScheme: ColorScheme(
+  colorScheme: const ColorScheme(
     brightness: Brightness.dark,
     primary: AppColors.deepNavy,
+    
     onPrimary: AppColors.white,
-    secondary: AppColors.brightAmber,
-    onSecondary: AppColors.deepNavy,
+    secondary: AppColors.brightAmber,  
+    onSecondary: AppColors.blue,
+    tertiary: AppColors.blue400,
+    onTertiary: AppColors.blue500,
+  
     error: AppColors.error,
     onError: AppColors.white,
     background: AppColors.blue900,
@@ -168,11 +209,16 @@ final ThemeData appDarkTheme = ThemeData(
     onSurface: AppColors.white,
   ),
 
-  textTheme: AppTypography.textTheme.apply(bodyColor: AppColors.white, displayColor: AppColors.white),
+  textTheme: AppTypography.textTheme.apply(
+    bodyColor: AppColors.white,
+    displayColor: AppColors.white,
+  ),
 
   appBarTheme: AppBarTheme(
     backgroundColor: AppColors.deepNavy,
     foregroundColor: AppColors.white,
+    centerTitle: true,
+    elevation: 0,
     titleTextStyle: GoogleFonts.dmSans(
       fontSize: 20,
       fontWeight: FontWeight.bold,
@@ -184,10 +230,7 @@ final ThemeData appDarkTheme = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: AppColors.brightAmber,
       foregroundColor: AppColors.deepNavy,
-      textStyle: GoogleFonts.dmSans(
-        fontWeight: FontWeight.w600,
-        fontSize: 16,
-      ),
+      textStyle: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -201,33 +244,42 @@ final ThemeData appDarkTheme = ThemeData(
     hintStyle: GoogleFonts.inter(color: AppColors.yellow100),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.blue700),
+      borderSide: const BorderSide(color: AppColors.blue700),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.blue700),
+      borderSide: const BorderSide(color: AppColors.blue700),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.brightAmber, width: 2),
+      borderSide: const BorderSide(color: AppColors.brightAmber, width: 2),
     ),
   ),
 
+  cardTheme: CardThemeData(
+    color: AppColors.blue800,
+    elevation: 2,
+    margin: const EdgeInsets.all(8),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+  ),
+
+  snackBarTheme: SnackBarThemeData(
+    backgroundColor: AppColors.brightAmber,
+    contentTextStyle: GoogleFonts.inter(color: AppColors.deepNavy),
+    behavior: SnackBarBehavior.floating,
+  ),
+
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    backgroundColor: AppColors.blue800,
+    selectedItemColor: AppColors.brightAmber,
+    unselectedItemColor: AppColors.yellow700,
+    type: BottomNavigationBarType.fixed,
+  ),
+
+  dividerTheme: const DividerThemeData(color: AppColors.blue700),
   iconTheme: const IconThemeData(color: AppColors.white),
 );
 
-/// Backwards-compatible default (light)
-final ThemeData appTheme = appLightTheme;
 
-/// Helper to obtain the ThemeData matching a ThemeMode. For ThemeMode.system
-/// the caller should resolve platform brightness; this returns light by default.
-ThemeData themeForMode(ThemeMode mode) {
-  switch (mode) {
-    case ThemeMode.dark:
-      return appDarkTheme;
-    case ThemeMode.light:
-      return appLightTheme;
-    case ThemeMode.system:
-      return appLightTheme;
-  }
-}

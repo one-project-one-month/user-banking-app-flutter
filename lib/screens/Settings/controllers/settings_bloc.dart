@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:banking_app/constant.dart';
 import 'package:banking_app/screens/Settings/services/settings_api_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../auth/services/cache_service.dart';
@@ -27,6 +28,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<SettingsChangePassword>(_onChangePassword);
     on<SettingsAutoSaveReceipt>(_onAutoSaveReceipt);
   }
+
 
   Future<void> _onLoad(LoadSettings event, Emitter<SettingsState> emit) async {
     // If app runs for the first time, persist initial defaults then emit them.

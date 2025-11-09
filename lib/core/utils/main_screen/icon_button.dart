@@ -27,7 +27,8 @@ class MainScreenIcon extends StatelessWidget {
               color: Colors.white,
             ),
             style: IconButton.styleFrom(
-              backgroundColor: Color(0xff0A3D62),
+              backgroundColor: Theme.of(context).buttonTheme.colorScheme?.primary 
+            ,//  Color(0xff0A3D62),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
