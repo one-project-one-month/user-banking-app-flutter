@@ -12,14 +12,14 @@ import 'package:banking_app/screens/Transactions/controllers/transaction_bloc.da
 import 'package:banking_app/screens/auth/controllers/auth_bloc.dart';
 
 import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
+import 'package:banking_app/screens/auth/services/cache_service.dart';
 import 'package:banking_app/screens/auth/views/splash_screen.dart';
 
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'screens/auth/services/cache_service.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
 // 🧩 Load theme setting before runApp to avoid flash
@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.settingsBloc});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, SettingsBloc settingsBloc) {
     return MultiBlocProvider(
       providers: [
         // Settings Bloc - Only once
@@ -82,7 +82,7 @@ class MyApp extends StatelessWidget {
         builder: (context, settingsState) {
           final isDark = settingsState.darkMode;
           return MaterialApp(
-            title: Constant.appName,
+            title: 'Banking App',
             theme: appLightTheme,
             darkTheme: appDarkTheme,
             themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
