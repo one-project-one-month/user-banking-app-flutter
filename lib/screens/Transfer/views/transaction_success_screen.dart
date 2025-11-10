@@ -1,10 +1,19 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:banking_app/Routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_event.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_state.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'widgets/transaction_info_row.dart';
 import 'widgets/account_info_card.dart';
 import 'widgets/nickname_bottom_sheet.dart';
@@ -15,12 +24,25 @@ class TransactionSuccessScreen extends StatefulWidget {
   const TransactionSuccessScreen({super.key, this.transactionData});
 
   @override
-  State<TransactionSuccessScreen> createState() =>
-      _TransactionSuccessScreenState();
+  State<TransactionSuccessScreen> createState() => _TransactionSuccessScreenState();
 }
 
 class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
   String? _nickname;
+  final GlobalKey _receiptKey = GlobalKey();
+  bool _isSavingReceipt = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if auto-save is enabled
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final settingsState = context.read<SettingsBloc>().state;
+      if (settingsState.autoSaveReceipt) {
+        _saveReceiptAsImage(autoSave: true);
+      }
+    });
+  }
 
   void _showNicknameBottomSheet() {
     showModalBottomSheet(
@@ -38,28 +60,146 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
     );
   }
 
-  void _saveReceipt() {
-    context.read<SettingsBloc>().add(const SettingsAutoSaveReceipt(true));
+  Future<void> _saveReceiptAsImage({bool autoSave = false}) async {
+    if (_isSavingReceipt) return;
+
+    setState(() {
+      _isSavingReceipt = true;
+    });
+
+    try {
+      // Different permission strategies for different Android versions
+      bool permissionGranted = false;
+
+      if (Platform.isAndroid) {
+        // Get Android version
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+        final sdkInt = androidInfo.version.sdkInt;
+
+        if (sdkInt >= 33) {
+          // Android 13+ (API 33+) - Use photos/media permissions
+          PermissionStatus photosStatus = await Permission.photos.status;
+          if (!photosStatus.isGranted) {
+            photosStatus = await Permission.photos.request();
+          }
+          permissionGranted = photosStatus.isGranted || photosStatus.isLimited;
+        } else {
+          // Android 12 and below - Use storage permission
+          PermissionStatus storageStatus = await Permission.storage.status;
+          if (!storageStatus.isGranted) {
+            storageStatus = await Permission.storage.request();
+          }
+          permissionGranted = storageStatus.isGranted;
+        }
+
+        if (!permissionGranted) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Storage permission is required to save receipt'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          setState(() {
+            _isSavingReceipt = false;
+          });
+          return;
+        }
+      } else {
+        // iOS
+        PermissionStatus photosStatus = await Permission.photos.status;
+        if (!photosStatus.isGranted) {
+          photosStatus = await Permission.photos.request();
+        }
+        permissionGranted = photosStatus.isGranted || photosStatus.isLimited;
+
+        if (!permissionGranted) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Photos permission is required to save receipt'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          setState(() {
+            _isSavingReceipt = false;
+          });
+          return;
+        }
+      }
+
+      // Wait for widget to be fully rendered
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Capture the receipt as image
+      RenderRepaintBoundary boundary = _receiptKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+
+      // Capture at high quality
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      // Generate filename with timestamp
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = 'receipt_$timestamp';
+
+      // Save to gallery
+      final result = await ImageGallerySaverPlus.saveImage(pngBytes, quality: 100, name: fileName);
+
+      if (mounted) {
+        if (result != null && result['isSuccess'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                autoSave ? 'Receipt auto-saved to gallery successfully!' : 'Receipt saved to gallery successfully!',
+              ),
+              backgroundColor: const Color(0xFF16A34A),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+
+          // Update auto-save preference if manually saved
+          if (!autoSave) {
+            context.read<SettingsBloc>().add(const SettingsAutoSaveReceipt(true));
+          }
+        } else {
+          throw Exception('Failed to save to gallery');
+        }
+      }
+    } catch (e) {
+      print('❌ Error saving receipt: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save receipt: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSavingReceipt = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<SettingsBloc, SettingsState>(
       listener: (context, state) {
-        if (state.isSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message ?? 'Receipt saved successfully!'),
-              backgroundColor: const Color(0xFF16A34A),
-            ),
-          );
-        } else if (state.hasError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Failed to save receipt'),
-              backgroundColor: Colors.red,
-            ),
-          );
+        if (state.isSuccess && state.message != null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message!), backgroundColor: const Color(0xFF16A34A)));
+        } else if (state.hasError && state.errorMessage != null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red));
         }
       },
       child: _buildContent(),
@@ -67,7 +207,6 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
   }
 
   Widget _buildContent() {
-    // Default transaction data if none provided
     final data =
         widget.transactionData ??
         {
@@ -99,170 +238,170 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(CommonSize.s20(context)),
-                child: Card(
-                  elevation: 4,
-                  color:
-                      Colors
-                          .grey[50], // Same light off-white as contact info cards
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      CommonSize.s16(context),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(CommonSize.s16(context)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header
-                        Center(
-                          child: Text(
-                            'Transfer Successful',
+                child: RepaintBoundary(
+                  key: _receiptKey,
+                  child: Card(
+                    elevation: 4,
+                    color: Colors.grey[50],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CommonSize.s16(context))),
+                    child: Padding(
+                      padding: EdgeInsets.all(CommonSize.s16(context)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header
+                          Center(
+                            child: Text(
+                              'Transfer Successful',
+                              style: TextStyle(
+                                color: const Color(0xFF002D62),
+                                fontSize: CommonSize.s18(context),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: CommonSize.s16(context)),
+
+                          // From Section
+                          Text(
+                            'From:',
                             style: TextStyle(
                               color: const Color(0xFF002D62),
-                              fontSize: CommonSize.s18(context),
-                              fontWeight: FontWeight.bold,
+                              fontSize: CommonSize.s14(context),
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
 
-                        SizedBox(height: CommonSize.s16(context)),
+                          SizedBox(height: CommonSize.s8(context)),
 
-                        // From Section
-                        Text(
-                          'From:',
-                          style: TextStyle(
-                            color: const Color(0xFF002D62),
-                            fontSize: CommonSize.s14(context),
-                            fontWeight: FontWeight.w600,
+                          AccountInfoCard(
+                            name: data['fromName'] ?? 'Ms. San',
+                            accountNumber: data['fromAccount'] ?? '234-1-56643-6',
+                            amount: '${data['amount'] ?? '588,000'} ${data['currency'] ?? 'Ks'}',
+                            amountColor: const Color(0xFFFFA726),
                           ),
-                        ),
 
-                        SizedBox(height: CommonSize.s8(context)),
+                          SizedBox(height: CommonSize.s20(context)),
 
-                        AccountInfoCard(
-                          name: data['fromName'] ?? 'Ms. San',
-                          accountNumber: data['fromAccount'] ?? '234-1-56643-6',
-                          amount:
-                              '${data['amount'] ?? '588,000'} ${data['currency'] ?? 'Ks'}',
-                          amountColor: const Color(0xFFFFA726),
-                        ),
+                          // Direction Arrow
+                          Center(
+                            child: Container(
+                              padding: EdgeInsets.all(CommonSize.s6(context)),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFFFFA726).withOpacity(0.1),
+                              ),
+                              child: Icon(
+                                Icons.arrow_downward,
+                                color: const Color(0xFFFFA726),
+                                size: CommonSize.s20(context),
+                              ),
+                            ),
+                          ),
 
-                        SizedBox(height: CommonSize.s20(context)),
+                          SizedBox(height: CommonSize.s20(context)),
 
-                        // Direction Arrow
-                        Center(
-                          child: Container(
-                            padding: EdgeInsets.all(CommonSize.s6(context)),
+                          // To Section
+                          Text(
+                            'To:',
+                            style: TextStyle(
+                              color: const Color(0xFF002D62),
+                              fontSize: CommonSize.s14(context),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          SizedBox(height: CommonSize.s8(context)),
+
+                          AccountInfoCard(
+                            name: data['toName'] ?? 'Mr. Jhon',
+                            accountNumber: data['toAccount'] ?? '671-2-67452-2',
+                          ),
+
+                          SizedBox(height: CommonSize.s16(context)),
+
+                          // Divider
+                          Container(
+                            height: 1,
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFFFFA726).withOpacity(0.1),
-                            ),
-                            child: Icon(
-                              Icons.arrow_downward,
-                              color: const Color(0xFFFFA726),
-                              size: CommonSize.s20(context),
+                              gradient: LinearGradient(
+                                colors: [Colors.transparent, const Color(0xFFFFA726), Colors.transparent],
+                              ),
                             ),
                           ),
-                        ),
 
-                        SizedBox(height: CommonSize.s20(context)),
+                          SizedBox(height: CommonSize.s12(context)),
 
-                        // To Section
-                        Text(
-                          'To:',
-                          style: TextStyle(
-                            color: const Color(0xFF002D62),
-                            fontSize: CommonSize.s14(context),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-
-                        SizedBox(height: CommonSize.s8(context)),
-
-                        AccountInfoCard(
-                          name: data['toName'] ?? 'Mr. Jhon',
-                          accountNumber: data['toAccount'] ?? '671-2-67452-2',
-                        ),
-
-                        SizedBox(height: CommonSize.s16(context)),
-
-                        // Divider
-                        Container(
-                          height: 1,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                const Color(0xFFFFA726),
-                                Colors.transparent,
-                              ],
+                          // Amount Section
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: CommonSize.s8(context),
+                              horizontal: CommonSize.s12(context),
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8F9FA),
+                              borderRadius: BorderRadius.circular(CommonSize.s6(context)),
+                            ),
+                            child: TransactionInfoRow(
+                              label: 'Amount (Ks)',
+                              value: '${data['amount'] ?? '588,000'} ${data['currency'] ?? 'Ks'}',
+                              valueFontWeight: FontWeight.bold,
+                              valueFontSize: CommonSize.s16(context),
+                              labelFontSize: CommonSize.s14(context),
+                              labelColor: const Color(0xFF002D62),
+                              valueColor: const Color(0xFF002D62),
                             ),
                           ),
-                        ),
 
-                        SizedBox(height: CommonSize.s12(context)),
+                          SizedBox(height: CommonSize.s8(context)),
 
-                        // Amount Section
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            vertical: CommonSize.s8(context),
-                            horizontal: CommonSize.s12(context),
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8F9FA),
-                            borderRadius: BorderRadius.circular(
-                              CommonSize.s6(context),
-                            ),
-                          ),
-                          child: TransactionInfoRow(
-                            label: 'Amount (Ks)',
-                            value:
-                                '${data['amount'] ?? '588,000'} ${data['currency'] ?? 'Ks'}',
-                            valueFontWeight: FontWeight.bold,
-                            valueFontSize: CommonSize.s16(context),
-                            labelFontSize: CommonSize.s14(context),
-                            labelColor: const Color(0xFF002D62),
-                            valueColor: const Color(0xFF002D62),
-                          ),
-                        ),
-
-                        SizedBox(height: CommonSize.s8(context)),
-
-                        // Transfer Fee
-                        TransactionInfoRow(
-                          label: 'Transfer fee',
-                          value: '0 ${data['currency'] ?? 'Ks'}',
-                          labelColor: const Color(0xFF6B7280),
-                          valueColor: const Color(0xFF6B7280),
-                          labelFontSize: CommonSize.s12(context),
-                          valueFontSize: CommonSize.s12(context),
-                        ),
-
-                        SizedBox(height: CommonSize.s8(context)),
-
-                        // Note
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            vertical: CommonSize.s8(context),
-                            horizontal: CommonSize.s12(context),
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFA726).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(
-                              CommonSize.s6(context),
-                            ),
-                          ),
-                          child: TransactionInfoRow(
-                            label: 'Note',
-                            value: data['note'] ?? 'Testing',
-                            labelColor: const Color(0xFFFFA726),
-                            valueColor: const Color(0xFFFFA726),
+                          // Transfer Fee
+                          TransactionInfoRow(
+                            label: 'Transfer fee',
+                            value: '0 ${data['currency'] ?? 'Ks'}',
+                            labelColor: const Color(0xFF6B7280),
+                            valueColor: const Color(0xFF6B7280),
                             labelFontSize: CommonSize.s12(context),
                             valueFontSize: CommonSize.s12(context),
                           ),
-                        ),
-                      ],
+
+                          SizedBox(height: CommonSize.s8(context)),
+
+                          // Note
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: CommonSize.s8(context),
+                              horizontal: CommonSize.s12(context),
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFA726).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(CommonSize.s6(context)),
+                            ),
+                            child: TransactionInfoRow(
+                              label: 'Note',
+                              value: data['note'] ?? 'Testing',
+                              labelColor: const Color(0xFFFFA726),
+                              valueColor: const Color(0xFFFFA726),
+                              labelFontSize: CommonSize.s12(context),
+                              valueFontSize: CommonSize.s12(context),
+                            ),
+                          ),
+
+                          // Timestamp footer
+                          SizedBox(height: CommonSize.s16(context)),
+                          Center(
+                            child: Text(
+                              'Saved: ${DateTime.now().toString().substring(0, 19)}',
+                              style: TextStyle(
+                                color: const Color(0xFF6B7280),
+                                fontSize: CommonSize.s10(context),
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -270,27 +409,28 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
             ),
           ),
 
-          // Set up nickname button - centered in remaining space
+          // Set up nickname button
           Container(
-            height: 135, // Fixed height for the button area
+            height: 135,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: _showNicknameBottomSheet,
+                    onTap: () {
+                      AppRoutes.navigateTo(context, AppRoutes.nickname).then((value) {
+                        if (value != null && value is String) {
+                          setState(() {
+                            _nickname = value;
+                          });
+                        }
+                      });
+                    },
                     child: Container(
                       width: CommonSize.s48(context),
                       height: CommonSize.s48(context),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF0A3D62),
-                      ),
-                      child: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF0A3D62)),
+                      child: const Icon(Icons.add, color: Colors.white, size: 20),
                     ),
                   ),
 
@@ -323,22 +463,13 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
         ],
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: CommonSize.s40(context), // Increased horizontal padding
-          vertical: CommonSize.s20(context),
-        ),
+        padding: EdgeInsets.symmetric(horizontal: CommonSize.s40(context), vertical: CommonSize.s20(context)),
         decoration: const BoxDecoration(
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: Offset(0, -2),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))],
         ),
-        child: customElevatedButton(context: context,
-          onPressed: _saveReceipt,
+        child: customElevatedButton(
+          onPressed: _isSavingReceipt ? null : () => _saveReceiptAsImage(autoSave: false),
           text: 'Save Receipt',
           color: const Color(0xFF0A3D62),
           textColor: Colors.white,
@@ -347,6 +478,7 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
           width: double.infinity,
           fontSize: CommonSize.s18(context),
           fontWeight: FontWeight.w600,
+          isLoading: _isSavingReceipt,
         ),
       ),
     );
