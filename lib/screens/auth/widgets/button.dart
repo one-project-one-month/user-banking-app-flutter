@@ -1,9 +1,10 @@
+import 'package:banking_app/AppStyles/Style.dart';
 import 'package:flutter/material.dart';
 
 
 Widget customElevatedButton({
   required String text,
-  VoidCallback? onPressed,
+  VoidCallback? onPressed,required BuildContext context,
   
   bool isLoading = false,
   Color? color,
@@ -14,6 +15,7 @@ Widget customElevatedButton({
   FontWeight? fontWeight,
   BorderRadius? borderRadius,
 }) {
+ final theme = Theme.of(context);
   return ElevatedButton(
     style: ButtonStyle(
       backgroundColor: WidgetStateProperty.all(color ?? Colors.blue),
@@ -28,10 +30,11 @@ Widget customElevatedButton({
     ),
     onPressed: isLoading ? null : onPressed,
     child: isLoading
-        ? const SizedBox(
+        ?  SizedBox(
             width: 20,
             height: 20,
-            child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+            child: CircularProgressIndicator.adaptive(strokeWidth: 2,backgroundColor: 
+            theme.colorScheme.brightness == Brightness.light ? Colors.white : AppColors.deepNavy,),
           )
         : Text(text,
             style: TextStyle(

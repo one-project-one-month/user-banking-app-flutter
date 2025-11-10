@@ -124,7 +124,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       opacity: _logoFade,
                       child: SlideTransition(
                         position: _logoSlide,
-                        child: AppLogo(width: 110, height: 110, borderRadius: 24, showShadow: true),
+                        child: 
+                        theme.colorScheme.brightness == Brightness.dark
+                            ? const AppLogo(
+                                width: 110,
+                                height: 110,
+                                borderRadius: 24,
+                                showShadow: true,
+                              )
+                            : const
+                        AppLogo2(width: 110, height: 110, borderRadius: 24, showShadow: true),
                       ),
                     ),
                     SizedBox(height: CommonSize.s20(context)),
@@ -134,16 +143,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         position: _contentSlide,
                         child: Text(
                           'Welcome back',
-                          style: TextStyle(
+                          style: 
+                          TextStyle(
                             fontSize: CommonSize.s28(context),
                             color: theme.colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                     ),
-
-                 //   SizedBox(height: CommonSize.s32(context)
                     ),
+                    SizedBox(height: CommonSize.s32(context)),
                     Form(
                       key: _formKey,
                       autovalidateMode: AutovalidateMode.disabled,
@@ -253,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               builder: (context, state) {
                                 final isLoading = state.status == AuthStatus.loading;
 
-                                return customElevatedButton(
+                                return customElevatedButton(context: context,
                                   onPressed: isLoading ? null : _handleLogin,
                                   text: "Login",
                                   color: theme.colorScheme.onPrimary,

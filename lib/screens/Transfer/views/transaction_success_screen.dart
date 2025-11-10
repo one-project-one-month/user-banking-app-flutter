@@ -337,7 +337,7 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
             ),
           ],
         ),
-        child: customElevatedButton(
+        child: customElevatedButton(context: context,
           onPressed: _saveReceipt,
           text: 'Save Receipt',
           color: const Color(0xFF0A3D62),

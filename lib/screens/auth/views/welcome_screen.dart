@@ -95,8 +95,16 @@ class _MainScreenState extends State<WelcomeScreen>
                         opacity: _logoFade,
                         child: SlideTransition(
                           position: _logoSlide,
-                          child: AppLogo(width: 110, height: 110, borderRadius: 24, showShadow: true),
-                        ),
+                          child:  theme.colorScheme.brightness == Brightness.dark
+                            ? const AppLogo(
+                                width: 110,
+                                height: 110,
+                                borderRadius: 24,
+                                showShadow: true,
+                              )
+                            : const
+                        AppLogo2(width: 110, height: 110, borderRadius: 24, showShadow: true),
+                      ),
                       ),
                       SizedBox(height: CommonSize.s32(context)),
                       FadeTransition(
@@ -137,6 +145,7 @@ class _MainScreenState extends State<WelcomeScreen>
                           //     AppRoutes.personalInfo,
                           //   );
                           // },
+                          context: context,
                           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignupScreen())),
                           text: "Create Account",
                           color: theme.colorScheme.onPrimary,
