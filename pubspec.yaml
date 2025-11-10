@@ -81,6 +81,7 @@ flutter:
   assets:
    - assets/
    - assets/logo/flypay.png
+   - assets/logo/flypay2.png
    - assets/font_image/
    - assets/svg/
    - assets/svg/Passport.svg

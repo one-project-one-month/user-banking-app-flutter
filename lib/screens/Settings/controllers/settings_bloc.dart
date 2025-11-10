@@ -10,13 +10,16 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SettingsApiService api;
   final CacheService cache;
 
-  static const _kDark = 'settings_dark_mode';
-  static const _kAuto = 'settings_auto_save';
+   static const _kDark = Constant.cacheSettingDarkModeKey;
+  static const _kAuto = Constant.cacheSettingAutoSaveKey;
 
-  SettingsBloc({SettingsApiService? apiService, CacheService? cacheService})
-    : api = apiService ?? SettingsApiService(baseUrl: "http://10.0.2.2:7777"),
-      cache = cacheService ?? CacheService(),
-      super(SettingsState.initial()) {
+   SettingsBloc({
+    SettingsApiService? apiService,
+    CacheService? cacheService,
+    SettingsState? initialState, // 👈 Add this parameter
+  })  : api = apiService ?? SettingsApiService(),
+  cache = cacheService ?? CacheService(),
+        super(initialState ?? SettingsState.initial()) {
     // Persistence handlers
     on<LoadSettings>(_onLoad);
     on<ToggleDarkMode>(_onToggleDark);
@@ -32,7 +35,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
   Future<void> _onLoad(LoadSettings event, Emitter<SettingsState> emit) async {
     // If app runs for the first time, persist initial defaults then emit them.
-    const initKey = '_settings_initialized';
+    const initKey = Constant.cacheSettingInitializedKey;
     final initialized = await cache.getBool(initKey);
 
     if (!event.force && (initialized == null || initialized == false)) {

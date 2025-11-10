@@ -134,7 +134,7 @@ class _NicknameBottomSheetState extends State<NicknameBottomSheet> {
                 SizedBox(height: CommonSize.s24(context)),
 
                 // Save button
-                customElevatedButton(
+                customElevatedButton(context: context,
                   onPressed: _saveNickname,
                   text: 'Save',
                   color: const Color(0xFF0A3D62),
