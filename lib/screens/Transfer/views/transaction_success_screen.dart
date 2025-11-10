@@ -225,7 +225,7 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
         backgroundColor: const Color(0xFF002D62),
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => AppRoutes.navigateAndRemoveUntil(context, AppRoutes.home_screen),
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(''),
@@ -469,6 +469,7 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))],
         ),
         child: customElevatedButton(
+          context: context,
           onPressed: _isSavingReceipt ? null : () => _saveReceiptAsImage(autoSave: false),
           text: 'Save Receipt',
           color: const Color(0xFF0A3D62),

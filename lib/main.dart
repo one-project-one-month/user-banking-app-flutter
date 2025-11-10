@@ -15,14 +15,13 @@ import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
 import 'package:banking_app/screens/auth/services/cache_service.dart';
 import 'package:banking_app/screens/auth/views/splash_screen.dart';
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-// 🧩 Load theme setting before runApp to avoid flash
+  // 🧩 Load theme setting before runApp to avoid flash
   final cache = CacheService();
   final initKey = Constant.cacheSettingInitializedKey;
   final initialized = await cache.getBool(initKey);
@@ -41,10 +40,7 @@ void main() async {
     autoSave = await cache.getBool(Constant.cacheSettingAutoSaveKey) ?? false;
   }
 
-  final initialState = SettingsState.initial().copyWith(
-    darkMode: darkMode,
-    autoSave: autoSave,
-  );
+  final initialState = SettingsState.initial().copyWith(darkMode: darkMode, autoSave: autoSave);
 
   final settingsBloc = SettingsBloc(cacheService: cache, initialState: initialState);
 
@@ -57,26 +53,26 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.settingsBloc});
 
   @override
-  Widget build(BuildContext context, SettingsBloc settingsBloc) {
+  Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // Settings Bloc - Only once
         BlocProvider<SettingsBloc>.value(value: settingsBloc),
 
         // KYC Blocs
-        BlocProvider<UploadBloc>(create: (context) => UploadBloc()),
-        BlocProvider<VerificationBloc>(create: (context) => VerificationBloc()),
-        BlocProvider<FaceAuthBloc>(create: (context) => FaceAuthBloc(FaceAuthService())),
+        BlocProvider<UploadBloc>(create: (_) => UploadBloc()),
+        BlocProvider<VerificationBloc>(create: (_) => VerificationBloc()),
+        BlocProvider<FaceAuthBloc>(create: (_) => FaceAuthBloc(FaceAuthService())),
 
         // Core Auth & User Blocs
-        BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
-        BlocProvider<UserBloc>(create: (context) => UserBloc(), lazy: false),
+        BlocProvider<AuthBloc>(create: (_) => AuthBloc()),
+        BlocProvider<UserBloc>(create: (_) => UserBloc(), lazy: false),
 
-        // Transfer Bloc - Only once
-        BlocProvider<TransferBloc>(create: (context) => TransferBloc(), lazy: false),
+        // Transfer & Transaction Blocs
+        BlocProvider<TransferBloc>(create: (_) => TransferBloc(), lazy: false),
+        BlocProvider<TransactionBloc>(create: (_) => TransactionBloc()),
 
-        // Transaction Bloc (if needed)
-         BlocProvider<TransactionBloc>(create: (context) => TransactionBloc()),
+        // 🎯 QR Payment Bloc - NEW!
+      //  BlocProvider<QRPaymentBloc>(create: (_) => QRPaymentBloc(), lazy: false),
       ],
       child: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, settingsState) {

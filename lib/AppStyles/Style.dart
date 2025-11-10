@@ -23,7 +23,7 @@ class AppColors {
   static const Color blue800 = Color(0xFF062236);
   static const Color blue900 = Color(0xFF041A29);
 
-  // Yellow Shades 
+  // Yellow Shades
   static const Color yellow = Colors.yellow;
   static const Color yellow50 = Color(0xFFFFF9E6);
   static const Color yellow100 = Color(0xFFFFECB2);
@@ -51,39 +51,13 @@ class AppColors {
 /// --------------------------------------------
 class AppTypography {
   static final TextTheme textTheme = TextTheme(
-    displayLarge: GoogleFonts.dmSans(
-      fontSize: 48,
-      fontWeight: FontWeight.bold,
-      color: AppColors.textPrimary,
-    ),
-    headlineLarge: GoogleFonts.dmSans(
-      fontSize: 32,
-      fontWeight: FontWeight.bold,
-      color: AppColors.textPrimary,
-    ),
-    headlineMedium: GoogleFonts.dmSans(
-      fontSize: 24,
-      fontWeight: FontWeight.bold,
-      color: AppColors.textPrimary,
-    ),
-    titleLarge: GoogleFonts.dmSans(
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textPrimary,
-    ),
-    bodyLarge: GoogleFonts.inter(
-      fontSize: 16,
-      color: AppColors.textPrimary,
-    ),
-    bodyMedium: GoogleFonts.inter(
-      fontSize: 14,
-      color: AppColors.textSecondary,
-    ),
-    labelLarge: GoogleFonts.dmSans(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: AppColors.white,
-    ),
+    displayLarge: GoogleFonts.dmSans(fontSize: 48, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+    headlineLarge: GoogleFonts.dmSans(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+    headlineMedium: GoogleFonts.dmSans(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+    titleLarge: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+    bodyLarge: GoogleFonts.inter(fontSize: 16, color: AppColors.textPrimary),
+    bodyMedium: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+    labelLarge: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.white),
   );
 }
 
@@ -99,10 +73,10 @@ final ThemeData appLightTheme = ThemeData(
   colorScheme: const ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.brightAmber,
-    onPrimary: AppColors.deepNavy,
+    onPrimary: AppColors.background,
     secondary: AppColors.deepNavy,
     onSecondary: AppColors.yellow,
-        tertiary: AppColors.yellow400,
+    tertiary: AppColors.yellow400,
     onTertiary: AppColors.yellow500,
     error: AppColors.error,
     onError: AppColors.white,
@@ -119,11 +93,7 @@ final ThemeData appLightTheme = ThemeData(
     foregroundColor: AppColors.deepNavy,
     centerTitle: true,
     elevation: 0,
-    titleTextStyle: GoogleFonts.dmSans(
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-      color: AppColors.deepNavy,
-    ),
+    titleTextStyle: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.deepNavy),
   ),
 
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -131,9 +101,7 @@ final ThemeData appLightTheme = ThemeData(
       backgroundColor: AppColors.deepNavy,
       foregroundColor: AppColors.white,
       textStyle: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
     ),
   ),
@@ -160,9 +128,7 @@ final ThemeData appLightTheme = ThemeData(
     color: AppColors.white,
     elevation: 3,
     margin: const EdgeInsets.all(8),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
   ),
 
   snackBarTheme: SnackBarThemeData(
@@ -194,13 +160,13 @@ final ThemeData appDarkTheme = ThemeData(
   colorScheme: const ColorScheme(
     brightness: Brightness.dark,
     primary: AppColors.deepNavy,
-    
+
     onPrimary: AppColors.white,
-    secondary: AppColors.brightAmber,  
+    secondary: AppColors.brightAmber,
     onSecondary: AppColors.blue,
     tertiary: AppColors.blue400,
     onTertiary: AppColors.blue500,
-  
+
     error: AppColors.error,
     onError: AppColors.white,
     background: AppColors.blue900,
@@ -209,21 +175,14 @@ final ThemeData appDarkTheme = ThemeData(
     onSurface: AppColors.white,
   ),
 
-  textTheme: AppTypography.textTheme.apply(
-    bodyColor: AppColors.white,
-    displayColor: AppColors.white,
-  ),
+  textTheme: AppTypography.textTheme.apply(bodyColor: AppColors.white, displayColor: AppColors.white),
 
   appBarTheme: AppBarTheme(
     backgroundColor: AppColors.deepNavy,
     foregroundColor: AppColors.white,
     centerTitle: true,
     elevation: 0,
-    titleTextStyle: GoogleFonts.dmSans(
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-      color: AppColors.white,
-    ),
+    titleTextStyle: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.white),
   ),
 
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -231,9 +190,7 @@ final ThemeData appDarkTheme = ThemeData(
       backgroundColor: AppColors.brightAmber,
       foregroundColor: AppColors.deepNavy,
       textStyle: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
     ),
   ),
@@ -260,9 +217,7 @@ final ThemeData appDarkTheme = ThemeData(
     color: AppColors.blue800,
     elevation: 2,
     margin: const EdgeInsets.all(8),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
   ),
 
   snackBarTheme: SnackBarThemeData(
@@ -281,5 +236,3 @@ final ThemeData appDarkTheme = ThemeData(
   dividerTheme: const DividerThemeData(color: AppColors.blue700),
   iconTheme: const IconThemeData(color: AppColors.white),
 );
-
-
