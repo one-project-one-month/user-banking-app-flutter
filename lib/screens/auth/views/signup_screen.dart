@@ -72,14 +72,15 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+     final theme = Theme.of(context);
     return BlocProvider(
       create: (_) => AuthBloc(),
       child: Scaffold(
         body: Container(
-          decoration: const BoxDecoration(
+          decoration:  BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
-              begin: Alignment.topCenter,
+               colors: [theme.colorScheme.primary, theme.colorScheme.tertiary, theme.colorScheme.primary],
+          begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
@@ -94,7 +95,7 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                       onPressed: () => Navigator.pop(context),
                       icon: Icon(
                         Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back,
-                        color: Colors.white,
+                           color: theme.colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -103,8 +104,16 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                     opacity: _logoFade,
                     child: SlideTransition(
                       position: _logoSlide,
-                      child: AppLogo(width: 110, height: 110, borderRadius: 24, showShadow: true),
-                    ),
+                      child:  theme.colorScheme.brightness == Brightness.dark
+                            ? const AppLogo(
+                                width: 110,
+                                height: 110,
+                                borderRadius: 24,
+                                showShadow: true,
+                              )
+                            : const
+                        AppLogo2(width: 110, height: 110, borderRadius: 24, showShadow: true),
+                       ),
                   ),
                   SizedBox(height: CommonSize.s20(context)),
                   FadeTransition(
@@ -115,7 +124,7 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                         'Create Account',
                         style: TextStyle(
                           fontSize: CommonSize.s28(context),
-                          color: Colors.white,
+                           color: theme.colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -134,14 +143,14 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                             position: _1TextFieldSlide,
                             child: customTextField(
                               controller: _emailController,
-                              errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                              errorStyle:  TextStyle(color: theme.colorScheme.error),
                               hintText: 'Enter your email',
-                              textStyle: const TextStyle(color: Colors.white),
+                              textStyle:  TextStyle(color: theme.colorScheme.onPrimary),
                               keyboardType: TextInputType.emailAddress,
-                              prefixIcon: const Icon(Icons.email),
-                              borderColor: Colors.white,
-                              hintStyle: const TextStyle(color: Colors.white),
-                              prefixIconColor: Colors.white,
+                              prefixIcon:  Icon(Icons.email),
+                              borderColor: theme.colorScheme.onPrimary,
+                              hintStyle:  TextStyle(color: theme.colorScheme.onPrimary),
+                              prefixIconColor: theme.colorScheme.onPrimary,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter your email';
@@ -210,10 +219,10 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                                   if (!isLoading && _formKey.currentState!.validate()) {
                                     context.read<AuthBloc>().add(AuthRequestOTP(_emailController.text.trim()));
                                   }
-                                },
+                                },  context: context,
                                 text: "Continue",
-                                color: Colors.white,
-                                textColor: const Color(0xFF1E3C72),
+                                color: theme.colorScheme.onPrimary,
+                                textColor: theme.colorScheme.primary,
                                 borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                                 height: CommonSize.s48(context),
                                 width: double.infinity,
@@ -230,7 +239,7 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                               Text(
                                 "Already have an account? ",
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: theme.colorScheme.onPrimary.withOpacity(0.9),
                                   fontSize: CommonSize.s16(context),
                                 ),
                               ),
@@ -239,10 +248,10 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                                 child: Text(
                                   "Log in",
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: theme.colorScheme.onPrimary,
                                     fontSize: CommonSize.s16(context),
                                     decoration: TextDecoration.underline,
-                                    decorationColor: Colors.white,
+                                    decorationColor: theme.colorScheme.onPrimary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

@@ -178,6 +178,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
   // ──────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocProvider.value(
       value: widget.authBloc, // <-- SAME BLoC
       child: Scaffold(
@@ -186,20 +188,20 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
           automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
+          iconTheme: IconThemeData(color: theme.colorScheme.onPrimary),
           leading: IconButton(
             icon: Icon(
               Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back,
-              color: Colors.white,
+              color: theme.colorScheme.onPrimary,
             ),
             onPressed: () => Navigator.pop(context),
           ),
         ),
         body: Container(
           constraints: BoxConstraints.expand(height: MediaQuery.of(context).size.height),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
+              colors: [theme.colorScheme.primary, theme.colorScheme.tertiary, theme.colorScheme.primary],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -216,7 +218,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                       opacity: _logoFade,
                       child: SlideTransition(
                         position: _logoSlide,
-                        child: AppLogo(width: 90, height: 90, borderRadius: 20),
+                        child: theme.colorScheme.brightness == Brightness.dark
+                            ? AppLogo(width: 90, height: 90, borderRadius: 20)
+                            : AppLogo2(width: 90, height: 90, borderRadius: 20),
                       ),
                     ),
                     SizedBox(height: CommonSize.s20(context)),
@@ -231,7 +235,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                             Text(
                               'Personal Details',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: theme.colorScheme.onPrimary,
                                 fontSize: CommonSize.s24(context),
                                 fontWeight: FontWeight.bold,
                               ),
@@ -239,7 +243,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                             Text(
                               'Tell us about yourself!',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: theme.colorScheme.onPrimary,
                                 fontSize: CommonSize.s14(context),
                                 fontWeight: FontWeight.bold,
                               ),
@@ -252,7 +256,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
 
                     // ───── LOADING / FORM ─────
                     if (_isLoadingOptions)
-                      const CircularProgressIndicator(color: Colors.white)
+                      CircularProgressIndicator(color: theme.colorScheme.onPrimary)
                     else
                       Form(
                         key: _formKey,
@@ -264,23 +268,23 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // ── Full name ──
-                                Text('Full name', style: TextStyle(color: Colors.white)),
+                                Text('Full name', style: TextStyle(color: theme.colorScheme.onPrimary)),
                                 SizedBox(height: CommonSize.s8(context)),
                                 customTextField(
                                   controller: _fullNameController,
                                   hintText: 'Mr/Mrs/Miss Full Name',
-                                  textStyle: const TextStyle(color: Colors.white),
-                                  hintStyle: const TextStyle(color: Colors.white),
-                                  prefixIcon: const Icon(Icons.person, color: Colors.white),
-                                  borderColor: Colors.white,
-                                  errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                  textStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                  hintStyle: TextStyle(color: theme.colorScheme.onPrimary.withOpacity(0.9)),
+                                  prefixIcon: Icon(Icons.person, color: theme.colorScheme.onPrimary),
+                                  borderColor: theme.colorScheme.onPrimary,
+                                  errorStyle: TextStyle(color: theme.colorScheme.error),
                                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                                   validator: (v) => v?.isEmpty ?? true ? 'Enter your full name' : null,
                                 ),
                                 SizedBox(height: CommonSize.s12(context)),
 
                                 // ── Date of birth ──
-                                Text('Date of birth', style: TextStyle(color: Colors.white)),
+                                Text('Date of birth', style: TextStyle(color: theme.colorScheme.onPrimary)),
                                 SizedBox(height: CommonSize.s8(context)),
                                 Row(
                                   children: [
@@ -293,10 +297,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                                           FilteringTextInputFormatter.digitsOnly,
                                           LengthLimitingTextInputFormatter(2),
                                         ],
-                                        borderColor: Colors.white,
-                                        hintStyle: const TextStyle(color: Colors.white),
-                                        textStyle: const TextStyle(color: Colors.white),
-                                        errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                        borderColor: theme.colorScheme.onPrimary,
+                                        hintStyle: TextStyle(color: theme.colorScheme.onPrimary.withOpacity(0.9)),
+                                        textStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                        errorStyle: TextStyle(color: theme.colorScheme.error),
                                         onEditingComplete: () => FocusScope.of(context).nextFocus(),
                                         validator: (v) {
                                           if (v == null || v.isEmpty) return 'DD';
@@ -316,10 +320,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                                           FilteringTextInputFormatter.digitsOnly,
                                           LengthLimitingTextInputFormatter(2),
                                         ],
-                                        borderColor: Colors.white,
-                                        hintStyle: const TextStyle(color: Colors.white),
-                                        textStyle: const TextStyle(color: Colors.white),
-                                        errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                        borderColor: theme.colorScheme.onPrimary,
+                                        hintStyle: TextStyle(color: theme.colorScheme.onPrimary.withOpacity(0.9)),
+                                        textStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                        errorStyle: TextStyle(color: theme.colorScheme.error),
                                         onEditingComplete: () => FocusScope.of(context).nextFocus(),
                                         validator: (v) {
                                           if (v == null || v.isEmpty) return 'MM';
@@ -339,10 +343,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                                           FilteringTextInputFormatter.digitsOnly,
                                           LengthLimitingTextInputFormatter(4),
                                         ],
-                                        borderColor: Colors.white,
-                                        hintStyle: const TextStyle(color: Colors.white),
-                                        textStyle: const TextStyle(color: Colors.white),
-                                        errorStyle: const TextStyle(color: Color.fromARGB(255, 240, 252, 2)),
+                                        borderColor: theme.colorScheme.onPrimary,
+                                        hintStyle: TextStyle(color: theme.colorScheme.onPrimary.withOpacity(0.9)),
+                                        textStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                        errorStyle: TextStyle(color: theme.colorScheme.error),
                                         onEditingComplete: () => FocusScope.of(context).unfocus(),
                                         validator: (v) {
                                           if (v == null || v.isEmpty) return 'YYYY';
@@ -367,19 +371,19 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                                   onChanged: (v) => setState(() => _selectedGenderId = v),
                                   decoration: InputDecoration(
                                     labelText: 'Gender',
-                                    labelStyle: const TextStyle(color: Colors.white),
-                                    prefixIcon: const Icon(Icons.wc, color: Colors.white),
+                                    labelStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                    prefixIcon: Icon(Icons.wc, color: theme.colorScheme.onPrimary),
                                     enabledBorder: UnderlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(color: Colors.white),
+                                      borderSide: BorderSide(color: theme.colorScheme.onPrimary),
                                     ),
                                     focusedBorder: UnderlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.white, width: 2),
+                                      borderSide: BorderSide(color: theme.colorScheme.onPrimary, width: 2),
                                     ),
                                   ),
-                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                                  dropdownColor: const Color(0xFF0A3D62),
-                                  style: const TextStyle(color: Colors.white),
+                                  icon: Icon(Icons.arrow_drop_down, color: theme.colorScheme.onPrimary),
+                                  dropdownColor: theme.colorScheme.primary,
+                                  style: TextStyle(color: theme.colorScheme.onPrimary),
                                   validator: (v) => v == null ? 'Select gender' : null,
                                 ),
                                 SizedBox(height: CommonSize.s12(context)),
@@ -394,19 +398,19 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                                   onChanged: (v) => setState(() => _selectedNationalityId = v),
                                   decoration: InputDecoration(
                                     labelText: 'Nationality',
-                                    labelStyle: const TextStyle(color: Colors.white),
-                                    prefixIcon: const Icon(Icons.people, color: Colors.white),
+                                    labelStyle: TextStyle(color: theme.colorScheme.onPrimary),
+                                    prefixIcon: Icon(Icons.people, color: theme.colorScheme.onPrimary),
                                     enabledBorder: UnderlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(color: Colors.white),
+                                      borderSide: BorderSide(color: theme.colorScheme.onPrimary),
                                     ),
                                     focusedBorder: UnderlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.white, width: 2),
+                                      borderSide: BorderSide(color: theme.colorScheme.onPrimary, width: 2),
                                     ),
                                   ),
-                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                                  dropdownColor: const Color(0xFF0A3D62),
-                                  style: const TextStyle(color: Colors.white),
+                                  icon: Icon(Icons.arrow_drop_down, color: theme.colorScheme.onPrimary),
+                                  dropdownColor: theme.colorScheme.primary,
+                                  style: TextStyle(color: theme.colorScheme.onPrimary),
                                   validator: (v) => v == null ? 'Select nationality' : null,
                                 ),
                               ],
@@ -462,10 +466,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
                                 if (!isLoading) {
                                   _submit();
                                 }
-                              },
+                              },context: context,
                               text: 'Next',
-                              color: Colors.white,
-                              textColor: const Color(0xFF0A3D62),
+                              color: theme.colorScheme.onPrimary,
+                              textColor: theme.colorScheme.primary,
                               borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                               height: CommonSize.s48(context),
                               width: double.infinity,

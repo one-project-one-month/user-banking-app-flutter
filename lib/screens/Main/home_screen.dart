@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 SnackBar(content: Text(state.errorMessage ?? 'Session expired'), backgroundColor: Colors.red),
               );
               Future.delayed(const Duration(seconds: 1), () {
-                AppRoutes.navigateAndRemoveUntil(context, AppRoutes.login);
+                AppRoutes.navigateAndRemoveUntil(context, AppRoutes.welcome);
               });
             } else {
               ScaffoldMessenger.of(context).showSnackBar(

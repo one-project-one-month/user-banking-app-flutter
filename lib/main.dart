@@ -5,20 +5,15 @@ import 'package:banking_app/screens/KYC/document/controllers/upload/upload_bloc.
 import 'package:banking_app/screens/KYC/document/controllers/verification/verification_bloc.dart';
 import 'package:banking_app/screens/KYC/face_authentication/controller/face_auth_bloc.dart';
 import 'package:banking_app/screens/KYC/face_authentication/service/face_auth_service.dart';
-import 'package:banking_app/screens/Main/home_screen.dart';
-import 'package:banking_app/screens/Nickname/views/nickname_create.dart';
-import 'package:banking_app/screens/Nickname/views/nickname_list.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
-import 'package:banking_app/screens/Settings/controllers/settings_event.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_state.dart';
 import 'package:banking_app/screens/Transfer/controllers/transfer_bloc.dart';
 import 'package:banking_app/screens/Transactions/controllers/transaction_bloc.dart';
 import 'package:banking_app/screens/auth/controllers/auth_bloc.dart';
-import 'package:banking_app/screens/views/splash_screen.dart';
-import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
 
-import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
+import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
 import 'package:banking_app/screens/auth/views/splash_screen.dart';
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,9 +22,9 @@ import 'screens/auth/services/cache_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🧩 Load theme setting before runApp to avoid flash
+// 🧩 Load theme setting before runApp to avoid flash
   final cache = CacheService();
-  const initKey = '_settings_initialized';
+  final initKey = Constant.cacheSettingInitializedKey;
   final initialized = await cache.getBool(initKey);
 
   bool darkMode = false;
@@ -66,7 +61,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         // Settings Bloc - Only once
-        BlocProvider<SettingsBloc>(create: (context) => SettingsBloc()..add(LoadSettings())),
+        BlocProvider<SettingsBloc>.value(value: settingsBloc),
 
         // KYC Blocs
         BlocProvider<UploadBloc>(create: (context) => UploadBloc()),

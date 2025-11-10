@@ -135,43 +135,68 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+     final theme = Theme.of(context);
     return BlocProvider.value(
       value: widget.authBloc,
       child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
-            color: Colors.white,
-          ),
-        ),
+      //  extendBodyBehindAppBar: true,
+        // appBar: AppBar(
+        //   backgroundColor: theme.appBarTheme.backgroundColor,
+        //   elevation: 0,
+        //   leading: IconButton(
+        //     icon: Icon(Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back),
+        //     onPressed: () => Navigator.pop(context),
+        //     color: theme.colorScheme.onPrimary,
+        //   ),
+        // ),
         body: Container(
-          decoration: const BoxDecoration(
+            constraints: BoxConstraints.expand(height: MediaQuery.of(context).size.height),
+        
+          decoration:  BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF227DBE), Color.fromARGB(255, 10, 89, 146), Color(0xFF0A3D62)],
-              begin: Alignment.topCenter,
+               colors: [theme.colorScheme.primary, theme.colorScheme.tertiary, theme.colorScheme.primary],
+          begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
           child: SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(CommonSize.s20(context)),
+            child: Padding(
+              padding: EdgeInsets.all(CommonSize.s20(context)),
+              child: SingleChildScrollView(
+                 physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+             
                 child: Column(
                   children: [
+                       Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(
+                          Theme.of(context).platform == TargetPlatform.iOS ? Icons.arrow_back_ios : Icons.arrow_back,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: CommonSize.s40(context)),
                     // Logo
                     FadeTransition(
                       opacity: _logoFade,
                       child: SlideTransition(
                         position: _logoSlide,
-                        child: AppLogo(width: 90, height: 90, borderRadius: 20),
-                      ),
+                        child:   theme.colorScheme.brightness == Brightness.dark
+                            ? const AppLogo(
+                                width: 110,
+                                height: 110,
+                                borderRadius: 24,
+                                showShadow: true,
+                              )
+                            : const
+                        AppLogo2(width: 110, height: 110, borderRadius: 24, showShadow: true),
+                   ),
                     ),
                     SizedBox(height: CommonSize.s24(context)),
-
+                            
                     // Title
                     FadeTransition(
                       opacity: _contentFade,
@@ -182,7 +207,7 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                             Text(
                               'Enter verification code',
                               style: TextStyle(
-                                color: Colors.white,
+                                 color: theme.colorScheme.onPrimary,
                                 fontSize: CommonSize.s20(context),
                                 fontWeight: FontWeight.bold,
                               ),
@@ -194,16 +219,16 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                                   TextSpan(
                                     text: 'We sent a 6-digit code to ',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
+                                        color: theme.colorScheme.onPrimary,
                                       fontSize: CommonSize.s14(context),
                                     ),
                                   ),
                                   TextSpan(
                                     text: widget.destination ?? 'your email',
                                     style: TextStyle(
-                                      color: Colors.amberAccent,
-                                      fontSize: CommonSize.s14(context),
-                                      fontWeight: FontWeight.w700,
+                                        color: theme.colorScheme.secondary,
+                                      fontSize: CommonSize.s16(context),
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
@@ -215,7 +240,7 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                       ),
                     ),
                     SizedBox(height: CommonSize.s28(context)),
-
+                            
                     // OTP Fields
                     FadeTransition(
                       opacity: _fieldsFade,
@@ -236,23 +261,23 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                                   textAlign: TextAlign.center,
                                   maxLength: 1,
                                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style:  TextStyle(
+                                    color: theme.colorScheme.onPrimary,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                   decoration: InputDecoration(
                                     counterText: '',
                                     enabledBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.white24),
+                                      borderSide:  BorderSide(   color: theme.colorScheme.onPrimary.withOpacity(0.5),),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.white),
+                                      borderSide:  BorderSide(color:     theme.colorScheme.onPrimary.withOpacity(0.5)),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     filled: true,
-                                    fillColor: Colors.white.withOpacity(0.06),
+                                    fillColor:     theme.colorScheme.onPrimary.withOpacity(0.06),
                                   ),
                                   onChanged: (v) => _onFieldChanged(i, v),
                                 ),
@@ -263,7 +288,7 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                       ),
                     ),
                     SizedBox(height: CommonSize.s20(context)),
-
+                            
                     // Submit + Resend
                     BlocConsumer<AuthBloc, AuthState>(
                       listener: (context, state) {
@@ -286,18 +311,18 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                       },
                       builder: (context, state) {
                         final isLoading = state.status == AuthStatus.loading;
-
+                            
                         return FadeTransition(
                           opacity: _buttonFade,
                           child: SlideTransition(
                             position: _buttonSlide,
                             child: Column(
                               children: [
-                                customElevatedButton(
+                                customElevatedButton(context: context,
                                   onPressed: _submitCode,
                                   text: 'Verify',
-                                  color: Colors.white,
-                                  textColor: const Color(0xFF1E3C72),
+                                   color: theme.colorScheme.onPrimary,
+                                  textColor:     theme.colorScheme.primary,
                                   borderRadius: BorderRadius.circular(CommonSize.s10(context)),
                                   height: CommonSize.s48(context),
                                   width: double.infinity,
@@ -310,7 +335,7 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                                     Text(
                                       _secondsLeft > 0 ? 'Resend in $_secondsLeft s' : "Didn't receive?",
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.9),
+                                        color:  theme.colorScheme.onPrimary.withOpacity(0.9),
                                         fontSize: CommonSize.s14(context),
                                       ),
                                     ),
@@ -324,7 +349,10 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                                               : null,
                                       child: Text(
                                         'Resend',
-                                        style: TextStyle(color: _secondsLeft == 0 ? Colors.white : Colors.white54),
+                                        style: TextStyle(color: _secondsLeft == 0 ? theme.colorScheme.onPrimary : theme.colorScheme.onPrimary.withOpacity(0.5),
+                                          fontSize: CommonSize.s14(context),
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ],

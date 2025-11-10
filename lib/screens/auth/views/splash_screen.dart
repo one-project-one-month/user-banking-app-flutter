@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
           ),
-          Positioned(bottom: 10, right: 1,left: 1,child:   Center(child: Text(Constant.appVersion)),)
+          Positioned(bottom: 10, right: 1,left: 1,child:   Center(child: Text(Constant.appVersion,style: theme.textTheme.bodySmall,)),)
           ]
         ),
       ),
