@@ -5,14 +5,12 @@ import 'package:banking_app/screens/KYC/document/views/upload_document.dart';
 import 'package:banking_app/screens/KYC/document/views/upload_document_dl.dart';
 import 'package:banking_app/screens/KYC/document/views/upload_document_passport.dart';
 import 'package:banking_app/screens/KYC/face_authentication/let_start_screen.dart';
-import 'package:banking_app/screens/Main/controllers/user_bloc.dart';
 import 'package:banking_app/screens/Main/home_screen.dart';
 import 'package:banking_app/screens/Nickname/views/nickname_list.dart';
 import 'package:banking_app/screens/QR/qr.dart';
 import 'package:banking_app/screens/Settings/settings_screen.dart';
 import 'package:banking_app/screens/Transfer/views/transfer_screen.dart';
 import 'package:banking_app/screens/auth/controllers/auth_bloc.dart';
-
 import 'package:banking_app/screens/auth/views/login_screen.dart';
 import 'package:banking_app/screens/auth/views/welcome_screen.dart';
 import 'package:banking_app/screens/auth/views/opt_screen.dart';
