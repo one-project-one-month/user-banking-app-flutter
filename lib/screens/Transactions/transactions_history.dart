@@ -16,10 +16,10 @@ class _TransactionsHistoryState extends State<TransactionsHistory> {
   @override
   void initState() {
     super.initState();
-    // Load transactions when screen opens
+    // Load full transaction history when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<TransactionBloc>().add(const TransactionLoadData());
+        context.read<TransactionBloc>().add(const TransactionLoadHistory());
       }
     });
   }
@@ -40,7 +40,7 @@ class _TransactionsHistoryState extends State<TransactionsHistory> {
         builder: (context, state) {
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<TransactionBloc>().add(const TransactionRefreshData());
+              context.read<TransactionBloc>().add(const TransactionLoadHistory());
               await Future.delayed(const Duration(milliseconds: 500));
             },
             child: Column(
@@ -177,7 +177,7 @@ class _TransactionsHistoryState extends State<TransactionsHistory> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                context.read<TransactionBloc>().add(const TransactionLoadData());
+                context.read<TransactionBloc>().add(const TransactionLoadHistory());
               },
               child: const Text('Retry'),
             ),

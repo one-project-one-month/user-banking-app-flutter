@@ -15,17 +15,19 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     : api = apiService ?? TransactionService(baseUrl: "http://10.0.2.2:7777"),
       cache = cacheService ?? CacheService(),
       super(const TransactionState()) {
-    on<TransactionLoadData>(_onLoadData);
+    // Register all event handlers
+    on<TransactionLoadRecentTransfers>(_onLoadRecentTransfers);
+    on<TransactionLoadHistory>(_onLoadHistory);
     on<TransactionRefreshData>(_onRefreshData);
     on<TransactionFilterByType>(_onFilterByType);
     on<TransactionFilterByDateRange>(_onFilterByDateRange);
   }
 
-  FutureOr<void> _onLoadData(TransactionLoadData event, Emitter<TransactionState> emit) async {
+  /// Load recent transfers (for home screen - 5 most recent)
+  FutureOr<void> _onLoadRecentTransfers(TransactionLoadRecentTransfers event, Emitter<TransactionState> emit) async {
     emit(state.copyWith(status: TransactionStatus.loading));
 
     try {
-      // Get token from cache
       final token = await cache.getToken();
 
       if (token == null || token.accessToken.isEmpty) {
@@ -35,16 +37,14 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         return;
       }
 
-      // Check if token is expired
       if (token.isExpired) {
         emit(state.copyWith(status: TransactionStatus.error, errorMessage: 'Session expired. Please login again.'));
         return;
       }
 
-      // Fetch recent transfers from API
       final transfers = await api.getRecentTransfers(token.accessToken);
 
-      print('✅ Loaded ${transfers.length} transactions');
+      print('✅ Loaded ${transfers.length} recent transfers for home screen');
 
       emit(
         state.copyWith(
@@ -55,7 +55,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         ),
       );
     } catch (e) {
-      String errorMsg = 'Failed to load transactions';
+      String errorMsg = 'Failed to load recent transfers';
       if (e is TransactionServiceException) {
         errorMsg = e.message;
       } else {
@@ -63,7 +63,50 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       }
 
       print('❌ TransactionBloc error: $errorMsg');
+      emit(state.copyWith(status: TransactionStatus.error, errorMessage: errorMsg));
+    }
+  }
 
+  /// Load transaction history (for transaction history screen - all transactions)
+  FutureOr<void> _onLoadHistory(TransactionLoadHistory event, Emitter<TransactionState> emit) async {
+    emit(state.copyWith(status: TransactionStatus.loading));
+
+    try {
+      final token = await cache.getToken();
+
+      if (token == null || token.accessToken.isEmpty) {
+        emit(
+          state.copyWith(status: TransactionStatus.error, errorMessage: 'No authentication token found. Please login.'),
+        );
+        return;
+      }
+
+      if (token.isExpired) {
+        emit(state.copyWith(status: TransactionStatus.error, errorMessage: 'Session expired. Please login again.'));
+        return;
+      }
+
+      final transfers = await api.getTransactionHistory(token.accessToken);
+
+      print('✅ Loaded ${transfers.length} transactions for history screen');
+
+      emit(
+        state.copyWith(
+          status: TransactionStatus.loaded,
+          allTransactions: transfers,
+          filteredTransactions: transfers,
+          errorMessage: null,
+        ),
+      );
+    } catch (e) {
+      String errorMsg = 'Failed to load transaction history';
+      if (e is TransactionServiceException) {
+        errorMsg = e.message;
+      } else {
+        errorMsg = e.toString();
+      }
+
+      print('❌ TransactionBloc error: $errorMsg');
       emit(state.copyWith(status: TransactionStatus.error, errorMessage: errorMsg));
     }
   }
@@ -80,7 +123,13 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         return;
       }
 
-      final transfers = await api.getRecentTransfers(token.accessToken);
+      // Load appropriate data based on context
+      // If we have fewer than 10 transactions, it's likely the home screen (recent)
+      // Otherwise, it's the history screen (all)
+      final transfers =
+          state.allTransactions.length <= 10
+              ? await api.getRecentTransfers(token.accessToken)
+              : await api.getTransactionHistory(token.accessToken);
 
       // Apply current filters
       final filtered = _applyFilters(transfers, state.activeFilter, state.activeDateFilter);
@@ -137,17 +186,33 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         break;
     }
 
-    // Apply date filter (implement based on your date logic)
-    // For now, this is a placeholder
+    // Apply date filter
+    final now = DateTime.now();
     switch (dateFilter) {
       case DateFilterType.yesterday:
-        // Filter for yesterday's transactions
+        final yesterday = now.subtract(const Duration(days: 1));
+        filtered =
+            filtered.where((t) {
+              // This is a placeholder - you'll need to add proper date parsing
+              // based on your actual transaction time format
+              return true; // TODO: implement date comparison
+            }).toList();
         break;
       case DateFilterType.lastWeek:
-        // Filter for last week's transactions
+        final lastWeek = now.subtract(const Duration(days: 7));
+        filtered =
+            filtered.where((t) {
+              // TODO: implement date comparison
+              return true;
+            }).toList();
         break;
       case DateFilterType.lastMonth:
-        // Filter for last month's transactions
+        final lastMonth = DateTime(now.year, now.month - 1, now.day);
+        filtered =
+            filtered.where((t) {
+              // TODO: implement date comparison
+              return true;
+            }).toList();
         break;
       case DateFilterType.all:
         break;

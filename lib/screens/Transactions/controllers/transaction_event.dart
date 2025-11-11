@@ -7,9 +7,14 @@ abstract class TransactionEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Load recent transfers from API
-class TransactionLoadData extends TransactionEvent {
-  const TransactionLoadData();
+/// Load recent transfers from API (for home screen - 5 most recent)
+class TransactionLoadRecentTransfers extends TransactionEvent {
+  const TransactionLoadRecentTransfers();
+}
+
+/// Load full transaction history from API (for transaction history screen - all)
+class TransactionLoadHistory extends TransactionEvent {
+  const TransactionLoadHistory();
 }
 
 /// Refresh recent transfers (pull to refresh)
