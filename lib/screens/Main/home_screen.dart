@@ -45,8 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // Dispatch once after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-       ///! context.read<UserBloc>().add(const UserLoadData());
-      ///!  context.read<TransactionBloc>().add(const TransactionLoadData());
+        context.read<UserBloc>().add(const UserLoadData());
+        // Load recent transfers (5 most recent) for home screen
+        context.read<TransactionBloc>().add(const TransactionLoadRecentTransfers());
       }
     });
   }
@@ -69,13 +70,27 @@ class _HomeScreenState extends State<HomeScreen> {
             final username = state.user?.username ?? 'User';
             return Row(
               children: [
-                Icon(Icons.account_circle, size: 45, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
+                Icon(
+                  Icons.account_circle,
+                  size: 45,
+                  color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
+                ),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_getGreeting(), style: theme.textTheme.bodySmall?.copyWith(color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary)),
-                    Text(username, style: theme.textTheme.bodySmall?.copyWith(color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary)),
+                    Text(
+                      _getGreeting(),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                    Text(
+                      username,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -85,10 +100,18 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Row(
             children: [
-              Icon(Icons.notifications_active, size: 30, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
+              Icon(
+                Icons.notifications_active,
+                size: 30,
+                color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
+              ),
               const SizedBox(width: 15),
               IconButton(
-                icon:  Icon(Icons.settings, size: 30, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
+                icon: Icon(
+                  Icons.settings,
+                  size: 30,
+                  color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
+                ),
                 onPressed: () {
                   AppRoutes.navigateTo(context, AppRoutes.settings);
                 },
@@ -100,33 +123,38 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
-          // if (state.hasError) {
-          //   if (state.errorMessage?.contains('login') ?? false) {
-          //     ScaffoldMessenger.of(context).showSnackBar(
-          //       SnackBar(content: Text(state.errorMessage ?? 'Session expired'), backgroundColor: Colors.red),
-          //     );
-          //     Future.delayed(const Duration(seconds: 1), () {
-          //     //!  AppRoutes.navigateAndRemoveUntil(context, AppRoutes.welcome);
-          //     });
-          //   } else {
-          //     ScaffoldMessenger.of(context).showSnackBar(
-          //       SnackBar(content: Text(state.errorMessage ?? 'An error occurred'), backgroundColor: Colors.orange),
-          //     );
-          //   }
-          // }
+          if (state.hasError) {
+            if (state.errorMessage?.contains('login') ?? false) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.errorMessage ?? 'Session expired'), backgroundColor: Colors.red),
+              );
+              Future.delayed(const Duration(seconds: 1), () {
+                AppRoutes.navigateAndRemoveUntil(context, AppRoutes.welcome);
+              });
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.errorMessage ?? 'An error occurred'), backgroundColor: Colors.orange),
+              );
+            }
+          }
         },
         builder: (context, userState) {
           return RefreshIndicator(
             onRefresh: () async {
-              // context.read<UserBloc>().add(const UserRefreshData());
-              // context.read<TransactionBloc>().add(const TransactionRefreshData());
-              // await Future.delayed(const Duration(milliseconds: 500));
+              context.read<UserBloc>().add(const UserRefreshData());
+              context.read<TransactionBloc>().add(const TransactionRefreshData());
+              await Future.delayed(const Duration(milliseconds: 500));
             },
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [theme.colorScheme.primary,theme.colorScheme.tertiary,theme.colorScheme.onTertiary,theme.colorScheme.onPrimary,],
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.tertiary,
+                    theme.colorScheme.onTertiary,
+                    theme.colorScheme.onPrimary,
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -158,16 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                               else
                                 Text(
-                                  
                                   isVisible ? "${userState.user?.formattedBalance ?? '0'} MMK" : "xx,xxx MMK",
-                                  // style: TextStyle(
-                                  //   fontFamily: 'DMsansSB',
-                                  //   fontSize: MediaQuery.of(context).size.width * 0.04,
-                                  //   fontWeight: FontWeight.bold,
-                                  //   color: const Color(0xff072B46),
-                                  // ),
-                                    style: theme.textTheme.titleLarge?.copyWith(fontFamily: 'DMsansSB'),
-                          
+                                  style: theme.textTheme.titleLarge?.copyWith(fontFamily: 'DMsansSB'),
                                 ),
                               IconButton(
                                 onPressed: () {
@@ -187,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
- SizedBox(height: 40),
+                  SizedBox(height: 40),
 
                   Expanded(
                     child: Container(
@@ -285,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
 
-                              // Recent Transactions from API
+                              // Recent Transactions from API (5 most recent)
                               BlocBuilder<TransactionBloc, TransactionState>(
                                 builder: (context, transactionState) {
                                   if (transactionState.isLoading) {
@@ -312,8 +332,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     );
                                   }
 
-                                  // Show only the 3 most recent transactions
-                                  final recentTransactions = transactionState.recentTransactions;
+                                  // Show the recent transactions (already limited to 5 by API)
+                                  final recentTransactions = transactionState.filteredTransactions;
 
                                   return Column(
                                     children:
