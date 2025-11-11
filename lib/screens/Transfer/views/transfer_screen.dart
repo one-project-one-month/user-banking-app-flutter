@@ -1,4 +1,3 @@
-
 import 'package:banking_app/AppStyles/Style.dart';
 import 'package:banking_app/screens/Transfer/views/transfer_confirmation_screen.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -35,6 +34,7 @@ class _TransferScreenState extends State<TransferScreen> {
   void initState() {
     super.initState();
     // Load from accounts when screen opens
+    context.read<TransferBloc>().add(const TransferClearRecipient());
     context.read<TransferBloc>().add(const TransferLoadFromAccounts());
     // Load nicknames from API
     _loadNicknames();
@@ -99,20 +99,21 @@ class _TransferScreenState extends State<TransferScreen> {
           backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon:  Icon(Icons.arrow_back_ios, color:  theme.iconTheme.color ?? Colors.black,
-     ),
+            icon: Icon(Icons.arrow_back_ios, color: theme.iconTheme.color ?? Colors.black),
           ),
-          title:  Text('Transfer', 
-             style: GoogleFonts.inter(
-            color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black,
-            fontWeight: FontWeight.w600,
-          ),     ),             
+          title: Text(
+            'Transfer',
+            style: GoogleFonts.inter(
+              color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           //tyle: TextStyle(fontSize: 24, fontFamily: 'DMS-B', color: Colors.black)),
           centerTitle: true,
           actions: [
             // Refresh nicknames button
             IconButton(
-              icon:  Icon(Icons.refresh,  color:  theme.iconTheme.color ?? Colors.black,),
+              icon: Icon(Icons.refresh, color: theme.iconTheme.color ?? Colors.black),
               onPressed: isLoadingNicknames ? null : _loadNicknames,
             ),
           ],
@@ -341,7 +342,11 @@ class _TransferScreenState extends State<TransferScreen> {
     return TextField(
       keyboardType: TextInputType.number,
       controller: accountController,
-      style:  TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black),
+      style: TextStyle(
+        fontFamily: 'DMS-SB',
+        fontSize: 14,
+        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+      ),
       enabled: isEnabled,
       onChanged: (value) {
         setState(() {
@@ -366,8 +371,12 @@ class _TransferScreenState extends State<TransferScreen> {
     return TextField(
       controller: fullNameController,
       enabled: false,
-        style:  TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black),
-   
+      style: TextStyle(
+        fontFamily: 'DMS-SB',
+        fontSize: 14,
+        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+      ),
+
       decoration: const InputDecoration(
         hintText: 'Full Name',
         hintStyle: TextStyle(fontSize: 12, fontFamily: 'DMS-R', color: Color(0xFF99A1AF)),
@@ -387,18 +396,17 @@ class _TransferScreenState extends State<TransferScreen> {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-             // color: isValid ? 
-              //Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onPrimary,
-              color: isValid
-    ? AppColors.deepNavy
-    : AppColors.blue100,
-
+              color: isValid ? AppColors.deepNavy : Colors.blue.shade100,
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextButton(
               onPressed:
-                  !isValid
+                  isValid // ✅ FIXED - button enabled when form IS valid
                       ? () {
+                        print('✅ Continue button pressed');
+                        print('   Account: ${accountController.text}');
+                        print('   Name: ${fullNameController.text}');
+
                         // Navigate to confirmation screen with recipient data
                         Navigator.push(
                           context,
