@@ -65,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (!mounted) return;
   AppRoutes.navigateAndReplace(context,// AppRoutes.welcome
- AppRoutes.welcome );
+ AppRoutes.home_screen );
   }
 
   @override

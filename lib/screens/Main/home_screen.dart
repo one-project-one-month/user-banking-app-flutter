@@ -45,8 +45,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // Dispatch once after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<UserBloc>().add(const UserLoadData());
-        context.read<TransactionBloc>().add(const TransactionLoadData());
+       ///! context.read<UserBloc>().add(const UserLoadData());
+      ///!  context.read<TransactionBloc>().add(const TransactionLoadData());
       }
     });
   }
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(Icons.notifications_active, size: 30, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
               const SizedBox(width: 15),
               IconButton(
-                icon: const Icon(Icons.settings, size: 30, color: Colors.white),
+                icon:  Icon(Icons.settings, size: 30, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
                 onPressed: () {
                   AppRoutes.navigateTo(context, AppRoutes.settings);
                 },
@@ -100,27 +100,27 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
-          if (state.hasError) {
-            if (state.errorMessage?.contains('login') ?? false) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.errorMessage ?? 'Session expired'), backgroundColor: Colors.red),
-              );
-              Future.delayed(const Duration(seconds: 1), () {
-                AppRoutes.navigateAndRemoveUntil(context, AppRoutes.welcome);
-              });
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.errorMessage ?? 'An error occurred'), backgroundColor: Colors.orange),
-              );
-            }
-          }
+          // if (state.hasError) {
+          //   if (state.errorMessage?.contains('login') ?? false) {
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       SnackBar(content: Text(state.errorMessage ?? 'Session expired'), backgroundColor: Colors.red),
+          //     );
+          //     Future.delayed(const Duration(seconds: 1), () {
+          //     //!  AppRoutes.navigateAndRemoveUntil(context, AppRoutes.welcome);
+          //     });
+          //   } else {
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       SnackBar(content: Text(state.errorMessage ?? 'An error occurred'), backgroundColor: Colors.orange),
+          //     );
+          //   }
+          // }
         },
         builder: (context, userState) {
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<UserBloc>().add(const UserRefreshData());
-              context.read<TransactionBloc>().add(const TransactionRefreshData());
-              await Future.delayed(const Duration(milliseconds: 500));
+              // context.read<UserBloc>().add(const UserRefreshData());
+              // context.read<TransactionBloc>().add(const TransactionRefreshData());
+              // await Future.delayed(const Duration(milliseconds: 500));
             },
             child: Container(
               width: double.infinity,
@@ -160,13 +160,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   
                                   isVisible ? "${userState.user?.formattedBalance ?? '0'} MMK" : "xx,xxx MMK",
-                                  style: TextStyle(
-                                    fontFamily: 'DMsansSB',
-                                    fontSize: MediaQuery.of(context).size.width * 0.04,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xff072B46),
-                                  ),
-                                  
+                                  // style: TextStyle(
+                                  //   fontFamily: 'DMsansSB',
+                                  //   fontSize: MediaQuery.of(context).size.width * 0.04,
+                                  //   fontWeight: FontWeight.bold,
+                                  //   color: const Color(0xff072B46),
+                                  // ),
+                                    style: theme.textTheme.titleLarge?.copyWith(fontFamily: 'DMsansSB'),
+                          
                                 ),
                               IconButton(
                                 onPressed: () {

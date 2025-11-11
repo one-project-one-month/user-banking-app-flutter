@@ -32,19 +32,24 @@ class _TransferConfirmationScreenState extends State<TransferConfirmationScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor,
           elevation: 0,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF99A1AF), size: 20),
+            icon: Icon(Icons.arrow_back_ios, color: theme.iconTheme.color ?? Colors.grey, size: 20),
           ),
-          title: const Text('Confirmation', style: TextStyle(fontSize: 20, fontFamily: 'DMS-B', color: Colors.black)),
+          title: Text(
+            'Confirmation',
+            style: TextStyle(fontSize: 20, fontFamily: 'DMS-B', color: theme.textTheme.titleLarge?.color ?? theme.colorScheme.onBackground),
+          ),
           centerTitle: true,
         ),
         body: BlocConsumer<TransferBloc, TransferState>(
@@ -77,26 +82,26 @@ class _TransferConfirmationScreenState extends State<TransferConfirmationScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'From:',
-                            style: TextStyle(fontFamily: 'DMS-M', fontSize: 14, color: Color(0xFF6B7280)),
+                            style: TextStyle(fontFamily: 'DMS-M', fontSize: 14, color: theme.colorScheme.onBackground.withOpacity(0.75)),
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
                                 username,
-                                style: const TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: Colors.black),
+                                style: TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: theme.colorScheme.onBackground),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 fromAccount?.accountNumber ?? '',
-                                style: const TextStyle(fontFamily: 'DMS-R', fontSize: 13, color: Color(0xFF6B7280)),
+                                style: TextStyle(fontFamily: 'DMS-R', fontSize: 13, color: theme.colorScheme.onBackground.withOpacity(0.75)),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '${fromAccount?.formattedBalance ?? '0'} Ks',
-                                style: const TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: Color(0xFFFFB800)),
+                                style: TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: theme.colorScheme.primary),
                               ),
                             ],
                           ),
@@ -108,19 +113,19 @@ class _TransferConfirmationScreenState extends State<TransferConfirmationScreen>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(color: theme.dividerColor),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'Logo',
-                            style: TextStyle(fontFamily: 'DMS-R', fontSize: 10, color: Color(0xFF9CA3AF)),
+                            style: TextStyle(fontFamily: 'DMS-R', fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
                       // Arrow down icon
-                      const Icon(Icons.arrow_downward, color: Color(0xFFFFB800), size: 24),
+                      Icon(Icons.arrow_downward, color: theme.colorScheme.primary, size: 24),
                       const SizedBox(height: 20),
                       // To Section
                       Row(
@@ -153,41 +158,43 @@ class _TransferConfirmationScreenState extends State<TransferConfirmationScreen>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(color: theme.dividerColor),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'Logo',
-                            style: TextStyle(fontFamily: 'DMS-R', fontSize: 10, color: Color(0xFF9CA3AF)),
+                            style: TextStyle(fontFamily: 'DMS-R', fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
                       // Divider
-                      Container(height: 1, color: const Color(0xFFFFB800)),
+                      Container(height: 1, color: theme.colorScheme.primary),
                       const SizedBox(height: 30),
                       // Amount Field
-                      const Text(
+                      Text(
                         'Amount (Ks)',
-                        style: TextStyle(fontFamily: 'DMS-M', fontSize: 14, color: Color(0xFF374151)),
+                        style: TextStyle(fontFamily: 'DMS-M', fontSize: 14, color: theme.colorScheme.onBackground),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: amountController,
                         keyboardType: TextInputType.number,
-                        style: const TextStyle(fontFamily: 'DMS-M', fontSize: 14, color: Colors.black),
+                        style: TextStyle(fontFamily: 'DMS-M', fontSize: 14, color: theme.colorScheme.onBackground),
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         onChanged: (value) {
                           setState(() {});
                         },
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'Enter Amount',
-                          hintStyle: TextStyle(fontSize: 13, fontFamily: 'DMS-R', color: Color(0xFFD1D5DC)),
-                          border: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFE5E7EB))),
-                          enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFE5E7EB))),
+                          filled: true,
+                          fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
+                          hintStyle: TextStyle(fontSize: 13, fontFamily: 'DMS-R', color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          border: UnderlineInputBorder(borderSide: BorderSide(color: theme.dividerColor)),
+                          enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: theme.dividerColor)),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFF0A3D62), width: 2),
+                            borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
                           ),
                         ),
                       ),
@@ -198,23 +205,23 @@ class _TransferConfirmationScreenState extends State<TransferConfirmationScreen>
                       TextField(
                         controller: noteController,
                         maxLines: 4,
-                        style: const TextStyle(fontFamily: 'DMS-R', fontSize: 14, color: Colors.black),
+                        style: TextStyle(fontFamily: 'DMS-R', fontSize: 14, color: theme.colorScheme.onBackground),
                         decoration: InputDecoration(
                           hintText: 'Add your note here',
-                          hintStyle: const TextStyle(fontSize: 13, fontFamily: 'DMS-R', color: Color(0xFFD1D5DC)),
+                          hintStyle: TextStyle(fontSize: 13, fontFamily: 'DMS-R', color: theme.colorScheme.onSurface.withOpacity(0.5)),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                            borderSide: BorderSide(color: theme.dividerColor),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                            borderSide: BorderSide(color: theme.dividerColor),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Color(0xFF0A3D62), width: 2),
+                            borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
                           ),
                         ),
                       ),
@@ -234,6 +241,7 @@ class _TransferConfirmationScreenState extends State<TransferConfirmationScreen>
   }
 
   Widget _buildConfirmButton(TransferState state) {
+    final theme = Theme.of(context);
     final amount = int.tryParse(amountController.text.trim()) ?? 0;
     final isValid = amount >= 1000;
     final recipient = state.recipient;
@@ -242,7 +250,7 @@ class _TransferConfirmationScreenState extends State<TransferConfirmationScreen>
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isValid && !isLoading ? const Color(0xFF0A3D62) : const Color(0xFFD1D5DC),
+        color: isValid && !isLoading ? theme.colorScheme.primary : theme.disabledColor,
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextButton(
@@ -282,17 +290,17 @@ class _TransferConfirmationScreenState extends State<TransferConfirmationScreen>
                 : null,
         child:
             isLoading
-                ? const SizedBox(
+                ? SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimary),
                 )
                 : Text(
                   'Confirm',
                   style: TextStyle(
                     fontFamily: 'DMS-M',
                     fontSize: 16,
-                    color: isValid ? Colors.white : const Color(0xFF99A1AF),
+                    color: isValid ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
       ),

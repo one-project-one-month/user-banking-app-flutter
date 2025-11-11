@@ -1,8 +1,10 @@
 
+import 'package:banking_app/AppStyles/Style.dart';
 import 'package:banking_app/screens/Transfer/views/transfer_confirmation_screen.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/transfer_bloc.dart';
 import '../controllers/transfer_event.dart';
@@ -86,21 +88,31 @@ class _TransferScreenState extends State<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
+          backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF99A1AF)),
+            icon:  Icon(Icons.arrow_back_ios, color:  theme.iconTheme.color ?? Colors.black,
+     ),
           ),
-          title: const Text('Transfer', style: TextStyle(fontSize: 24, fontFamily: 'DMS-B', color: Colors.black)),
+          title:  Text('Transfer', 
+             style: GoogleFonts.inter(
+            color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black,
+            fontWeight: FontWeight.w600,
+          ),     ),             
+          //tyle: TextStyle(fontSize: 24, fontFamily: 'DMS-B', color: Colors.black)),
           centerTitle: true,
           actions: [
             // Refresh nicknames button
             IconButton(
-              icon: const Icon(Icons.refresh, color: Color(0xFF99A1AF)),
+              icon:  Icon(Icons.refresh,  color:  theme.iconTheme.color ?? Colors.black,),
               onPressed: isLoadingNicknames ? null : _loadNicknames,
             ),
           ],
@@ -329,7 +341,7 @@ class _TransferScreenState extends State<TransferScreen> {
     return TextField(
       keyboardType: TextInputType.number,
       controller: accountController,
-      style: const TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: Colors.black),
+      style:  TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black),
       enabled: isEnabled,
       onChanged: (value) {
         setState(() {
@@ -354,7 +366,8 @@ class _TransferScreenState extends State<TransferScreen> {
     return TextField(
       controller: fullNameController,
       enabled: false,
-      style: const TextStyle(fontFamily: 'DMS-R', fontSize: 16, color: Colors.black),
+        style:  TextStyle(fontFamily: 'DMS-SB', fontSize: 14, color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black),
+   
       decoration: const InputDecoration(
         hintText: 'Full Name',
         hintStyle: TextStyle(fontSize: 12, fontFamily: 'DMS-R', color: Color(0xFF99A1AF)),
@@ -374,12 +387,17 @@ class _TransferScreenState extends State<TransferScreen> {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: isValid ? const Color(0xFF0A3D62) : const Color(0xFFD1D5DC),
+             // color: isValid ? 
+              //Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onPrimary,
+              color: isValid
+    ? AppColors.deepNavy
+    : AppColors.blue100,
+
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextButton(
               onPressed:
-                  isValid
+                  !isValid
                       ? () {
                         // Navigate to confirmation screen with recipient data
                         Navigator.push(
@@ -399,7 +417,7 @@ class _TransferScreenState extends State<TransferScreen> {
                 style: TextStyle(
                   fontFamily: 'DMS-M',
                   fontSize: 18,
-                  color: isValid ? const Color(0xFFE7ECEF) : const Color(0xFF99A1AF),
+                  color: isValid ? Theme.of(context).colorScheme.onPrimary : Colors.grey.shade700,
                 ),
               ),
             ),

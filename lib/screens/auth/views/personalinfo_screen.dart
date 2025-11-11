@@ -179,9 +179,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> with SingleTick
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return BlocProvider.value(
-      value: widget.authBloc, // <-- SAME BLoC
+      value: widget.authBloc, 
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
