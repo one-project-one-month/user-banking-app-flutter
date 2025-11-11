@@ -71,8 +71,6 @@ class MyApp extends StatelessWidget {
         BlocProvider<TransferBloc>(create: (_) => TransferBloc(), lazy: false),
         BlocProvider<TransactionBloc>(create: (_) => TransactionBloc()),
 
-        // 🎯 QR Payment Bloc - NEW!
-      //  BlocProvider<QRPaymentBloc>(create: (_) => QRPaymentBloc(), lazy: false),
       ],
       child: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, settingsState) {
