@@ -48,9 +48,9 @@ class _QRToPayScreenState extends State<QRToPayScreen> {
       body: BlocConsumer<QRBloc, QRState>(
         listener: (context, state) {
           if (state.hasError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage ?? 'An error occurred'), backgroundColor: Colors.red),
-            );
+        //     ScaffoldMessenger.of(context).showSnackBar(
+        //       SnackBar(content: Text(state.errorMessage ?? 'An error occurred'), backgroundColor: Colors.red),
+        //     );
           }
 
           // Auto-start subscription when QR is generated

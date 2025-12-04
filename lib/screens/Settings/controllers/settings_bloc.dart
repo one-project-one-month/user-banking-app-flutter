@@ -10,16 +10,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SettingsApiService api;
   final CacheService cache;
 
-   static const _kDark = Constant.cacheSettingDarkModeKey;
+  static const _kDark = Constant.cacheSettingDarkModeKey;
   static const _kAuto = Constant.cacheSettingAutoSaveKey;
 
-   SettingsBloc({
-    SettingsApiService? apiService,
-    CacheService? cacheService,
-    SettingsState? initialState, // 👈 Add this parameter
-  })  : api = apiService ?? SettingsApiService(),
-  cache = cacheService ?? CacheService(),
-        super(initialState ?? SettingsState.initial()) {
+  SettingsBloc({SettingsApiService? apiService, CacheService? cacheService, SettingsState? initialState})
+    : api = apiService ?? SettingsApiService(),
+      cache = cacheService ?? CacheService(),
+      super(initialState ?? SettingsState.initial()) {
     // Persistence handlers
     on<LoadSettings>(_onLoad);
     on<ToggleDarkMode>(_onToggleDark);
@@ -30,9 +27,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<SettingsSetPin>(_onSetPin);
     on<SettingsChangePassword>(_onChangePassword);
     on<SettingsAutoSaveReceipt>(_onAutoSaveReceipt);
-    on<LoadAutoSaveReceipt>(_onLoadAutoSaveReceipt); // Add this handler
+    on<LoadAutoSaveReceipt>(_onLoadAutoSaveReceipt);
   }
-
 
   Future<void> _onLoad(LoadSettings event, Emitter<SettingsState> emit) async {
     // If app runs for the first time, persist initial defaults then emit them.
@@ -70,7 +66,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(SettingsState.initial());
   }
 
-  /// Set Transaction PIN
+  /// Set Transaction PIN - NOW CALLS THE ACTUAL API!
   Future<void> _onSetPin(SettingsSetPin event, Emitter<SettingsState> emit) async {
     emit(state.copyWith(status: SettingsStatus.loading));
 
@@ -91,11 +87,16 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         return;
       }
 
-      // TODO: Call API to set PIN
-      // For now, just simulate success
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Call API to set PIN
+      final result = await api.setPin(token.accessToken, event.pin);
 
-      emit(state.copyWith(status: SettingsStatus.success, message: 'PIN set successfully'));
+      if (result['success'] == true) {
+        print('✅ PIN set successfully via API');
+        emit(state.copyWith(status: SettingsStatus.success, message: result['message'] ?? 'PIN set successfully'));
+      } else {
+        print('❌ PIN set failed: ${result['message']}');
+        emit(state.copyWith(status: SettingsStatus.error, errorMessage: result['message'] ?? 'Failed to set PIN'));
+      }
     } catch (e) {
       print('❌ SettingsBloc SetPin error: $e');
       emit(state.copyWith(status: SettingsStatus.error, errorMessage: 'Failed to set PIN: $e'));

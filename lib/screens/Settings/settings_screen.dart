@@ -8,6 +8,7 @@ import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_event.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_state.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:banking_app/screens/Settings/widgets/set_pin_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -88,10 +89,10 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     // Load settings and auto-save receipt setting
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      
+
       final bloc = context.read<SettingsBloc>();
       bloc.add(const LoadSettings());
-      
+
       // Safely try to load auto-save receipt setting
       // This might fail on hot reload if the handler wasn't registered yet
       try {
@@ -207,15 +208,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   }
 
   void _showSetPinDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Set Transaction PIN'),
-            content: const Text('Set PIN feature coming soon'),
-            actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
-          ),
-    );
+    showDialog(context: context, barrierDismissible: false, builder: (context) => const SetPinDialog());
   }
 
   void _handleLogout(BuildContext context) {
@@ -262,7 +255,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
       body: BlocListener<SettingsBloc, SettingsState>(
         listener: (context, state) {
           if (!mounted || !context.mounted) return;
-          
+
           if (state.isSuccess && state.message != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted && context.mounted) {
@@ -373,10 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                           ),
                           subtitle: Text(
                             'Automatically save transaction receipts to gallery',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
+                            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600),
                           ),
                           value: state.autoSaveReceipt,
                           activeColor: const Color(0xFF3366FF),
@@ -425,7 +415,28 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
               ),
 
               const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
+              FadeTransition(
+                opacity: _darkModeFade,
+                child: SlideTransition(
+                  position: _darkModeSlide,
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3366FF).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.smart_toy, color: Color(0xFF3366FF), size: 20),
+                    ),
+                    title: const Text('AI Assistant'),
+                    onTap: () {
+                      AppRoutes.navigateTo(context, AppRoutes.aiAssistant);
+                    },
+                  ),
+                ),
+              ),
               // Logout
               FadeTransition(
                 opacity: _logoutFade,

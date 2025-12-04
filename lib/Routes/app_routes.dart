@@ -1,3 +1,5 @@
+import 'package:banking_app/screens/Chat/controllers/ai_assistant_bloc.dart';
+import 'package:banking_app/screens/Chat/views/ai_chat_assistant_screen.dart';
 import 'package:banking_app/screens/KYC/document/views/documentVerification_screen.dart';
 import 'package:banking_app/screens/KYC/face_authentication/face_authentication_notice_screen.dart';
 import 'package:banking_app/screens/KYC/face_authentication/face_authentication_screen.dart';
@@ -19,6 +21,7 @@ import 'package:banking_app/screens/auth/views/signup_screen.dart';
 import 'package:banking_app/screens/auth/views/splash_screen.dart';
 import 'package:banking_app/screens/Transfer/views/pin_confirmation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AppRoutes {
   // Route names as constants
@@ -41,6 +44,7 @@ class AppRoutes {
   static const String pin = '/pin';
   static const String settings = '/settings';
   static const String nickname = '/nickname';
+  static const String aiAssistant = '/ai-assistant';
 
   // Add more routes as your app grows
   // static const String login = '/login';
@@ -55,7 +59,11 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const WelcomeScreen(), settings: settings);
       case signup:
         return MaterialPageRoute(builder: (_) => const SignupScreen(), settings: settings);
-
+      case aiAssistant:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(create: (context) => AIAssistantBloc(), child: const AIAssistantChatScreen()),
+          settings: settings,
+        );
       case AppRoutes.otp:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
@@ -69,7 +77,7 @@ class AppRoutes {
 
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen(), settings: settings);
-          case AppRoutes.home_screen:
+      case AppRoutes.home_screen:
         return MaterialPageRoute(builder: (_) => const HomeScreen(), settings: settings);
 
       case AppRoutes.transfer:

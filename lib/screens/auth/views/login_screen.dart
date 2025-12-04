@@ -226,12 +226,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             listener: (context, state) {
                               if (state.status == AuthStatus.success) {
                                 // ✅ Login successful - token and user data saved to cache
-                                customFlushbar(
-                                  context: context,
-                                  message: "Login Successful!",
-                                  backgroundColor: Colors.green,
-                                  icon: const Icon(Icons.check_circle, color: Colors.white),
-                                );
+                                // customFlushbar(
+                                //   context: context,
+                                //   message: "Login Successful!",
+                                //   backgroundColor: Colors.green,
+                                //   icon: const Icon(Icons.check_circle, color: Colors.white),
+                                // );
 
                                 // Load user data into UserBloc from cache
                                 context.read<UserBloc>().add(UserLoadData());
@@ -244,12 +244,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 });
                               } else if (state.status == AuthStatus.failure) {
                                 // ❌ Login failed - show error from backend
-                                customFlushbar(
-                                  context: context,
-                                  message: state.message ?? "Login Failed",
-                                  backgroundColor: Colors.red,
-                                  icon: const Icon(Icons.error, color: Colors.white),
-                                );
+                                // customFlushbar(
+                                //   context: context,
+                                //   message: state.message ?? "Login Failed",
+                                //   backgroundColor: Colors.red,
+                                //   icon: const Icon(Icons.error, color: Colors.white),
+                                // );
                               }
                             },
                             builder: (context, state) {

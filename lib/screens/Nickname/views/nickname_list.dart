@@ -51,25 +51,25 @@ class _NicknameListViewState extends State<_NicknameListView> {
           if (state.hasError && state.errorMessage != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.errorMessage!),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              }
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     SnackBar(
+              //       content: Text(state.errorMessage!),
+              //       backgroundColor: Colors.red,
+              //       duration: const Duration(seconds: 3),
+              //     ),
+              //   );
+               }
             });
           } else if (state.isSuccess && state.message != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message!),
-                    backgroundColor: Colors.green,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   SnackBar(
+                //     content: Text(state.message!),
+                //     backgroundColor: Colors.green,
+                //     duration: const Duration(seconds: 2),
+                //   ),
+                // );
               }
             });
           }

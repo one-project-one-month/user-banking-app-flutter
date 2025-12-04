@@ -40,7 +40,7 @@ class SettingsApiService {
             final code = decoded['code'];
             if (code == 0 || code == 200) {
               final data = decoded['data'];
-              
+
               // Handle different response formats
               bool? flag;
               if (data is Map<String, dynamic>) {
@@ -53,7 +53,7 @@ class SettingsApiService {
                 // If data is a string, try to parse it
                 flag = data.toLowerCase() == 'true';
               }
-              
+
               if (flag != null) {
                 print('✅ Auto-save receipt setting: $flag');
                 return flag;
@@ -133,6 +133,70 @@ class SettingsApiService {
     print('❌ Auto-save receipt update failed with status: ${res.statusCode}');
     return {'success': false, 'message': 'Failed to update auto-save preference (Status: ${res.statusCode})'};
   }
+
+  /// Set Transaction PIN
+  /// POST /personal-banking/users/set-pin
+  /// Body: { "pin": "string" }
+  /// Headers: Authorization: Bearer {token}
+  /// Response: { "code": 200, "message": "PIN set successfully", "data": null }
+Future<Map<String, dynamic>> setPin(String accessToken, String pin) async {
+  if (baseUrl == null) {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return {'success': true, 'message': 'PIN set successfully'};
+  }
+
+  print('📋 Setting transaction PIN...');
+  print('   URL: ${_uri('/personal-banking/users/set-pin')}');
+
+  final res = await _client.post(
+    _uri('/personal-banking/users/set-pin'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+      'Accept': '*/*',
+    },
+    body: json.encode({'pin': pin}),
+  );
+
+  print('📥 Set PIN Response Status: ${res.statusCode}');
+  print('📥 Set PIN Response Body: ${res.body}');
+
+  if (res.statusCode >= 200 && res.statusCode < 300) {
+    try {
+      final decoded = json.decode(res.body);
+      if (decoded is Map<String, dynamic>) {
+        final code = decoded['code'];
+        final message = decoded['message'] ?? 'PIN set successfully';
+
+        if (code == 0 || code == 200) {
+          print('✅ PIN set successfully: $message');
+          return {'success': true, 'message': message, 'data': decoded['data']};
+        } else {
+          print('❌ Set PIN failed: $message');
+          return {'success': false, 'message': message};
+        }
+      }
+    } catch (e) {
+      print('❌ JSON parsing error: $e');
+      return {'success': false, 'message': 'Invalid server response: $e'};
+    }
+  }
+
+  try {
+    final decoded = json.decode(res.body);
+    if (decoded is Map<String, dynamic>) {
+      final serverMsg = decoded['message'] ?? decoded['error'] ?? decoded['detail'];
+      if (serverMsg != null) {
+        print('❌ Server error: $serverMsg');
+        return {'success': false, 'message': serverMsg.toString()};
+      }
+    }
+  } catch (_) {}
+
+  print('❌ Set PIN failed with status: ${res.statusCode}');
+  return {'success': false, 'message': 'Failed to set PIN (Status: ${res.statusCode})'};
+}
+
 
   void dispose() {
     _client.close();
