@@ -84,6 +84,23 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     ).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.6, 0.8)));
 
     _controller.forward();
+
+    // Load settings and auto-save receipt setting
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      
+      final bloc = context.read<SettingsBloc>();
+      bloc.add(const LoadSettings());
+      
+      // Safely try to load auto-save receipt setting
+      // This might fail on hot reload if the handler wasn't registered yet
+      try {
+        bloc.add(const LoadAutoSaveReceipt());
+      } catch (e) {
+        print('⚠️ Could not load auto-save receipt setting: $e');
+        // This is okay - the setting will default to false
+      }
+    });
   }
 
   @override
@@ -244,22 +261,32 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
       ),
       body: BlocListener<SettingsBloc, SettingsState>(
         listener: (context, state) {
+          if (!mounted || !context.mounted) return;
+          
           if (state.isSuccess && state.message != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message!),
-                backgroundColor: const Color(0xFF16A34A),
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message!),
+                    backgroundColor: const Color(0xFF16A34A),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            });
           } else if (state.hasError && state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.errorMessage!),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            });
           }
         },
         child: SingleChildScrollView(
@@ -319,6 +346,41 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                           value: state.darkMode,
                           activeColor: const Color(0xFF3366FF),
                           onChanged: (v) => context.read<SettingsBloc>().add(ToggleDarkMode(v)),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Auto Save Receipt Toggle
+              FadeTransition(
+                opacity: _darkModeFade, // Reuse animation or create new one
+                child: SlideTransition(
+                  position: _darkModeSlide,
+                  child: BlocBuilder<SettingsBloc, SettingsState>(
+                    builder: (context, state) {
+                      return Card(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: SwitchListTile(
+                          title: Text(
+                            'Auto Save Receipt',
+                            style: GoogleFonts.inter(
+                              color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Automatically save transaction receipts to gallery',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          value: state.autoSaveReceipt,
+                          activeColor: const Color(0xFF3366FF),
+                          onChanged: (v) => context.read<SettingsBloc>().add(SettingsAutoSaveReceipt(v)),
                         ),
                       );
                     },

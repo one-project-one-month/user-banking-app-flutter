@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:banking_app/screens/auth/widgets/size.dart';
 import 'package:banking_app/screens/auth/widgets/flushbar.dart';
 import 'package:banking_app/screens/Transfer/controllers/transfer_bloc.dart';
 import 'package:banking_app/screens/Transfer/controllers/transfer_event.dart';
@@ -8,6 +7,7 @@ import 'package:banking_app/screens/Transfer/controllers/transfer_state.dart';
 import 'widgets/pin_input_display.dart';
 import 'widgets/numeric_keypad.dart';
 import 'transaction_success_screen.dart';
+import 'package:banking_app/responsive_utils.dart';
 
 class PinConfirmationScreen extends StatefulWidget {
   final Map<String, dynamic>? transactionData;
@@ -27,9 +27,9 @@ class _PinConfirmationScreenState extends State<PinConfirmationScreen> with Sing
   bool _isLoading = false;
   bool _isLocked = false;
 
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -37,11 +37,10 @@ class _PinConfirmationScreenState extends State<PinConfirmationScreen> with Sing
     _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
 
     _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _controller.forward();
   }
@@ -53,101 +52,41 @@ class _PinConfirmationScreenState extends State<PinConfirmationScreen> with Sing
   }
 
   void _onKeyPressed(String digit) {
-    if (_isLocked || _isLoading) return;
-
-    if (_pin.length < 6) {
-      setState(() {
-        _pin += digit;
-      });
-
-      // Auto-submit when 6 digits are entered
-      if (_pin.length == 6) {
-        _verifyAndConfirmTransfer();
-      }
-    }
+    if (_isLocked || _isLoading || _pin.length >= 6) return;
+    setState(() => _pin += digit);
+    if (_pin.length == 6) _verifyAndConfirmTransfer();
   }
 
   void _onBackspace() {
-    if (_isLocked || _isLoading) return;
-
-    if (_pin.isNotEmpty) {
-      setState(() {
-        _pin = _pin.substring(0, _pin.length - 1);
-      });
-    }
+    if (_isLocked || _isLoading || _pin.isEmpty) return;
+    setState(() => _pin = _pin.substring(0, _pin.length - 1));
   }
 
   Future<void> _verifyAndConfirmTransfer() async {
     if (_isLocked) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Step 1: Verify PIN
+    setState(() => _isLoading = true);
     context.read<TransferBloc>().add(TransferVerifyPin(_pin));
   }
 
   void _handlePinVerified() {
-    // Step 2: After PIN verified, confirm transfer
-    final transferState = context.read<TransferBloc>().state;
-    final recipient = transferState.recipient;
-    final amount = transferState.transactionAmount;
-    final note = transferState.transactionNote ?? '';
+    final state = context.read<TransferBloc>().state;
+    final recipient = state.recipient;
+    final amount = state.transactionAmount;
+    final note = state.transactionNote ?? '';
 
-    print('📋 Handling PIN verified');
-    print('   Recipient: ${recipient?.fullName} (ID: ${recipient?.id})');
-    print('   Amount: $amount');
-    print('   Note: $note');
-
-    if (recipient == null || recipient.id.isEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
-      customFlushbar(
-        context: context,
-        message: "Missing recipient information. Please go back and try again.",
-        backgroundColor: Colors.red,
-        icon: const Icon(Icons.error, color: Colors.white),
-      );
+    if (recipient == null || recipient.id.isEmpty || amount == null || amount <= 0) {
+      setState(() => _isLoading = false);
+      customFlushbar(context: context, message: "Invalid transaction data.", backgroundColor: Colors.red);
       return;
     }
 
-    if (amount == null || amount <= 0) {
-      setState(() {
-        _isLoading = false;
-      });
-      customFlushbar(
-        context: context,
-        message: "Invalid transfer amount. Please go back and enter amount.",
-        backgroundColor: Colors.red,
-        icon: const Icon(Icons.error, color: Colors.white),
-      );
-      return;
-    }
-
-    // Parse recipient ID to int
     final toAccountId = int.tryParse(recipient.id);
     if (toAccountId == null) {
-      setState(() {
-        _isLoading = false;
-      });
-      customFlushbar(
-        context: context,
-        message: "Invalid recipient account ID",
-        backgroundColor: Colors.red,
-        icon: const Icon(Icons.error, color: Colors.white),
-      );
+      setState(() => _isLoading = false);
+      customFlushbar(context: context, message: "Invalid recipient ID", backgroundColor: Colors.red);
       return;
     }
 
-    print('✅ All validations passed, confirming transfer...');
-    print('   toAccountId: $toAccountId');
-    print('   amount: $amount');
-    print('   note: $note');
-    print('   pin: ${_pin.substring(0, 2)}****');
-
-    // Confirm transfer with PIN
     context.read<TransferBloc>().add(TransferConfirm(toAccountId: toAccountId, amount: amount, note: note, pin: _pin));
   }
 
@@ -169,69 +108,45 @@ class _PinConfirmationScreenState extends State<PinConfirmationScreen> with Sing
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = const Color(0xFF0A3D62);
+
     return BlocListener<TransferBloc, TransferState>(
       listener: (context, state) {
-        print('📱 PIN Screen State Change: ${state.status}');
-        print('   Amount in state: ${state.transactionAmount}');
-        print('   Note in state: ${state.transactionNote}');
-        print('   Recipient: ${state.recipient?.fullName}');
-
-        if (state.isValidating) {
-          // Validation in progress
-          setState(() {
-            _isLoading = true;
-          });
-        } else if (state.isValidated) {
-          // Validation complete
-          setState(() {
-            _isLoading = false;
-          });
-        } else if (state.isVerifyingPin) {
-          // PIN verification in progress
-          setState(() {
-            _isLoading = true;
-          });
-        } else if (state.isPinVerified) {
-          // PIN verified, proceed to confirm transfer
-          print('✅ PIN verified! Proceeding to confirm transfer...');
+        // Loading states
+        if (state.isVerifyingPin || state.isConfirming || state.isValidating) {
+          if (!_isLoading) setState(() => _isLoading = true);
+        }
+        // PIN verified → proceed to confirm transfer
+        else if (state.isPinVerified) {
           _handlePinVerified();
-        } else if (state.isConfirming) {
-          // Transfer confirmation in progress
-          setState(() {
-            _isLoading = true;
-          });
-        } else if (state.isConfirmed) {
-          // Transfer confirmed successfully - Navigate to success screen
-          print('✅ Transfer confirmed! Navigating to success screen...');
+        }
+        // Transfer confirmed → go to success screen
+        else if (state.isConfirmed) {
+          setState(() => _isLoading = false);
 
-          setState(() {
-            _isLoading = false;
-          });
-
-          // Build transaction data from validation and confirmation
           final validationData = state.validationData ?? {};
           final confirmationData = state.confirmationData ?? {};
           final fromAccount = validationData['fromAccountDetails'] as Map<String, dynamic>?;
           final toAccount = validationData['toAccountDetails'] as Map<String, dynamic>?;
 
           final transactionData = {
-            'fromName': fromAccount?['accountNumber'] ?? '',
+            'fromName': fromAccount?['accountHolderName'] ?? fromAccount?['accountNumber'] ?? '',
             'fromAccount': fromAccount?['accountNumber'] ?? '',
-            'toName': toAccount?['accountNumber'] ?? state.recipient?.fullName ?? '',
+            'toName': toAccount?['accountHolderName'] ?? state.recipient?.fullName ?? '',
             'toAccount': toAccount?['accountNumber'] ?? state.recipient?.accountNumber ?? '',
             'amount': state.transactionAmount?.toString() ?? '0',
             'currency': 'Ks',
             'note': state.transactionNote ?? '',
-            'transactionId': confirmationData['transactionId'],
+            'transactionId': confirmationData['transactionId'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
           };
 
-          Navigator.of(context).pushReplacement(
+          Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => TransactionSuccessScreen(transactionData: transactionData)),
+            (route) => false,
           );
-        } else if (state.hasError) {
-          // Error occurred
-          print('❌ Error: ${state.errorMessage}');
-
+        }
+        // Error handling
+        else if (state.hasError) {
           setState(() {
             _isLoading = false;
             _attempts++;
@@ -239,45 +154,42 @@ class _PinConfirmationScreenState extends State<PinConfirmationScreen> with Sing
           });
 
           if (_attempts >= 3) {
-            // Lock screen after 3 attempts
-            setState(() {
-              _isLocked = true;
-            });
-
+            setState(() => _isLocked = true);
             customFlushbar(
               context: context,
-              message: "Too many failed attempts. Please try again later.",
+              message: "Too many failed attempts. Account locked.",
               backgroundColor: Colors.red,
-              icon: const Icon(Icons.error, color: Colors.white),
             );
           } else {
             customFlushbar(
               context: context,
-              message: state.errorMessage ?? "Invalid PIN. ${3 - _attempts} attempts remaining.",
+              message: state.errorMessage ?? "Invalid PIN. ${3 - _attempts} attempts left.",
               backgroundColor: Colors.orange,
-              icon: const Icon(Icons.warning, color: Colors.white),
             );
           }
+        } else {
+          if (_isLoading) setState(() => _isLoading = false);
         }
       },
       child: Scaffold(
         backgroundColor: Colors.white,
+        extendBodyBehindAppBar: false,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: widget.onCancel ?? () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF002D62)),
+            onPressed: widget.onCancel ?? () => Navigator.pop(context),
+            icon: Icon(Icons.arrow_back, color: primaryColor, size: context.iconSize(24)),
           ),
-          title: const Text(
+          title: Text(
             'Password',
-            style: TextStyle(color: Color(0xFF002D62), fontSize: 18, fontWeight: FontWeight.w600),
+            style: TextStyle(color: primaryColor, fontSize: context.fontSize(19), fontWeight: FontWeight.w600),
           ),
           centerTitle: true,
         ),
         body: SafeArea(
           child: Padding(
-            padding: EdgeInsets.all(CommonSize.s20(context)),
+            padding: context.responsivePadding(horizontal: 24, bottom: 20),
             child: Column(
               children: [
                 Expanded(
@@ -290,52 +202,45 @@ class _PinConfirmationScreenState extends State<PinConfirmationScreen> with Sing
                         children: [
                           // Lock Icon
                           Container(
-                            width: CommonSize.s56(context),
-                            height: CommonSize.s56(context),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0A3D62),
-                              borderRadius: BorderRadius.circular(CommonSize.s12(context)),
-                            ),
-                            child: const Icon(Icons.lock, color: Colors.white, size: 28),
+                            width: context.iconSize(64),
+                            height: context.iconSize(64),
+                            decoration: BoxDecoration(color: primaryColor, borderRadius: context.borderRadius(16)),
+                            child: Icon(Icons.lock, color: Colors.white, size: context.iconSize(32)),
                           ),
 
-                          SizedBox(height: CommonSize.s24(context)),
+                          SizedBox(height: context.spacing(28)),
 
-                          // Instruction Text
                           Text(
                             'Enter your PIN to confirm transaction',
-                            style: TextStyle(
-                              color: const Color(0xFF002D62),
-                              fontSize: CommonSize.s16(context),
-                              fontWeight: FontWeight.w500,
-                            ),
                             textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontSize: context.fontSize(12),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
 
-                          SizedBox(height: CommonSize.s32(context)),
+                          SizedBox(height: context.spacing(32)),
 
-                          // PIN Input Display
                           PinInputDisplay(pin: _pin),
 
-                          SizedBox(height: CommonSize.s32(context)),
+                          SizedBox(height: context.spacing(32)),
 
-                          // Numeric Keypad
                           NumericKeypad(
                             onKeyPressed: _onKeyPressed,
                             onBackspace: _onBackspace,
                             isEnabled: !_isLocked && !_isLoading,
                           ),
 
-                          SizedBox(height: CommonSize.s24(context)),
+                          SizedBox(height: context.spacing(24)),
 
-                          // Forgot PIN Link
                           TextButton(
                             onPressed: _isLocked ? null : _handleForgotPin,
                             child: Text(
-                              'Forgot Pin?',
+                              'Forgot PIN?',
                               style: TextStyle(
-                                color: _isLocked ? Colors.grey : const Color(0xFF002D62),
-                                fontSize: CommonSize.s14(context),
+                                color: _isLocked ? Colors.grey : primaryColor,
+                                fontSize: context.fontSize(15),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -346,12 +251,13 @@ class _PinConfirmationScreenState extends State<PinConfirmationScreen> with Sing
                   ),
                 ),
 
-                // Loading Indicator
+                // Loading indicator at the very bottom
                 if (_isLoading)
                   Padding(
-                    padding: EdgeInsets.only(bottom: CommonSize.s20(context)),
+                    padding: EdgeInsets.only(top: context.spacing(12)),
                     child: const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0A3D62)),
+                      strokeWidth: 3.5,
                     ),
                   ),
               ],

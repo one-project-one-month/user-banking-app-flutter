@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class SettingsApiService {
-  String? baseUrl = "http://10.0.2.2:7777";
+  String? baseUrl = "https://136.112.160.13:7777"; // Updated to HTTPS server
   final http.Client _client;
 
   SettingsApiService({this.baseUrl, http.Client? client}) : _client = client ?? http.Client();
@@ -12,8 +12,69 @@ class SettingsApiService {
     return Uri.parse(baseUrl! + path);
   }
 
+  /// Get Auto Save Receipt setting
+  /// GET /personal-banking/users/autoSaveRecepit
+  /// Headers: Authorization: Bearer {token}
+  /// Response: { "code": 200, "message": "...", "data": { "flag": true/false } }
+  Future<bool?> getAutoSaveReceipt(String accessToken) async {
+    if (baseUrl == null) {
+      return false; // Default to false if no baseUrl
+    }
+
+    print('📋 Fetching auto-save receipt setting');
+    print('   URL: ${_uri('/personal-banking/users/autoSaveRecepit')}');
+
+    try {
+      final res = await _client.get(
+        _uri('/personal-banking/users/autoSaveRecepit'),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken', 'Accept': '*/*'},
+      );
+
+      print('📥 Get Auto Save Receipt Response Status: ${res.statusCode}');
+      print('📥 Get Auto Save Receipt Response Body: ${res.body}');
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        try {
+          final decoded = json.decode(res.body);
+          if (decoded is Map<String, dynamic>) {
+            final code = decoded['code'];
+            if (code == 0 || code == 200) {
+              final data = decoded['data'];
+              
+              // Handle different response formats
+              bool? flag;
+              if (data is Map<String, dynamic>) {
+                // If data is an object, look for 'flag' property
+                flag = data['flag'] as bool?;
+              } else if (data is bool) {
+                // If data is directly a boolean
+                flag = data;
+              } else if (data is String) {
+                // If data is a string, try to parse it
+                flag = data.toLowerCase() == 'true';
+              }
+              
+              if (flag != null) {
+                print('✅ Auto-save receipt setting: $flag');
+                return flag;
+              } else {
+                print('⚠️ Could not extract flag from response data: $data');
+              }
+            }
+          }
+        } catch (e) {
+          print('❌ JSON parsing error: $e');
+        }
+      }
+    } catch (e) {
+      print('❌ Error fetching auto-save receipt: $e');
+    }
+
+    return null; // Return null if failed to fetch
+  }
+
   /// Auto Save Receipt
-  /// PUT /personal-banking/users/autoSaveReceipt?flag=true|false
+  /// PUT /personal-banking/users/autoSaveRecepit?flag=true|false
   /// Headers: Authorization: Bearer {token}
   /// Response: { "code": 200, "message": "Preference updated", "data": null }
   Future<Map<String, dynamic>> setAutoSaveReceipt(String accessToken, bool enabled) async {
@@ -23,10 +84,10 @@ class SettingsApiService {
     }
 
     print('📋 Setting auto-save receipt to: $enabled');
-    print('   URL: ${_uri('/personal-banking/users/autoSaveReceipt?flag=$enabled')}');
+    print('   URL: ${_uri('/personal-banking/users/autoSaveRecepit?flag=$enabled')}');
 
     final res = await _client.put(
-      _uri('/personal-banking/users/autoSaveReceipt?flag=$enabled'),
+      _uri('/personal-banking/users/autoSaveRecepit?flag=$enabled'), // Fixed typo: Recepit
       headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $accessToken', 'Accept': '*/*'},
     );
 

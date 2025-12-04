@@ -11,14 +11,21 @@ class NicknameState extends Equatable {
 
   const NicknameState({this.status = NicknameStatus.initial, this.items = const [], this.message, this.errorMessage});
 
-  NicknameState copyWith({NicknameStatus? status, List<NicknameOption>? items, String? message, String? errorMessage}) {
+  NicknameState copyWith({
+    NicknameStatus? status, 
+    List<NicknameOption>? items, 
+    Object? message = _sentinel,
+    Object? errorMessage = _sentinel,
+  }) {
     return NicknameState(
       status: status ?? this.status,
       items: items ?? this.items,
-      message: message,
-      errorMessage: errorMessage,
+      message: message == _sentinel ? this.message : message as String?,
+      errorMessage: errorMessage == _sentinel ? this.errorMessage : errorMessage as String?,
     );
   }
+  
+  static const _sentinel = Object();
 
   bool get isLoading => status == NicknameStatus.loading;
   bool get isSuccess => status == NicknameStatus.success;

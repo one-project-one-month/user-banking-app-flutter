@@ -28,53 +28,88 @@ class NicknameBloc extends Bloc<NicknameEvent, NicknameState> {
   }
 
   Future<void> _onCreate(CreateNickname event, Emitter<NicknameState> emit) async {
-    emit(state.copyWith(status: NicknameStatus.loading));
+    emit(state.copyWith(
+      status: NicknameStatus.loading,
+      message: null,
+      errorMessage: null,
+    ));
 
     try {
-      // Use the account ID directly - no need to verify
       print('✅ Creating nickname with account ID: ${event.toAccountId}');
 
       await api.createNickname(toAccountId: event.toAccountId, nickname: event.nickname);
 
       // Reload the list to get the updated nicknames with proper IDs
-      add(const LoadNicknames());
-
-      emit(state.copyWith(status: NicknameStatus.success, message: 'Nickname created successfully'));
+      final items = await api.fetchNicknames();
+      emit(state.copyWith(
+        status: NicknameStatus.success, 
+        items: items,
+        message: 'Nickname created successfully',
+        errorMessage: null,
+      ));
     } catch (e) {
       print('❌ Create nickname error: $e');
-      emit(state.copyWith(status: NicknameStatus.failure, errorMessage: e.toString()));
+      emit(state.copyWith(
+        status: NicknameStatus.failure,
+        errorMessage: e.toString(),
+        message: null,
+      ));
     }
   }
 
   Future<void> _onUpdate(UpdateNickname event, Emitter<NicknameState> emit) async {
-    emit(state.copyWith(status: NicknameStatus.loading));
+    emit(state.copyWith(
+      status: NicknameStatus.loading,
+      message: null,
+      errorMessage: null,
+    ));
 
     try {
       await api.updateNickname(id: event.id, toAccountId: event.toAccountId, nickname: event.nickname);
 
       // Reload the list to get the updated nicknames
-      add(const LoadNicknames());
-
-      emit(state.copyWith(status: NicknameStatus.success, message: 'Nickname updated successfully'));
+      final items = await api.fetchNicknames();
+      emit(state.copyWith(
+        status: NicknameStatus.success,
+        items: items,
+        message: 'Nickname updated successfully',
+        errorMessage: null,
+      ));
     } catch (e) {
       print('❌ Update nickname error: $e');
-      emit(state.copyWith(status: NicknameStatus.failure, errorMessage: e.toString()));
+      emit(state.copyWith(
+        status: NicknameStatus.failure,
+        errorMessage: e.toString(),
+        message: null,
+      ));
     }
   }
 
   Future<void> _onDelete(DeleteNickname event, Emitter<NicknameState> emit) async {
-    emit(state.copyWith(status: NicknameStatus.loading));
+    emit(state.copyWith(
+      status: NicknameStatus.loading,
+      message: null,
+      errorMessage: null,
+    ));
 
     try {
       await api.deleteNickname(event.id);
 
       // Reload the list to show updated nicknames
-      add(const LoadNicknames());
-
-      emit(state.copyWith(status: NicknameStatus.success, message: 'Nickname deleted successfully'));
+      final items = await api.fetchNicknames();
+      emit(state.copyWith(
+        status: NicknameStatus.success,
+        items: items,
+        message: 'Nickname deleted successfully',
+        errorMessage: null,
+      ));
     } catch (e) {
       print('❌ Delete nickname error: $e');
-      emit(state.copyWith(status: NicknameStatus.failure, errorMessage: e.toString()));
+      emit(state.copyWith(
+        status: NicknameStatus.failure,
+        errorMessage: e.toString(),
+        message: null,
+      ));
     }
   }
 

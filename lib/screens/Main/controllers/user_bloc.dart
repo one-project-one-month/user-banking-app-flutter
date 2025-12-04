@@ -12,7 +12,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   final CacheService cache;
 
   UserBloc({UserApiService? apiService, CacheService? cacheService})
-    : api = apiService ?? UserApiService(baseUrl: "http://10.0.2.2:7777"),
+    : api = apiService ?? UserApiService(baseUrl: "https://136.112.160.13:7777"),
       cache = cacheService ?? CacheService(),
       super(const UserState()) {
     on<UserLoadData>(_onLoadData);

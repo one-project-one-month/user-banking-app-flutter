@@ -10,6 +10,10 @@ import 'package:banking_app/screens/auth/widgets/button.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_event.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_state.dart';
+import 'package:banking_app/screens/Nickname/controllers/nickname_bloc.dart';
+import 'package:banking_app/screens/Nickname/controllers/nickname_event.dart';
+import 'package:banking_app/screens/Nickname/controllers/nickname_state.dart';
+import 'package:banking_app/screens/Nickname/views/nickname_create.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,16 +35,30 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
   String? _nickname;
   final GlobalKey _receiptKey = GlobalKey();
   bool _isSavingReceipt = false;
+  bool _hasSavedReceipt = false; // Track if receipt has been saved
 
   @override
   void initState() {
     super.initState();
-    // Check if auto-save is enabled
+    // Load auto-save receipt setting from API
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final settingsState = context.read<SettingsBloc>().state;
-      if (settingsState.autoSaveReceipt) {
-        _saveReceiptAsImage(autoSave: true);
+      // Load auto-save receipt setting
+      try {
+        context.read<SettingsBloc>().add(const LoadAutoSaveReceipt());
+      } catch (e) {
+        print('⚠️ Error loading auto-save receipt: $e');
       }
+      
+      // Wait a bit for the setting to load, then check
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          final settingsState = context.read<SettingsBloc>().state;
+          // Only auto-save if API returns true
+          if (settingsState.autoSaveReceipt) {
+            _saveReceiptAsImage(autoSave: true);
+          }
+        }
+      });
     });
   }
 
@@ -61,7 +79,7 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
   }
 
   Future<void> _saveReceiptAsImage({bool autoSave = false}) async {
-    if (_isSavingReceipt) return;
+    if (_isSavingReceipt || _hasSavedReceipt) return; // Prevent saving if already saved
 
     setState(() {
       _isSavingReceipt = true;
@@ -93,13 +111,17 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
         }
 
         if (!permissionGranted) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Storage permission is required to save receipt'),
-                backgroundColor: Colors.orange,
-              ),
-            );
+          if (mounted && context.mounted) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Storage permission is required to save receipt'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
+            });
           }
           setState(() {
             _isSavingReceipt = false;
@@ -115,13 +137,17 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
         permissionGranted = photosStatus.isGranted || photosStatus.isLimited;
 
         if (!permissionGranted) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Photos permission is required to save receipt'),
-                backgroundColor: Colors.orange,
-              ),
-            );
+          if (mounted && context.mounted) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Photos permission is required to save receipt'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
+            });
           }
           setState(() {
             _isSavingReceipt = false;
@@ -133,8 +159,19 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
       // Wait for widget to be fully rendered
       await Future.delayed(const Duration(milliseconds: 100));
 
+      // Check if context is still valid before accessing render object
+      if (!mounted || !context.mounted) {
+        print('⚠️ Widget disposed before capturing receipt');
+        return;
+      }
+
+      final renderObject = _receiptKey.currentContext?.findRenderObject();
+      if (renderObject == null || !(renderObject is RenderRepaintBoundary)) {
+        throw Exception('Receipt widget not ready for capture');
+      }
+
       // Capture the receipt as image
-      RenderRepaintBoundary boundary = _receiptKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      RenderRepaintBoundary boundary = renderObject as RenderRepaintBoundary;
 
       // Capture at high quality
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
@@ -148,36 +185,57 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
       // Save to gallery
       final result = await ImageGallerySaverPlus.saveImage(pngBytes, quality: 100, name: fileName);
 
-      if (mounted) {
+      // Check again before showing success message
+      if (mounted && context.mounted) {
         if (result != null && result['isSuccess'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                autoSave ? 'Receipt auto-saved to gallery successfully!' : 'Receipt saved to gallery successfully!',
-              ),
-              backgroundColor: const Color(0xFF16A34A),
-              duration: const Duration(seconds: 3),
-            ),
-          );
+          // Mark as saved
+          setState(() {
+            _hasSavedReceipt = true;
+          });
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    autoSave ? 'Receipt auto-saved to gallery successfully!' : 'Receipt saved to gallery successfully!',
+                  ),
+                  backgroundColor: const Color(0xFF16A34A),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
+          });
 
           // Update auto-save preference if manually saved
-          if (!autoSave) {
+          if (!autoSave && mounted && context.mounted) {
             context.read<SettingsBloc>().add(const SettingsAutoSaveReceipt(true));
           }
+
+          // Navigate back to home after a short delay
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted && context.mounted) {
+              AppRoutes.navigateAndRemoveUntil(context, AppRoutes.home_screen);
+            }
+          });
         } else {
           throw Exception('Failed to save to gallery');
         }
       }
     } catch (e) {
       print('❌ Error saving receipt: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save receipt: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+      if (mounted && context.mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to save receipt: ${e.toString()}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        });
       }
     } finally {
       if (mounted) {
@@ -190,19 +248,54 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SettingsBloc, SettingsState>(
-      listener: (context, state) {
-        if (state.isSuccess && state.message != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message!), backgroundColor: const Color(0xFF16A34A)));
-        } else if (state.hasError && state.errorMessage != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red));
-        }
-      },
-      child: _buildContent(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: context.read<SettingsBloc>()),
+        BlocProvider(create: (_) => NicknameBloc()..add(const LoadNicknames())),
+      ],
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<SettingsBloc, SettingsState>(
+            listener: (context, state) {
+              if (!mounted || !context.mounted) return;
+              
+              if (state.isSuccess && state.message != null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message!),
+                        backgroundColor: const Color(0xFF16A34A),
+                      ),
+                    );
+                  }
+                });
+              } else if (state.hasError && state.errorMessage != null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.errorMessage!),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                });
+              }
+            },
+          ),
+          BlocListener<NicknameBloc, NicknameState>(
+            listener: (context, state) {
+              // Reload nicknames after successful creation to update the UI
+              if (state.isSuccess && state.message != null && state.items.isNotEmpty) {
+                // Nicknames were loaded/created, UI will update automatically via BlocBuilder
+                print('✅ Nicknames updated: ${state.items.length} items');
+              }
+            },
+          ),
+        ],
+        child: _buildContent(),
+      ),
     );
   }
 
@@ -409,56 +502,74 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
             ),
           ),
 
-          // Set up nickname button
-          Container(
-            height: 135,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      AppRoutes.navigateTo(context, AppRoutes.nickname).then((value) {
-                        if (value != null && value is String) {
-                          setState(() {
-                            _nickname = value;
-                          });
-                        }
-                      });
-                    },
-                    child: Container(
-                      width: CommonSize.s48(context),
-                      height: CommonSize.s48(context),
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF0A3D62)),
-                      child: const Icon(Icons.add, color: Colors.white, size: 20),
-                    ),
-                  ),
+          // Set up nickname button - only show if user has no nicknames
+          BlocBuilder<NicknameBloc, NicknameState>(
+            builder: (context, nicknameState) {
+              // Only show button if no nicknames exist and not loading
+              final hasNicknames = nicknameState.items.isNotEmpty;
+              final isLoading = nicknameState.isLoading && nicknameState.items.isEmpty;
+              
+              if (isLoading) {
+                return Container(
+                  height: 135,
+                  child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+                );
+              }
 
-                  SizedBox(height: CommonSize.s6(context)),
+              if (hasNicknames) {
+                // Don't show button if user already has nicknames
+                return const SizedBox.shrink();
+              }
 
-                  Text(
-                    'Set up nickname',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: CommonSize.s12(context),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+              // Show button only if no nicknames exist
+              return Container(
+                height: 135,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          // Navigate to create nickname screen
+                          final res = await Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const NicknameCreateScreen()),
+                          );
 
-                  if (_nickname != null) ...[
-                    SizedBox(height: CommonSize.s4(context)),
-                    Text(
-                      'Nickname: $_nickname',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: CommonSize.s12(context),
-                        fontWeight: FontWeight.w600,
+                          if (res is Map<String, dynamic>) {
+                            final toAccountId = res['account']?.toString() ?? '';
+                            final nickname = res['nickname']?.toString() ?? '';
+
+                            if (toAccountId.isNotEmpty && nickname.isNotEmpty) {
+                              // Create the nickname
+                              context.read<NicknameBloc>().add(
+                                CreateNickname(toAccountId: toAccountId, nickname: nickname),
+                              );
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: CommonSize.s48(context),
+                          height: CommonSize.s48(context),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF0A3D62)),
+                          child: const Icon(Icons.add, color: Colors.white, size: 20),
+                        ),
                       ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+
+                      SizedBox(height: CommonSize.s6(context)),
+
+                      Text(
+                        'Set up nickname',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: CommonSize.s12(context),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -470,8 +581,8 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
         ),
         child: customElevatedButton(
           context: context,
-          onPressed: _isSavingReceipt ? null : () => _saveReceiptAsImage(autoSave: false),
-          text: 'Save Receipt',
+          onPressed: (_isSavingReceipt || _hasSavedReceipt) ? null : () => _saveReceiptAsImage(autoSave: false),
+          text: _hasSavedReceipt ? 'Receipt Saved' : 'Save Receipt',
           color: const Color(0xFF0A3D62),
           textColor: Colors.white,
           borderRadius: BorderRadius.circular(CommonSize.s12(context)),

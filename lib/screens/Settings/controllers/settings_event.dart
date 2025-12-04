@@ -69,3 +69,11 @@ class SettingsAutoSaveReceipt extends SettingsEvent {
   @override
   List<Object?> get props => [enabled];
 }
+
+/// Load auto-save receipt setting from API
+class LoadAutoSaveReceipt extends SettingsEvent {
+  const LoadAutoSaveReceipt();
+
+  @override
+  List<Object?> get props => [];
+}

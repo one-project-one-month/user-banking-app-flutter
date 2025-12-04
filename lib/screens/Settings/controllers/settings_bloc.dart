@@ -30,6 +30,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<SettingsSetPin>(_onSetPin);
     on<SettingsChangePassword>(_onChangePassword);
     on<SettingsAutoSaveReceipt>(_onAutoSaveReceipt);
+    on<LoadAutoSaveReceipt>(_onLoadAutoSaveReceipt); // Add this handler
   }
 
 
@@ -130,6 +131,31 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     } catch (e) {
       print('❌ SettingsBloc ChangePassword error: $e');
       emit(state.copyWith(status: SettingsStatus.error, errorMessage: 'Failed to change password: $e'));
+    }
+  }
+
+  /// Load auto-save receipt setting from API
+  Future<void> _onLoadAutoSaveReceipt(LoadAutoSaveReceipt event, Emitter<SettingsState> emit) async {
+    try {
+      final token = await cache.getToken();
+
+      if (token == null || token.accessToken.isEmpty) {
+        print('⚠️ No token found, skipping auto-save receipt load');
+        return;
+      }
+
+      if (token.isExpired) {
+        print('⚠️ Token expired, skipping auto-save receipt load');
+        return;
+      }
+
+      final flag = await api.getAutoSaveReceipt(token.accessToken);
+      if (flag != null) {
+        emit(state.copyWith(autoSaveReceipt: flag));
+      }
+    } catch (e) {
+      print('❌ Error loading auto-save receipt: $e');
+      // Don't emit error state, just log it
     }
   }
 

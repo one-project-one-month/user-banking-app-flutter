@@ -4,7 +4,7 @@ import '../models/token.dart';
 import '../models/registration_options.dart';
 
 class ApiService {
-  String? baseUrl = "http://10.0.2.2:7777";
+  String? baseUrl = "https://136.112.160.13:7777";
   final http.Client _client;
 
   ApiService({this.baseUrl, http.Client? client}) : _client = client ?? http.Client();

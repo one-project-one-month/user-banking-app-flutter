@@ -2,117 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'controllers/qr_bloc.dart';
-import 'controllers/qr_event.dart';
-import 'controllers/qr_state.dart';
-import 'views/qr_to_receive_screen.dart';
-import 'views/qr_to_pay_screen.dart';
-import 'views/scan_to_receive.dart';
-import '../Transfer/views/transfer_confirmation_screen.dart';
-import '../Transfer/controllers/transfer_bloc.dart';
-import '../Transfer/controllers/transfer_event.dart';
+import '../controllers/qr_bloc.dart';
+import '../controllers/qr_event.dart';
+import '../controllers/qr_state.dart';
+import '../../Transfer/views/transfer_confirmation_screen.dart';
+import '../../Transfer/controllers/transfer_bloc.dart';
+import '../../Transfer/controllers/transfer_event.dart';
 
-// Main QR Screen with bottom navigation and QRBloc
-class QRScreen extends StatefulWidget {
-  const QRScreen({Key? key}) : super(key: key);
+class ScanToReceiveScreen extends StatefulWidget {
+  const ScanToReceiveScreen({Key? key}) : super(key: key);
 
   @override
-  State<QRScreen> createState() => _QRScreenState();
+  State<ScanToReceiveScreen> createState() => _ScanToReceiveScreenState();
 }
 
-class _QRScreenState extends State<QRScreen> {
-  int _currentIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => QRBloc(),
-      child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: const [
-            ScanToPayScreen(),
-            QRToPayScreen(),
-            QRToReceiveScreen(),
-            ScanToReceiveScreen(),
-          ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.blue,
-          unselectedItemColor: Colors.grey,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.qr_code_scanner), label: 'Scan to pay'),
-            BottomNavigationBarItem(icon: Icon(Icons.qr_code), label: 'QR to Pay'),
-            BottomNavigationBarItem(icon: Icon(Icons.qr_code_2), label: 'QR to Receive'),
-            BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan to Receive'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// 1. Scan to Pay Screen (Customer scans merchant's QR to receive)
-class ScanToPayScreen extends StatefulWidget {
-  const ScanToPayScreen({Key? key}) : super(key: key);
-
-  @override
-  State<ScanToPayScreen> createState() => _ScanToPayScreenState();
-}
-
-class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingObserver {
+class _ScanToReceiveScreenState extends State<ScanToReceiveScreen> {
   final MobileScannerController cameraController = MobileScannerController();
   bool hasScanned = false;
   bool hasPermission = false;
   bool permissionChecked = false;
-  bool cameraStarted = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     // Check permission after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkCameraPermission();
     });
   }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && hasPermission && mounted && !hasScanned) {
-      // Restart camera when app comes back to foreground
-      _startCamera();
-    } else if (state == AppLifecycleState.paused) {
-      // Stop camera when app goes to background
-      cameraController.stop();
-    }
-  }
-  
-  // Method to restart camera when tab becomes visible
-  void restartCamera() {
-    if (hasPermission && mounted && !hasScanned) {
-      setState(() {
-        cameraStarted = false;
-      });
-      _startCamera();
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    cameraController.dispose();
-    super.dispose();
-  }
-
 
   Future<void> _checkCameraPermission() async {
     try {
@@ -125,10 +42,20 @@ class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingOb
       
       if (hasPermission && mounted) {
         // Wait a bit for the widget to be fully built before starting camera
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (mounted && !cameraStarted) {
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (mounted) {
           // Start camera after permission is granted and widget is ready
-          await _startCamera();
+          try {
+            await cameraController.start();
+            print('✅ Camera started successfully');
+          } catch (e) {
+            print('❌ Error starting camera: $e');
+            // Try to restart
+            if (mounted) {
+              await Future.delayed(const Duration(milliseconds: 300));
+              await cameraController.start();
+            }
+          }
         }
       } else {
         // Show error if permission denied
@@ -149,39 +76,10 @@ class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingOb
     }
   }
 
-  Future<void> _startCamera() async {
-    if (cameraStarted) return; // Don't start if already started
-    
-    try {
-      // Stop camera first if it's running
-      try {
-        await cameraController.stop();
-      } catch (_) {}
-      
-      await Future.delayed(const Duration(milliseconds: 100));
-      
-      // Start camera
-      await cameraController.start();
-      setState(() {
-        cameraStarted = true;
-      });
-      print('✅ Camera started successfully');
-    } catch (e) {
-      print('❌ Error starting camera: $e');
-      // Retry after a delay
-      if (mounted) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        try {
-          await cameraController.start();
-          setState(() {
-            cameraStarted = true;
-          });
-          print('✅ Camera started on retry');
-        } catch (e2) {
-          print('❌ Camera failed to start on retry: $e2');
-        }
-      }
-    }
+  @override
+  void dispose() {
+    cameraController.dispose();
+    super.dispose();
   }
 
   void _handleScannedQR(String qrData) {
@@ -212,10 +110,9 @@ class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingOb
           // Reset for another scan
           setState(() {
             hasScanned = false;
-            cameraStarted = false;
           });
           if (mounted) {
-            _startCamera();
+            cameraController.start();
           }
         }
 
@@ -249,7 +146,10 @@ class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingOb
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.black,
-          title: const Text('Scan to Pay', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'Scan QR to Receive',
+            style: TextStyle(color: Colors.white),
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
@@ -260,6 +160,7 @@ class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingOb
         ),
         body: Stack(
           children: [
+            // Camera view
             if (permissionChecked && hasPermission)
               MobileScanner(
                 controller: cameraController,
@@ -299,6 +200,8 @@ class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingOb
               const Center(
                 child: CircularProgressIndicator(color: Colors.white),
               ),
+
+            // Scanning frame
             Center(
               child: Container(
                 width: 250,
@@ -309,22 +212,34 @@ class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingOb
                 ),
               ),
             ),
+
+            // Instructions
             Positioned(
               top: 50,
               left: 0,
               right: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: const Text(
-                    'Place QR at the center of your camera\nand it will be automatically scanned',
+                    'Scan the QR code to receive payment',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
             ),
+
             // Loading indicator when processing
             if (hasScanned)
               Container(
@@ -351,5 +266,4 @@ class _ScanToPayScreenState extends State<ScanToPayScreen> with WidgetsBindingOb
       ),
     );
   }
-
 }

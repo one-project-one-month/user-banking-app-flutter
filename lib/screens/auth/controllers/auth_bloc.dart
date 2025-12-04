@@ -12,7 +12,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final CacheService cache;
 
   AuthBloc({ApiService? apiService, CacheService? cacheService})
-    : api = apiService ?? ApiService(baseUrl: "http://10.0.2.2:7777"),
+    : api = apiService ?? ApiService(baseUrl: "https://136.112.160.13:7777"),
       cache = cacheService ?? CacheService(),
       super(const AuthState()) {
     on<AuthRequestOTP>(_onRequestOTP);

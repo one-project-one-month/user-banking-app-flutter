@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/user.dart';
 
 class UserApiService {
-  String? baseUrl = "http://10.0.2.2:7777";
+  String? baseUrl = "https://136.112.160.13:7777";
   final http.Client _client;
 
   UserApiService({this.baseUrl, http.Client? client}) : _client = client ?? http.Client();

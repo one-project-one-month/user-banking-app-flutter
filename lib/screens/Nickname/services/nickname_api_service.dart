@@ -8,7 +8,7 @@ class NicknameApiService {
   final http.Client _client;
 
   NicknameApiService({String? baseUrl, http.Client? client})
-    : baseUrl = baseUrl ?? "http://10.0.2.2:7777",
+    : baseUrl = baseUrl ?? "https://136.112.160.13:7777",
       _client = client ?? http.Client();
 
   Uri _uri(String path) {

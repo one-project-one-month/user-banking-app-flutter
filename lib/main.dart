@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:banking_app/AppStyles/Style.dart';
 import 'package:banking_app/Routes/app_routes.dart';
 import 'package:banking_app/constant.dart';
+import 'package:banking_app/my_http_override.dart';
 import 'package:banking_app/screens/KYC/document/controllers/upload/upload_bloc.dart';
 import 'package:banking_app/screens/KYC/document/controllers/verification/verification_bloc.dart';
 import 'package:banking_app/screens/KYC/face_authentication/controller/face_auth_bloc.dart';
 import 'package:banking_app/screens/KYC/face_authentication/service/face_auth_service.dart';
+import 'package:banking_app/screens/QR/controllers/qr_bloc.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_bloc.dart';
 import 'package:banking_app/screens/Settings/controllers/settings_state.dart';
 import 'package:banking_app/screens/Transfer/controllers/transfer_bloc.dart';
@@ -44,6 +48,7 @@ void main() async {
 
   final settingsBloc = SettingsBloc(cacheService: cache, initialState: initialState);
 
+  HttpOverrides.global = MyHttpOverrides();
   runApp(MyApp(settingsBloc: settingsBloc));
 }
 
@@ -71,6 +76,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<TransferBloc>(create: (_) => TransferBloc(), lazy: false),
         BlocProvider<TransactionBloc>(create: (_) => TransactionBloc()),
 
+        BlocProvider<QRBloc>(create: (_) => QRBloc()),
       ],
       child: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, settingsState) {

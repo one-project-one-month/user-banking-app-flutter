@@ -17,9 +17,14 @@ class NicknameListScreen extends StatelessWidget {
   }
 }
 
-class _NicknameListView extends StatelessWidget {
+class _NicknameListView extends StatefulWidget {
   const _NicknameListView();
 
+  @override
+  State<_NicknameListView> createState() => _NicknameListViewState();
+}
+
+class _NicknameListViewState extends State<_NicknameListView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -39,22 +44,34 @@ class _NicknameListView extends StatelessWidget {
       ),
       body: BlocConsumer<NicknameBloc, NicknameState>(
         listener: (context, state) {
+          // More defensive check - ensure widget is still mounted and context is valid
+          if (!mounted || !context.mounted) return;
+          
+          // Only show SnackBar for new messages, not on every state change
           if (state.hasError && state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 3),
-              ),
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.errorMessage!),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            });
           } else if (state.isSuccess && state.message != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message!),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message!),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            });
           }
         },
         builder: (context, state) {
